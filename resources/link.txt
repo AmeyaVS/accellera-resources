@@ -1,4 +1,4 @@
-# SystemC 1.0.2 | 2002-02-08
+# SystemC 1.0.2 | 2002-02-07
 https://accellera.org/images/downloads/standards/systemc/systemc-1.0.2.tar.gz
 # SystemC Verification Library(SCV), Release 1.0p1 | 2003-12-16
 https://accellera.org/images/downloads/standards/systemc/systemc-2.0-SCV1.0p1.tgz
@@ -34,9 +34,9 @@ https://accellera.org/images/downloads/standards/systemc/TLM_2_0_LRM.pdf
 https://accellera.org/images/downloads/standards/systemc/TLM-2.0.1.tgz
 # SystemC AMS 1.0 | 2010-03-05
 https://accellera.org/images/downloads/standards/systemc/OSCI_SystemC_AMS_extensions_1v0_Standard.zip
-# SystemC Regressions 2.3.0 | 2012-07-02
+# SystemC Regressions 2.3.0 | 2012-07-01
 https://accellera.org/images/downloads/standards/systemc/systemc_regressions-2.3.0.tgz
-# Systemc 2.3.0 | 2012-07-02
+# Systemc 2.3.0 | 2012-07-01
 https://accellera.org/images/downloads/standards/systemc/systemc-2.3.0.tgz
 # SystemC Synthesis Subset | 2016-03-11
 https://accellera.org/images/downloads/standards/systemc/SystemC_Synthesis_Subset_1_4_7-Apache.pdf
@@ -74,7 +74,7 @@ https://accellera.org/images/downloads/standards/systemc/cci-1.0.0.zip
 https://accellera.org/images/downloads/standards/systemc/SystemC_CCI_1_0_LRM.pdf
 # SystemC AMS 2.3 Examples | 2020-04-08
 https://accellera.org/images/downloads/standards/systemc/application_examples.zip
-# SystemC Extensions User's Guide | 2020-01-09
+# SystemC AMS Extensions User's Guide | 2020-01-09
 https://accellera.org/images/downloads/standards/systemc/Accellera_SystemC_AMS_Users_Guide_January_2020.pdf
 # SystemC Regressions 2.3.3 | 2018-11-05
 https://accellera.org/images/downloads/standards/systemc/systemc-regressions-2.3.3.tar.gz
@@ -84,10 +84,10 @@ https://accellera.org/images/downloads/standards/systemc/systemc-2.3.3.tar.gz
 ## Drafts
 # SystemC-UVM Draft 1.0-alpha1 | 2016-02-29
 https://accellera.org/images/downloads/drafts-review/uvm-systemc-1.0-alpha1.tar.gz
-# SystemC Regressions 2.3.2_pre | 2017-02-27
-https://accellera.org/images/downloads/drafts-review/systemc-regressions-2.3.2_pub_rev_20170223.tar.gz
-# SystemC 2.3.2_pre | 2017-02-27
-https://accellera.org/images/downloads/drafts-review/systemc-2.3.2_pub_rev_20170223.tar.gz
+### SystemC Regressions 2.3.2_pre | 2017-02-27
+##https://accellera.org/images/downloads/drafts-review/systemc-regressions-2.3.2_pub_rev_20170223.tar.gz
+### SystemC 2.3.2_pre | 2017-02-27
+##https://accellera.org/images/downloads/drafts-review/systemc-2.3.2_pub_rev_20170223.tar.gz
 # SystemC-UVM Draft 1.0-beta1 | 2017-12-08
 https://accellera.org/images/downloads/standards/systemc/uvm-systemc-1.0-beta1.tar.gz
 # SystemC-CCI 0.9.0_pre | 2017-12-19
@@ -102,14 +102,14 @@ https://accellera.org/images/downloads/drafts-review/configuration_requirements-
 https://accellera.org/images/downloads/drafts-review/scv-2.0-public_preview.tar.gz
 # SystemC synthesizable 1.4 draft | 2015-02-11
 https://accellera.org/images/downloads/drafts-review/SystemC_Synthesis_Subset_Draft_1_4.pdf
-# SystemC-UVM 1.0-alpha1 | 2015-12-04
-https://accellera.org/images/downloads/drafts-review/uvm-systemc-1.0-alpha1.tar.gz
+### SystemC-UVM 1.0-alpha1 | 2015-12-04
+##https://accellera.org/images/downloads/drafts-review/uvm-systemc-1.0-alpha1.tar.gz
 # SystemC Regressions 2.3.2 draft | 2017-02-27
 https://accellera.org/images/downloads/drafts-review/systemc-regressions-2.3.2_pub_rev_20170223.tar.gz
 # SystemC 2.3.2 draft | 2017-02-27
 https://accellera.org/images/downloads/drafts-review/systemc-2.3.2_pub_rev_20170223.tar.gz
-# SystemC-UVM 1.0-beta1 | 2012-12-08
-https://accellera.org/images/downloads/standards/systemc/uvm-systemc-1.0-beta1.tar.gz
+### SystemC-UVM 1.0-beta1 | 2012-12-08
+##https://accellera.org/images/downloads/standards/systemc/uvm-systemc-1.0-beta1.tar.gz
  
 
 ## Misc.
