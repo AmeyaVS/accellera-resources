@@ -1,0 +1,96 @@
+
+
+===========================================================================
+Release Notes for the SystemC AMS extensions 1.0 Standard Kit, March 8 2010
+===========================================================================
+
+
+CONTENTS
+========
+
+  1) SystemC AMS extensions 1.0 Standard Kit contents
+  2) Frequently asked questions
+
+
+1) SystemC AMS extensions 1.0 Standard Kit contents
+===================================================
+
+The AMS 1.0 standard kit contains:
+  - Requirements Specification document, version 2.1
+  - Standard SystemC AMS extensions Language Reference Manual, version 1.0
+  - SystemC AMS extensions User's Guide
+
+  
+2) Frequently Asked Questions
+===================================================
+
+Q: What is the main reason for defining the SystemC AMS 1.0 standard?
+
+A: The AMS 1.0 standard fulfills the need of the electronics industry to 
+   have a standardized system-level modeling language for AMS applications 
+   based on SystemC. The AMS standard defines the semantics and language 
+   constructs for system-level design and modeling of embedded
+   analog/mixed-signal systems at higher levels of abstraction.
+
+Q: How do the SystemC AMS extensions fit into the spectrum with existing 
+   hardware description languages?
+
+A: The SystemC AMS extensions focus on the system-level and architecture 
+   modeling aspects for AMS systems. By having AMS extensions for SystemC, 
+   users can build an executable description of the AMS system in a C++
+   based manner, enabling seamless integration with HW/SW architectures 
+   in SystemC and functional descriptions in C and C++.
+
+Q: How can the SystemC community interact with the AMS Working Group?
+
+A: The SystemC community members can interact with the AMS Working group 
+   by joining the AMS discussion forum. The forum can be used to discuss 
+   or ask questions on how to use the new AMS language.
+
+Q: Is there a proof-of-concept simulator available that supports the AMS 
+   extensions?
+
+A: The AMS Language Reference Manual, which is part of the AMS standard, 
+   is developed to facilitate the creation of new implementations compliant 
+   with this new standard. OSCI expects, similar as with the introduction 
+   of SystemC, that the industry will support the SystemC AMS extensions 
+   over time. Availability of an AMS standard-compliant proof-of-concept 
+   simulator will be communicated via the AMS discussion forum.
+
+Q: Does OSCI target the development of an open source proof-of-concept 
+   implementation?
+
+A: The main objective of OSCI is to define and advance SystemC as an 
+   open-industry standard for system-level modeling, design and verification. 
+   OSCI will evaluate all possible options to promote the availability of 
+   an open-source proof-of-concept implementation via its member organizations.
+
+Q: I found a simulator called "SystemC-AMS" on www.systemc-ams.org. Is this 
+   simulator compatible with the SystemC AMS extensions 1.0 Standard?
+
+A: The website www.systemc-ams.org is not owned and not maintained by OSCI, 
+   but by the former study group who explored AMS capabilities in SystemC 
+   some years ago. The information available on this website is completely 
+   independent from any OSCI publication or release. We recommend you to 
+   contact the responsible organization whether such a simulator is 
+   compatible with the AMS standard or not.
+
+Q: Not all requirements are covered in the AMS 1.0 standard. What will 
+   happen with the remaining items?
+
+A: The AMSWG will continue to improve and enhance the AMS 1.0 standard. 
+   The important topics will be considered for future updates, based on 
+   prioritization by the AMS woring group in the coming period. Members 
+   of OSCI can participate in the AMS working group.
+
+Q: I would like to learn more about the SystemC AMS extensions. Where can 
+   I find books, courses, or other training material?
+
+A: The AMS 1.0 standard includes a comprehensive manual explaining all 
+   fundamentals of the AMS language and how to use the extensive set of 
+   features for AMS behavioral modeling at the system-level. In addition, 
+   the AMS working group members will continue to promote SystemC and the 
+   AMS extensions, and will be providing periodic updates at many workshops, 
+   tutorials, and conferences over the course of this year. The latest 
+   information and material is shared via the public page of the AMS working 
+   group.

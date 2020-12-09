@@ -1,0 +1,51 @@
+                             2010-03-08
+                SystemC AMS extensions 1.0 Standard 
+                ===================================
+
+This is the README file of the SystemC AMS extensions 1.0 Standard.
+
+-------------------------------------------------------------------------------
+
+Licensing and Copyright
+
+   See the license agreement at http://www.systemc.org/about/org_docs/license
+   to determine your rights and responsibilities for using this kit.
+
+
+Installation
+
+   No installation, as such, required; simply extract contents of the
+   downloaded package.
+
+
+Release Notes
+
+   See the separate RELEASENOTES file that provides up-to date
+   information about the AMS 1.0 standard.
+
+
+Directory Structure
+
+   Dirs: docs/	    : contains the documentation for AMS 1.0 Standard
+
+	 
+Documentation
+
+   You can find documentation for this release in the docs directory:
+      * Requirements specification 
+      * Standard SystemC AMS extensions Language Reference Manual
+      * SystemC AMS extensions User's Guide
+
+
+Examples
+
+   Examples are given in the SystemC AMS extensions User's Guide.
+
+
+Comments, feedback or problems
+
+   Any comments, feedback or problems regarding the material supplied by this kit 
+   can be submitted to ams_forum@lists.systemc.org.
+
+   For more information see the frequently asked questions in the RELEASENOTES 
+   file. 
