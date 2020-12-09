@@ -1,0 +1,13 @@
+= README
+
+This repo is a collection of various resources from *link:https://accellera.org/[Accellera]*.
+
+Mostly an archive of the resources, also there might be changes in individual directories depending on my interest in fixing bugs or other issues in the resources.
+
+== Resources
+
+Directories resources:
+
+* link:resources[resources]:
+** Directory containing the link:resources/link.txt[list] of resources captured from the Accellera site.
+** Utility link:parse_resource.py[script] to extract json data(*Note:* Run the script from top-level directory).
