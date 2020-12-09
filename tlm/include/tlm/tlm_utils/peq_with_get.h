@@ -15,6 +15,10 @@
 
  *****************************************************************************/
 
+// 12-Jan-2009  John Aynsley  Bug fix. sc_time argument to notify should be const
+// 20-Mar-2009  John Aynsley  Add cancel_all() method
+
+
 #ifndef __PEQ_WITH_GET_H__
 #define __PEQ_WITH_GET_H__
 
@@ -36,7 +40,7 @@ public:
   {
   }
 
-  void notify(transaction_type& trans, sc_core::sc_time& t)
+  void notify(transaction_type& trans, const sc_core::sc_time& t)
   {
     m_scheduled_events.insert(pair_type(t + sc_core::sc_time_stamp(), &trans));
     m_event.notify(t);
@@ -63,13 +67,19 @@ public:
     }
 
     m_event.notify(m_scheduled_events.begin()->first - now);
-    
+
     return 0;
   }
 
   sc_core::sc_event& get_event()
   {
     return m_event;
+  }
+
+  // Cancel all events from the event queue
+  void cancel_all() {
+    m_scheduled_events.clear();
+    m_event.cancel();
   }
 
 private:

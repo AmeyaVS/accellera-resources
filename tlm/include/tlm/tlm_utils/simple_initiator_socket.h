@@ -19,6 +19,7 @@
 #define __SIMPLE_INITIATOR_SOCKET_H__
 
 #include "tlm.h"
+#include <sstream>
 
 namespace tlm_utils {
 
@@ -37,8 +38,15 @@ public:
   typedef tlm::tlm_initiator_socket<BUSWIDTH, TYPES>    base_type;
 
 public:
-  explicit simple_initiator_socket(const char* n = "simple_initiator_socket") :
-    base_type(sc_core::sc_gen_unique_name(n)),
+  simple_initiator_socket() :
+    base_type(sc_core::sc_gen_unique_name("simple_initiator_socket")),
+    m_process(this->name())
+  {
+    this->m_export.bind(m_process);
+  }
+
+  explicit simple_initiator_socket(const char* n) :
+    base_type(n),
     m_process(this->name())
   {
     this->m_export.bind(m_process);
@@ -63,7 +71,7 @@ private:
   {
   public:
     typedef sync_enum_type (MODULE::*TransportPtr)(transaction_type&,
-                                                   tlm::tlm_phase&,
+                                                   phase_type&,
                                                    sc_core::sc_time&);
     typedef void (MODULE::*InvalidateDirectMemPtr)(sc_dt::uint64,
                                                    sc_dt::uint64);
@@ -79,8 +87,9 @@ private:
     void set_transport_ptr(MODULE* mod, TransportPtr p)
     {
       if (m_transport_ptr) {
-        std::cerr << m_name << ": non-blocking callback allready registered" << std::endl;
-
+        std::stringstream s;
+        s << m_name << ": non-blocking callback allready registered";
+        SC_REPORT_WARNING("/OSCI_TLM-2/simple_socket",s.str().c_str());
       } else {
         assert(!m_mod || m_mod == mod);
         m_mod = mod;
@@ -91,8 +100,9 @@ private:
     void set_invalidate_direct_mem_ptr(MODULE* mod, InvalidateDirectMemPtr p)
     {
       if (m_invalidate_direct_mem_ptr) {
-        std::cerr << m_name << ": invalidate DMI callback allready registered" << std::endl;
-
+        std::stringstream s;
+        s << m_name << ": invalidate DMI callback allready registered";
+        SC_REPORT_WARNING("/OSCI_TLM-2/simple_socket",s.str().c_str());
       } else {
         assert(!m_mod || m_mod == mod);
         m_mod = mod;
@@ -108,9 +118,11 @@ private:
         return (m_mod->*m_transport_ptr)(trans, phase, t);
 
       } else {
-        std::cerr << m_name << ": no transport callback registered" << std::endl;
-        assert(0); exit(1);
+        std::stringstream s;
+        s << m_name << ": no transport callback registered";
+        SC_REPORT_ERROR("/OSCI_TLM-2/simple_socket",s.str().c_str());
       }
+      return tlm::TLM_ACCEPTED;   ///< unreachable code
     }
 
     void invalidate_direct_mem_ptr(sc_dt::uint64 start_range,
@@ -151,8 +163,15 @@ public:
   typedef tlm::tlm_initiator_socket<BUSWIDTH, TYPES>    base_type;
 
 public:
-  explicit simple_initiator_socket_tagged(const char* n = "simple_initiator_socket_tagged") :
-    base_type(sc_core::sc_gen_unique_name(n)),
+  simple_initiator_socket_tagged() :
+    base_type(sc_core::sc_gen_unique_name("simple_initiator_socket_tagged")),
+    m_process(this->name())
+  {
+    this->m_export.bind(m_process);
+  }
+
+  explicit simple_initiator_socket_tagged(const char* n) :
+    base_type(n),
     m_process(this->name())
   {
     this->m_export.bind(m_process);
@@ -183,7 +202,7 @@ private:
   public:
     typedef sync_enum_type (MODULE::*TransportPtr)(int,
                                                    transaction_type&,
-                                                   tlm::tlm_phase&,
+                                                   phase_type&,
                                                    sc_core::sc_time&);
     typedef void (MODULE::*InvalidateDirectMemPtr)(int,
                                                    sc_dt::uint64,
@@ -205,8 +224,9 @@ private:
     void set_transport_ptr(MODULE* mod, TransportPtr p)
     {
       if (m_transport_ptr) {
-        std::cerr << m_name << ": non-blocking callback allready registered" << std::endl;
-
+        std::stringstream s;
+        s << m_name << ": non-blocking callback allready registered";
+        SC_REPORT_WARNING("/OSCI_TLM-2/simple_socket",s.str().c_str());
       } else {
         assert(!m_mod || m_mod == mod);
         m_mod = mod;
@@ -217,8 +237,9 @@ private:
     void set_invalidate_direct_mem_ptr(MODULE* mod, InvalidateDirectMemPtr p)
     {
       if (m_invalidate_direct_mem_ptr) {
-        std::cerr << m_name << ": invalidate DMI callback allready registered" << std::endl;
-
+        std::stringstream s;
+        s << m_name << ": invalidate DMI callback allready registered";
+        SC_REPORT_WARNING("/OSCI_TLM-2/simple_socket",s.str().c_str());
       } else {
         assert(!m_mod || m_mod == mod);
         m_mod = mod;
@@ -234,9 +255,11 @@ private:
         return (m_mod->*m_transport_ptr)(m_transport_user_id, trans, phase, t);
 
       } else {
-        std::cerr << m_name << ": no transport callback registered" << std::endl;
-        assert(0); exit(1);
+        std::stringstream s;
+        s << m_name << ": no transport callback registered";
+        SC_REPORT_ERROR("/OSCI_TLM-2/simple_socket",s.str().c_str());
       }
+      return tlm::TLM_ACCEPTED;   ///< unreachable code
     }
 
     void invalidate_direct_mem_ptr(sc_dt::uint64 start_range,

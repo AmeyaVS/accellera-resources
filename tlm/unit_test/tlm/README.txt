@@ -8,12 +8,14 @@ SubDirs: build-cygwin/
          build-unix/
          bus/
          bus_dmi/
+         cancel_all/
          common/
          endian_conv/
-         gp_extension/
          multi_sockets/
+         nb2b_adapter/
          p2p/
          static_extensions/
+         update_original/
 Files: README.txt
 
 
@@ -40,13 +42,18 @@ To run the makefiles the following environment needs to be set:
       directory containing the systemc library.  
    On Windows, the SYSTEMC and TLM environments variables should be used.
    
-   The multi_sockets test is dependent on the boost library, you will need to 
-   have an environment variable 'BOOST_HOME' set to build the test
-   
-   To run the tests with SystemC-2.1v1, boost and gcc-3.4.4 you need to change
+   To run the tests with SystemC-2.1v1 and gcc-3.4.4 you need to change
    the Makefile.config in build-unix/ to unset the FLAG_WERROR
    You also need to unset this flag when using gcc-4.1.2 and above
 
+To run the Visual C++ solutions (.sln) or project (.vcproj) files, you must edit 
+the Property sheet as follows:
+
+1 Select Property Manager from the View menu
+2 Under projectName > Debug | Win32 select systemc
+3 Select Properties from the View menu
+4 Select User Macros under Common Properties
+5 Update the SYSTEMC and TLM entries and apply
 
 The tests:
 ----------
@@ -74,9 +81,6 @@ multi_sockets/ :
       initiators and targets. This test also uses instance specific extentions
       in the generic payload
       
-      NOTE: this test does not compile with SystemCv2.1.v1 due to 
-            incompatibilities with the boost library that is required for the
-	    multi_socket implementation
       
 p2p/ :
   BaseSocketLT/ :

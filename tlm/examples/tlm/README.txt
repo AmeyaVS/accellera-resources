@@ -16,6 +16,7 @@ SubDirs: at_1_phase/
          lt_dmi/
          lt_extension_mandatory/
          lt_temporal_decouple/
+         lt_mixed_endian/
 Files: README.txt
 
 
@@ -43,12 +44,18 @@ To run the makefiles the following environment needs to be set:
       directory containing the systemc library.  
    On Windows, the SYSTEMC and TLM environments variables should be used.
    
-   The multi_sockets test is dependent on the boost library, you will need to 
-   have an environment variable 'BOOST_HOME' set to build the test
-   
-   To run the tests with SystemC-2.1v1, boost and gcc-3.4.4 you need to change
+   To run the tests with SystemC-2.1v1 and gcc-3.4.4 you need to change
    the Makefile.config in build-unix/ to unset the FLAG_WERROR
    You also need to unset this flag when using gcc-4.1.2 and above
+
+To run the Visual C++ solutions (.sln) or project (.vcproj) files, you must edit 
+the Property sheet as follows:
+
+1 Select Property Manager from the View menu
+2 Under projectName > Debug | Win32 select systemc
+3 Select Properties from the View menu
+4 Select User Macros under Common Properties
+5 Update the SYSTEMC and TLM entries and apply
 
 
 The examples:
