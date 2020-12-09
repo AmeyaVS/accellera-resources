@@ -57,5 +57,6 @@
 #include "scv/scv_sparse_array.h"
 #include "scv/scv_tr.h"
 #include "scv/scv_kit_date.h"
+#include "scv/scv_ver.h"
 
 #endif

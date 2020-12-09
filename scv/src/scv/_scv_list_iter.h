@@ -342,9 +342,7 @@ public:
 
   // Assign list const_iterator to Bag const iterator leaving count unassigned
   scv_peek_bag_iter& operator=(const lbrIterT& other) { 
-    if ((*this)._peek != other) { 
-      _peek = other;
-    } 
+    _peek = other;
     return *this;
   } 
 

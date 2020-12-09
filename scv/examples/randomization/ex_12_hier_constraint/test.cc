@@ -17,8 +17,8 @@ struct packet_hier_constraint : public packet_base_constraint {
     SCV_CONSTRAINT (
       ((packet->src_addr() > (packet->dest_addr() + 0x100000) ) && 
        (packet->src_addr() < (packet->dest_addr() + 0x200000) ) ) || 
-      ((packet->src_addr() < (packet->dest_addr() - 0x10000) )) &&
-       (packet->src_addr() > (packet->dest_addr() - 0xfffff) ) );
+      ((packet->src_addr() < (packet->dest_addr() - 0x10000) ) &&
+       (packet->src_addr() > (packet->dest_addr() - 0xfffff) )) );
   }
 };
 // nbcode "constraint" end

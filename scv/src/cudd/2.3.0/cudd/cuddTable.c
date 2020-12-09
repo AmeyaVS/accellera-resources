@@ -1848,7 +1848,8 @@ cuddInsertSubtables(
 		return(0);
 	    }
 	    unique->memused += (newsize - unique->maxSize) * sizeof(int);
-	}
+	} else
+	    newmap = NULL; /* To shut up GCC warnings */
 	unique->memused += (newsize - unique->maxSize) * ((numSlots+1) *
 	    sizeof(DdNode *) + 2 * sizeof(int) + sizeof(DdSubtable));
 	for (i = 0; i < level; i++) {
@@ -2467,7 +2468,8 @@ ddResizeTable(
 		return(0);
 	    }
 	    unique->memused += (newsize - unique->maxSize) * sizeof(int);
-	}
+	} else
+	    newmap = NULL; /* To shut up GCC warnings */
 	unique->memused += (newsize - unique->maxSize) * ((numSlots+1) *
 	    sizeof(DdNode *) + 2 * sizeof(int) + sizeof(DdSubtable));
 	if (newsize > unique->maxSizeZ) {

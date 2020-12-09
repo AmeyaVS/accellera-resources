@@ -35,10 +35,6 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-
-AUTOMAKE_OPTIONS = foreign
-
 SUBDIRS = icons
 
 EXTRA_DIST = \
@@ -102,4 +98,3 @@ EXTRA_DIST = \
 	node7.html \
 	node8.html \
 	node9.html 
-

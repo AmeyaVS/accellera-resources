@@ -35,9 +35,6 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
-
 SUBDIRS = doc
 
 EXTRA_DIST = \

@@ -2,9 +2,9 @@ dnl
 dnl Careful: don't use unquoted commas or double quotes in AC_MSG_ERROR, quote with [ and ]
 dnl
 
-AC_DEFUN(SC_VERSION_CHECK,
+AC_DEFUN([SCV_SC_VERSION_CHECK],
   [
-  AC_CACHE_CHECK("for systemc version", sc_version,
+  AC_CACHE_CHECK([for SystemC version], scv_cv_sc_version,
     [
     cat > testsc.sh <<EOF
     #! /bin/sh
@@ -17,31 +17,31 @@ EOF
 // A program to get the version info from libsystemc.a
 //
 #include "systemc.h"
-int main() {
+int sc_main(int argc, char *argv[]) {
   int maj=0, min=0, kit=0;
   sscanf(sc_version()," SystemC %d.%d.%d ",&maj,&min,&kit);
   printf("%d%03d%03d\n",maj,min,kit);
   return 0;
 }]
 EOF
+    echo $3
     if eval ./testsc.sh; then
-      sc_version=`./scver`
+      sc_version=`LD_LIBRARY_PATH=[$3]${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} ./scver 2>/dev/null`
     else
-      sc_version="unknown"
-      AC_MSG_WARN(Unable to determine the systemC version.
+      scv_cv_sc_version="unknown"
+      AC_MSG_WARN(Unable to determine the SystemC version.
 Please check your SystemC installation. )
       date
     fi;
-    rm testsc.sh scver.cc scver
-
+    rm -f testsc.sh scver.cc scver
     ]
   )
   ]
 )
 
-AC_DEFUN(SCV_TEST_CC_SANITY,
+AC_DEFUN([SCV_TEST_CC_SANITY],
   [
-  AC_CACHE_CHECK("for working C++ compiler", scv_cv_cc_sanity,
+  AC_CACHE_CHECK([for working C++ compiler], scv_cv_cc_sanity,
     [
     cat > test.sh <<EOF
     #! /bin/sh
@@ -63,9 +63,10 @@ EOF
 /* So define it here empty.  Namespaces are extensible, so this is harmless. */
 namespace std {}
 using namespace std;
-#include <string>
+#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include <strstream.h>
+#include <sstream>
 int main()
 {
 #define STRING_SIZE 100
@@ -77,7 +78,8 @@ int main()
     exit(1);
   }
 
-  ostrstream outString(buf, STRING_SIZE);
+  ostringstream outString(buf);
+
   outString << "hello world " << i;
   if (strcmp(buf,"hello world 1") != 0)
   {
@@ -111,9 +113,9 @@ The testfile that failed: ./conftest.cc may be useful in helping you find the pr
   ]
 )
 
-AC_DEFUN(SCV_TEST_AUTO_NEQ,
+AC_DEFUN([SCV_TEST_AUTO_NEQ],
   [
-  AC_CACHE_CHECK("for compiler-provided operator!=", scv_have_auto_neq,
+  AC_CACHE_CHECK([for compiler-provided operator!=], scv_cv_have_auto_neq,
     [
     cat > test.sh <<EOF
     #! /bin/sh
@@ -136,16 +138,16 @@ public:
 private:
   int _v1, _v2;
 };
-int main(int argc, char *argv[])
+int sc_main(int argc, char *argv[])
 {
   pppp p1(0,1), p2(10,12);
   return p1 != p2;
 }]
 EOF
     if eval ./test.sh; then
-      scv_have_auto_neq="yes"
+      scv_cv_have_auto_neq="yes"
     else
-      scv_have_auto_neq="no"
+      scv_cv_have_auto_neq="no"
     fi;
     rm -f test.sh noteq.cpp noteq.o
     ]
@@ -153,9 +155,9 @@ EOF
   ]
 )
 
-AC_DEFUN(SCV_TEST_ULL_WRITE,
+AC_DEFUN([SCV_TEST_ULL_WRITE],
   [
-  AC_CACHE_CHECK("for unsigned long long stream support", scv_have_ull_write,
+  AC_CACHE_CHECK([for unsigned long long stream support], scv_cv_have_ull_write,
     [
     cat > test.sh <<EOF
     #! /bin/sh
@@ -174,7 +176,7 @@ EOF
 namespace std {}
 using namespace std;
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 int main()
 {
   unsigned long long hold = 10;
@@ -183,9 +185,9 @@ int main()
 }]
 EOF
     if eval ./test.sh; then
-      scv_have_ull_write="yes"
+      scv_cv_have_ull_write="yes"
     else
-      scv_have_ull_write="no"
+      scv_cv_have_ull_write="no"
     fi;
     rm -f test.sh writeull.cc test.exe
     ]
@@ -193,7 +195,7 @@ EOF
   ]
 )
 
-AC_DEFUN(SCV_TEST_LD_SO,
+AC_DEFUN([SCV_TEST_LD_SO],
   [
   AC_CACHE_CHECK("for ability to dynamically load libraries and access data", scv_cv_ld_so,
     [
@@ -213,7 +215,7 @@ struct testT { const char* name; int i; int j; };
 testT test[[]] = {{"test0",5,2},{"test1",3,3},{0}};
 EOF
     cat > t2conftest.cc <<EOF
-[#include <iostream.h>
+[#include <iostream>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -246,7 +248,7 @@ EOF
   ]
 )
 
-AC_DEFUN(SCV_HP_CHECK,
+AC_DEFUN([SCV_HP_CHECK],
 [
 dummy=dummy-$$
 UNAME_MACHINE=`(uname -m) 2>/dev/null` || UNAME_MACHINE=unknown

@@ -1,3 +1,12 @@
+SCV (2.0 public_review)
+
+    Bugfixes:
+
+    General Improvements:
+        * Support for Accellera Systems Initiative (Accellera) SystemC 2.3.0
+        * Support for 64-bit build process 
+
+
 SCV (1.0p2-sysc2.2)
 
     Bugfixes:

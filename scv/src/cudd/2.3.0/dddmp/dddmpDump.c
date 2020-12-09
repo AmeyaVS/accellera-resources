@@ -702,6 +702,7 @@ DdNode **proots = NULL;       /* array of BDD roots to be loaded */
 int close_fp = 0;
 
   *pproots = NULL;
+  T = E = NULL; /* To shut up GCC warnings */
 
   if (fp == NULL) {
     fp = fopen (file, "r");
@@ -1495,6 +1496,8 @@ FILE *fp          /* store file */
   if (f == DD_ONE(dd)) {
     /* Check for special case: don't recur */
     idf = DddmpReadNodeIndex(f);
+    idT = idE = vf = vT = vE = 0; /* To shut up GCC warning */
+    T = E = NULL; /* To shut up GCC warnings */
   }
   else {
 

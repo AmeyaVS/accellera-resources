@@ -1,10 +1,6 @@
 #include "data_ext.h"
 
-#ifdef _MSC_VER
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
 
 // nbcode "decl" start
 int sc_main(int argc, char** argv) {

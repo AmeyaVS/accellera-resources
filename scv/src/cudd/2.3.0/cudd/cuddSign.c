@@ -217,7 +217,7 @@ ddCofMintermAux(
     num_calls++;
 #endif
 
-    if (st_lookup(table, (char *) node, (char **) &values)) {
+    if (st_lookup(table, (char *) node, (char **)(void *) &values)) {
 	return(values);
     }
 

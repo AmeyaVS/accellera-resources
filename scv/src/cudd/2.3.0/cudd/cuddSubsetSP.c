@@ -360,7 +360,7 @@ cuddSubsetShortPaths(
 #endif
 
 	N = Cudd_Regular(f);
-	if (!st_lookup(pathTable, (char *)N, (char **)&nodeStat)) {
+	if (!st_lookup(pathTable, (char *)N, (char **)(void *)&nodeStat)) {
 	    fprintf(dd->err, "Something wrong, root node must be in table\n");
 	    dd->errorCode = CUDD_INTERNAL_ERROR;
 	    return(NULL);
@@ -662,7 +662,8 @@ CreateTopDist(
 		/* check is already visited, if not add a new entry in
 		 * the path Table
 		 */
-		if (!st_lookup(pathTable, (char *)regChild, (char **)&nodeStat)) {
+		if (!st_lookup(pathTable, (char *)regChild,
+                               (char **)(void *)&nodeStat)) {
 		    /* if not in table, has never been visited */
 		    /* create entry for table */
 		    if (nodeDistPageIndex == nodeDistPageSize)
@@ -816,7 +817,7 @@ CreateBotDist(
     /* each node has one table entry */
     /* update as you go down the min dist of each node from
        the root in each (odd and even) parity */
-    if (!st_lookup(pathTable, (char *)N, (char **)&nodeStat)) {
+    if (!st_lookup(pathTable, (char *)N, (char **)(void *)&nodeStat)) {
 	fprintf(fp, "Something wrong, the entry doesn't exist\n");
 	return(0);
     }
@@ -863,7 +864,7 @@ CreateBotDist(
 	} else { 
 	    /* If node not in table, recur. */
 	    if (!st_lookup(pathTable, (char *) regChild,
-			   (char **)&nodeStatChild)) {
+			   (char **)(void *)&nodeStatChild)) {
 		fprintf(fp, "Something wrong, node in table should have been created in top dist proc.\n");
 		return(0);
 	    }
@@ -1244,7 +1245,7 @@ BuildSubsetBdd(
 
     N = Cudd_Regular(node);
     /* Find node in table. */
-    if (!st_lookup(pathTable, (char *)N, (char **)&nodeStat)) {
+    if (!st_lookup(pathTable, (char *)N, (char **)(void *)&nodeStat)) {
 	(void) fprintf(dd->err, "Something wrong, node must be in table \n");
 	dd->errorCode = CUDD_INTERNAL_ERROR;
 	return(NULL);
@@ -1309,11 +1310,14 @@ BuildSubsetBdd(
 	thenDone++;
 	processingDone++;
 	NvBotDist = MAXSHORTINT;
+	NvPathLength = 0; /* To shut up GCC warnings */
+	regNv = NULL; /* To shut up GCC warnings */
     } else {
 	/* Derive regular child for table lookup. */
 	regNv = Cudd_Regular(Nv);
 	/* Get node data for shortest path length. */
-	if (!st_lookup(pathTable, (char *)regNv, (char **)&nodeStatNv) ) {
+	if (!st_lookup(pathTable, (char *)regNv,
+                       (char **)(void *)&nodeStatNv) ) {
 	    (void) fprintf(dd->err, "Something wrong, node must be in table\n");
 	    dd->errorCode = CUDD_INTERNAL_ERROR;
 	    return(NULL);
@@ -1353,11 +1357,14 @@ BuildSubsetBdd(
 	elseDone++;
 	processingDone++;
 	NnvBotDist = MAXSHORTINT;
+	NnvPathLength = 0; /* To shut up GCC warnings */
+	regNnv = NULL; /* To shut up GCC warnings */
     } else {
 	/* Derive regular child for table lookup. */
 	regNnv = Cudd_Regular(Nnv);
 	/* Get node data for shortest path length. */
-	if (!st_lookup(pathTable, (char *)regNnv, (char **)&nodeStatNnv) ) {
+	if (!st_lookup(pathTable, (char *)regNnv,
+                       (char **)(void *)&nodeStatNnv) ) {
 	    (void) fprintf(dd->err, "Something wrong, node must be in table\n");
 	    dd->errorCode = CUDD_INTERNAL_ERROR;
 	    return(NULL);

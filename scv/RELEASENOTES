@@ -1,5 +1,5 @@
-                Release Notes for SCV 1.0p2-sysc2.2
-                ===================================
+                Release Notes for SCV 2.0 public_preview
+                ========================================
 
 CONTENTS
 ========
@@ -20,15 +20,10 @@ CONTENTS
 1) What's new in this release?
 ==============================
 
-This is an update of the SCV 1.0p1 release of the SystemC verification
-library. The primary purpose of this update is to support the SystemC 2.1v1
-and SystemC 2.2 versions that have been developed since the original release.
-
-It also includes support for versions of gcc that require greater complience
-with the ANSI C++ standard. The latest version of gcc that has been tested
-with this release is gcc 4.1.0.
-
-
+This is an update of the SCV 1.0p2 release of the SystemC verification
+library. The primary purpose of this update is to support the Accellera Systems Initiative (Accellera) SystemC 2.3.0
+(compliant with IEEE 1666-2011), as well as legacy Accellera SystemC 2.2.0.
+Support for recent compilers is also included.
 
 2) Bug fixes and enhancements
 =============================

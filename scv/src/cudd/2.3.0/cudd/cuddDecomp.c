@@ -755,7 +755,7 @@ CreateBotDist(
     
     /* Return the entry in the table if found. */
     N = Cudd_Regular(node);
-    if (st_lookup(distanceTable, (char *)N, (char **)&nodeStat)) {
+    if (st_lookup(distanceTable, (char *)N, (char **)(void *)&nodeStat)) {
 	nodeStat->localRef++;
 	return(nodeStat);
     }
@@ -829,7 +829,7 @@ CountMinterms(
     }
 
     /* Return the entry in the table if found. */
-    if (st_lookup(mintermTable, (char *)node, (char **)&dummy)) {
+    if (st_lookup(mintermTable, (char *)node, (char **)(void *)&dummy)) {
 	min = *dummy;
 	return(min);
     }
@@ -1687,14 +1687,14 @@ BuildConjuncts(
     }
 
     /* If result (a pair of conjuncts) in cache, return the factors. */
-    if (st_lookup(cacheTable, (char *)node, (char **)&dummy)) {
+    if (st_lookup(cacheTable, (char *)node, (char **)(void *)&dummy)) {
 	factors = dummy;
 	return(factors);
     }
     
     /* check distance and local reference count of this node */
     N = Cudd_Regular(node);
-    if (!st_lookup(distanceTable, (char *)N, (char **)&nodeStat)) {
+    if (!st_lookup(distanceTable, (char *)N, (char **)(void *)&nodeStat)) {
 	(void) fprintf(dd->err, "Not in table, Something wrong\n");
 	dd->errorCode = CUDD_INTERNAL_ERROR;
 	return(NULL);
@@ -1764,7 +1764,8 @@ BuildConjuncts(
      * minterms. We go first where there are more minterms.
      */
     if (!Cudd_IsConstant(Nv)) {
-	if (!st_lookup(mintermTable, (char *)Nv, (char **)&doubleDummy)) {
+	if (!st_lookup(mintermTable, (char *)Nv,
+                       (char **)(void *)&doubleDummy)) {
 	    (void) fprintf(dd->err, "Not in table: Something wrong\n");
 	    dd->errorCode = CUDD_INTERNAL_ERROR;
 	    return(NULL);
@@ -1773,7 +1774,8 @@ BuildConjuncts(
     }
     
     if (!Cudd_IsConstant(Nnv)) {
-	if (!st_lookup(mintermTable, (char *)Nnv, (char **)&doubleDummy)) {
+	if (!st_lookup(mintermTable, (char *)Nnv,
+                       (char **)(void *)&doubleDummy)) {
 	    (void) fprintf(dd->err, "Not in table: Something wrong\n");
 	    dd->errorCode = CUDD_INTERNAL_ERROR;
 	    return(NULL);
@@ -1808,6 +1810,7 @@ BuildConjuncts(
 	    return(factors);
 	}
     }
+    else factorsNv =  NULL; /* To shut up GCC warnings */
 
     /* build ge, he recursively */
     if (Nnv != zero) {
@@ -1834,6 +1837,7 @@ BuildConjuncts(
 	    return(factors);
 	}
     }
+    else factorsNnv =  NULL;  /* To shut up GCC warnings */
 
     /* construct the 2 pairs */
     /* g1 = x*gt + x'*ge; h1 = x*ht + x'*he; */

@@ -1,7 +1,7 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2002 by all Contributors.
+##  source code Copyright (c) 1996-2012 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
@@ -30,32 +30,36 @@
 ##  MODIFICATION LOG - modifiers, enter your name, affiliation, date and
 ##  changes you are making here.
 ##
-##      Name, Affiliation, Date:
-##  Description of Modification:
+##      Name, Affiliation, Date: Eric Paire, Jerome Cornet, 
+##                               STMicroelectronics, 2012-04-27
+##  Description of Modification: Revamp of autotool build system for 64-bit
+##                               support, 32-bit compilation on 64-bit host
+##
+##      Name, Affiliation, Date: Stephan Schulz,
+##                               Fraunhofer IIS-EAS, 2013-04-21 
+##  Description of Modification: Removed -h switch which limits sh to bash 
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
 EXTRA_DIST = \
 	copyDir.sh.in copyExamples.sh copyFiles.sh.in
 
 all : all-am create_copiers
 
 create_copiers :
-	# create copyDir.sh
-	echo "#!/bin/sh -h" >copyDir.sh
+	@# create copyDir.sh
+	echo "#!/bin/sh" >copyDir.sh
 	echo "overwrite=${overwrite_files}" >>copyDir.sh
 	cat ${srcdir}/copyDir.sh.in >>copyDir.sh
-	# create copyExamples.sh
+	@# create copyExamples.sh
 	if test ! -r copyExamples.sh; then \
 	  cp ${srcdir}/copyExamples.sh .; \
 	fi
-	# create copyFiles.sh
-	echo "#!/bin/sh -h" >copyFiles.sh
+	@# create copyFiles.sh
+	echo "#!/bin/sh" >copyFiles.sh
 	echo "overwrite=${overwrite_files}" >>copyFiles.sh
 	cat ${srcdir}/copyFiles.sh.in >>copyFiles.sh
-	# set permissions
+	@# set permissions
 	chmod a+x copyDir.sh copyFiles.sh
 
 clean-worker :

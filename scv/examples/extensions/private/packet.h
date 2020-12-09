@@ -1,10 +1,6 @@
 #include "scv.h"
 
-#ifdef _MSC_VER 
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif 
 
 #ifndef PACKET_H
 #define PACKET_H

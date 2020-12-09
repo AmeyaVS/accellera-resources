@@ -1,1 +1,1 @@
-#define SCV_KIT_DATE "Thu Aug  7 12:04:45 PDT 2003"
+#define SCV_KIT_DATE "Fri Mar  1 17:03:46 CET 2013"

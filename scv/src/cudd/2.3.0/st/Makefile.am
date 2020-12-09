@@ -1,7 +1,7 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2002 by all Contributors.
+##  source code Copyright (c) 1996-2012 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
@@ -30,26 +30,25 @@
 ##  MODIFICATION LOG - modifiers, enter your name, affiliation, date and
 ##  changes you are making here.
 ##
-##      Name, Affiliation, Date:
-##  Description of Modification:
+##      Name, Affiliation, Date: Eric Paire, Jerome Cornet, 
+##                               STMicroelectronics, 2012-04-27
+##  Description of Modification: Revamp of autotool build system for 64-bit
+##                               support, 32-bit compilation on 64-bit host
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
-lib_LIBRARIES = libst.a 
+noinst_LTLIBRARIES = libst.la 
 
 SUBDIRS = doc
 
-libst_a_SOURCES =  st.h st.c
+libst_la_SOURCES = \
+	st.c \
+	st.h
 
-INCLUDES = \
+libst_la_LDFLAGS = \
+	$(LIBTOOL_LDFLAGS)
+
+libst_la_CPPFLAGS = \
 	-I${top_srcdir}/src/cudd/2.3.0/util \
 	-I${top_srcdir}/src \
-	-I${buildInc} \
-	-DSCV_VERSION=\"$(VERSION)\"
-
-copyFiles = ${top_builddir}/scripts/copyFiles.sh
-
-all : all-recursive
-	${copyFiles} -s . ${buildLib} ${lib_LIBRARIES}
+	-I${buildInc}

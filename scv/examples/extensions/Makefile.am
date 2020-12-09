@@ -1,7 +1,7 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2002 by all Contributors.
+##  source code Copyright (c) 1996-2012 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
@@ -14,14 +14,29 @@
 ##  language governing rights and limitations under the License.
 ##
 ## ****************************************************************************
+##
+##  Makefile.am --
+##  Process this file with automake to produce Makefile.in
+##
+## ****************************************************************************
+##
+##  Original Authors:
+##  Eric Paire, Jerome Cornet
+##  STMicroelectronics, 2012-04-27
+##
+## ****************************************************************************
+##  
+##  MODIFICATION LOG - modifiers, enter your name, affiliation, date and
+##  changes you are making here.
+##
+##      Name, Affiliation, Date: 
+##  Description of Modification:
+##
+## ****************************************************************************
 
-# This Makefile provides targets for three architectures
-#
-#   sun-gnu
-#   linux
-#   hppa-native
-
-INCLUDE_FILES =
-SOURCE_FILES = test.cpp
-
-include ../../Makefile.rules
+SUBDIRS = \
+	ex_01_userdata \
+	ex_02_enumdata \
+	ex_03_nestdata \
+	introspection1 \
+	private

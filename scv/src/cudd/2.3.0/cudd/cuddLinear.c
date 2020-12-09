@@ -888,6 +888,7 @@ cuddLinearInPlace(
 	** The chain is handled as a FIFO; g points to the beginning and
 	** last points to the end.
 	*/
+	last = NULL; /* To shut up GCC warnings */
 	g = NULL;
 	for (i = 0; i < xslots; i++) {
 	    f = xlist[i];

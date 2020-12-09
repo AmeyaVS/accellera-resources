@@ -35,8 +35,6 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-
 EXTRA_DIST = \
 	change_begin.gif \
 	change_delete.gif \
@@ -56,5 +54,3 @@ EXTRA_DIST = \
 	previous_motif_gr.gif \
 	up_motif.gif \
 	up_motif_gr.gif 
-
-AUTOMAKE_OPTIONS = foreign

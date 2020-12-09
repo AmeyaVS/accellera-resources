@@ -37,8 +37,9 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Stephan Schulz, Fraunhofer IIS-EAS, 2013-02-21
+  Description of Modification: undefined DELETE macro from winnt.h to support
+                               mingw32
 
  *****************************************************************************/
 
@@ -331,6 +332,10 @@ public: // implementation (private)
 // ----------------------------------------
 // dynamic extension to perform value change callback
 // ----------------------------------------
+#ifdef _WIN32
+# undef DELETE //defined in winnt.h
+#endif
+
 class scv_extension_callbacks_if : public _SCV_INTROSPECTION_BASE {
 public:
   enum callback_reason { VALUE_CHANGE, DELETE };

@@ -1,4 +1,5 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
+
 /*
  * The following code is derived, directly or indirectly, from the SystemC
  * source code Copyright (c) 1996-2002 by all Contributors.
@@ -14,46 +15,20 @@
  * language governing rights and limitations under the License.
  */
 
- 
-/* Define if we're on Linux */
+/* Define if we're on Linux/i386 */
 #undef ARCH_IS_X86
 
-/* the full canonical system: cpu, vendor, os */
-#undef TARGET
-
-/* found Dl_info in dlfcn.h */
-#undef HAVE_DL_INFO
-
-/* A string that contains the shared library extention (e.g. .so or .sl) */
-#undef SHLIB_EXT
-
-/* Define if we're on the HP-UX 11 */
-#undef RWSTD_MULTI_THREAD 
-#undef RW_MULTI_THREAD 
-#undef _REENTRANT
-#undef __HPACC_THREAD_SAFE_RB_TREE 
-#undef HP_THREAD_SAFE 
-#undef _THREAD_SAFE
-#undef _POSIX_C_SOURCE
-#undef hp_hpux11
-
-#undef _USE_FMTFLAGS_TYPE
-#undef _USE_FRIEND_FOR_EQUAL
-#undef _USE_EXPLICIT_NEQ
-#undef _USE_HASH_MAP
-#undef _USE_PADDING_ON_STRUCTS
-#undef _USE_UINT64_WRITE
-
-#undef SCV_USE_IOSTREAM_H
-#undef _SCV_USE_SC_REPORT
-
-#undef SC_VERSION
+/* Define if we're on Linux/x86_64 */
+#undef ARCH_IS_X86_64
 
 /* Define to 1 if you have the <a.out.h> header file. */
 #undef HAVE_A_OUT_H
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* found Dl_info in dlfcn.h */
+#undef HAVE_DL_INFO
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -109,6 +84,13 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define if we're on the HP-UX 11 */
+#undef HP_THREAD_SAFE
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
 /* Name of package */
 #undef PACKAGE
 
@@ -124,14 +106,85 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define if we're on the HP-UX 11 */
+#undef RWSTD_MULTI_THREAD
+
+/* Define if we're on the HP-UX 11 */
+#undef RW_MULTI_THREAD
+
+/* Define version of SystemC linked with: VRRRPPP where
+   V=Version,RRR=Pevision,PPP=Patchlevel */
+#undef SCV_SC_VERSION
+
+/* Define if <iostream.h> should be included instead of <iostream> */
+#undef SCV_USE_IOSTREAM_H
+
+/* A string that contains the shared library extention (e.g. .so or .sl) */
+#undef SHLIB_EXT
+
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of `void *', as computed by sizeof. */
+#undef SIZEOF_VOID_P
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* the full canonical system: cpu, vendor, os */
+#undef TARGET
+
 /* Version number of package */
 #undef VERSION
+
+/* Define if we're on the HP-UX 11 */
+#undef _HPUX_SOURCE
+
+/* Define if we're on the HP-UX 11 */
+#undef _POSIX_C_SOURCE
+
+/* Define if we're on the HP-UX 11 */
+#undef _REENTRANT
+
+/* Define if sc_report should be used instead of internal scv_report */
+#undef _SCV_USE_SC_REPORT
+
+/* Define if we're on the HP-UX 11 */
+#undef _THREAD_SAFE
+
+/* Define if an operator== should be defined for each operator!= */
+#undef _USE_EXPLICIT_NEQ
+
+/* Define if we use gcc version = 3.2 */
+#undef _USE_FMTFLAGS_TYPE
+
+/* Define if we use gcc version = 3.2 */
+#undef _USE_FRIEND_FOR_EQUAL
+
+/* Define if we use gcc version < 3.4 */
+#undef _USE_HASH_MAP
+
+/* Define if we use gcc */
+#undef _USE_PADDING_ON_STRUCTS
+
+/* Define if "cout << ull" is correctly supported */
+#undef _USE_UINT64_WRITE
+
+/* Define if we're on the HP-UX 11 */
+#undef __HPACC_THREAD_SAFE_RB_TREE
+
+/* Define if we're on the HP-UX 11 */
+#undef hp_hpux11
+
 
 #ifdef __cplusplus
 
@@ -140,9 +193,9 @@
 #undef _HPUX_SOURCE
 
 #if defined (__SUNPRO_CC)
-#include<list>
-#include<map>
-#include<string>
+#include <list>
+#include <map>
+#include <string>
 #endif
 
 /* HP-UX's aCC doesn't have std defined until it sees a std lib header file */
@@ -173,7 +226,7 @@ using namespace std;
 # define _USE_FMTFLAGS_TYPE
 # define _USE_FRIEND_FOR_EQUAL
 # define _USE_EXPLICIT_NEQ
-# define SC_VERSION 2000001
+# define SCV_SC_VERSION 2000001
 # define HAVE_STDDEF_H
-# define _SCV_USE_SC_REPORT
 #endif
+

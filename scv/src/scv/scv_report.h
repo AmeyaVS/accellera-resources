@@ -32,8 +32,9 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Stephan Schulz, Fraunhofer IIS-EAS, 2013-02-21
+  Description of Modification: Undefined ERROR macro from wingdi.h to support
+                               mingw32
 
  *****************************************************************************/
 
@@ -320,6 +321,10 @@ private:
   scv_actions _actions;
 };
 
+
+#ifdef _WIN32
+# undef ERROR //defined in wingdi.h
+#endif
 
 class _scv_message {
 friend class scv_report_core;

@@ -1,16 +1,12 @@
 #include "scv.h"
 
-#ifdef _MSC_VER 
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif 
 
 #ifndef PACKET_H
 #define PACKET_H
 
 //Create an object type that will be thrown in the bag. In this case,
-//we will use the same basic type that we use for the smart queue example 
+//we will use the same basic type that we use for the smart queue example
 
 // nbcode "fields" start
 //The bag will be defined as
@@ -44,7 +40,7 @@ class packetT {
     friend ostream& operator<< (ostream& os, const packetT& p) {
       os << "   src: "    << setw(2) << p.src
          << "  dest: "    << setw(5) << p.dest
-         << "  length: "  << setw(4) << p.length 
+         << "  length: "  << setw(4) << p.length
          << "  payload: " << setw(5) << p.payload[0]
          << " .. "        << setw(5) << p.payload[p.length-1];
       return os;

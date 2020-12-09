@@ -1,6 +1,6 @@
 /* $Id: datalimit.c,v 1.1 2002/09/17 21:59:12 dlm Exp $ */
 
-#ifndef _MSC_VER
+#if ! ((defined _MSC_VER) || (defined _WIN32))
 #ifndef HAVE_SYS_RESOURCE_H
 #define HAVE_SYS_RESOURCE_H 1
 #endif

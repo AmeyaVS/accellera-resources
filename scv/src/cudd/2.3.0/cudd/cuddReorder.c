@@ -556,6 +556,7 @@ cuddSwapping(
 	    break;
 	if (heuristic == CUDD_REORDER_RANDOM_PIVOT) {
 	    max = -1;
+	    pivot = 0; /* To shut up GCC warnings */
 	    for (j = lower; j <= upper; j++) {
 		if ((keys = table->subtables[j].keys) > max) {
 		    max = keys;

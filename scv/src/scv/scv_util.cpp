@@ -50,6 +50,7 @@
 // For cdsIdent:
 
 #include "scv/scv_kit_date.h"
+#include "scv/scv_ver.h"
 
 #ifndef SCV_VERSION
 #define SCV_VERSION "<SCV_VERSION undefined>"

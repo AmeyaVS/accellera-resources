@@ -155,11 +155,11 @@
     }  \
     if (Discrete) {  \
       if (rhs._lowerbound <= _lowerbound && _lowerbound <= rhs._upperbound) {  \
-	_lowerbound = rhs._upperbound+1;  \
+	_lowerbound = (SizeT)rhs._upperbound+1;  \
 	if (_lowerbound < rhs._upperbound) _empty = true; /* overflow */  \
       }  \
       if (rhs._lowerbound <= _upperbound && _upperbound <= rhs._upperbound) {  \
-	_upperbound = rhs._lowerbound-1;  \
+	_upperbound = (SizeT)rhs._lowerbound-1;  \
 	if (rhs._lowerbound < _upperbound) _empty = true; /* underflow */  \
       }  \
     } else {  \

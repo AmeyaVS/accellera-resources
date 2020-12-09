@@ -520,6 +520,7 @@ zddFindNodeHiLo(
     }
 
     *lower = low = (unsigned int) table->permZ[treenode->index];
+    *upper = low; /* To shut up GCC warnings */
     high = (int) (low + treenode->size - 1);
 
     if (high >= table->sizeZ) {
@@ -1078,6 +1079,7 @@ zddGroupMove(
         ybot = table->subtableZ[ybot].next;
     ytop = y;
     ysize = ybot - ytop + 1;
+    swapx = swapy = 0; /* To shut up GCC warnings */
 
 #if defined(DD_DEBUG) && defined(DD_VERBOSE)
     initialSize = bestSize = table->keysZ;

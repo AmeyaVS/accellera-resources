@@ -2525,6 +2525,7 @@ int _scv_constraint_manager::getVecSize(scv_extensions_if* s) const
 unsigned _scv_constraint_manager::getStartIndex(scv_extensions_if* s) const
 {
   _smartDataRecordT * sDataP;
+  sDataP = NULL; /* To shut up GCC warnings */
   extHash->get(s, sDataP);
   return sDataP->startIndex;
 }
@@ -2826,16 +2827,16 @@ double _scv_constraint_manager::getWeightNode(ddNodeT* node)
   e = getWeightNode(Ne);
 
   if (Nt != oneNode && Nt != zeroNode)  {
-    pthenBranch = pow((double)2,(Cudd_Regular(Nt)->index - Cudd_Regular(node)->index - 1)) * t;
+    pthenBranch = pow(2.0,(int)(Cudd_Regular(Nt)->index - Cudd_Regular(node)->index - 1)) * t;
   } else if (Nt == oneNode) {
-    pthenBranch = pow((double)2,(numBddVar - Cudd_Regular(node)->index - 1)) * t;
+    pthenBranch = pow(2.0,(int)(numBddVar - Cudd_Regular(node)->index - 1)) * t;
   } else {
     pthenBranch = t ;
   }
   if (Ne != oneNode && Ne != zeroNode) {
-    pelseBranch =  pow((double)2,(Cudd_Regular(Ne)->index - Cudd_Regular(node)->index - 1)) * e  ;
+    pelseBranch =  pow(2.0,(int)(Cudd_Regular(Ne)->index - Cudd_Regular(node)->index - 1)) * e  ;
   } else if (Ne == oneNode) {
-    pelseBranch = pow((double)2,(numBddVar - Cudd_Regular(node)->index - 1)) * e;
+    pelseBranch = pow(2.0,(int)(numBddVar - Cudd_Regular(node)->index - 1)) * e;
   } else {
     pelseBranch = e ;
   }

@@ -35,7 +35,4 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
-
 EXTRA_DIST = st.doc st.html

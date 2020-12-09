@@ -341,8 +341,14 @@ sctop::sctop(sc_module_name name) : sc_module(name)
   cout << TBS_INFO << "Make sure they change values after a next" << endl;
   pp->next();
   int newFieldValues[4];
-  if (fieldValues[0] == (newFieldValues[0] = pp->packet_type) || fieldValues[1] == (newFieldValues[1] = pp->src) ||
-	  fieldValues[2] == (newFieldValues[2] = pp->dest) || fieldValues[3] == (newFieldValues[3] = pp->payload))
+  newFieldValues[0] = pp->packet_type;
+  newFieldValues[1] = pp->src;
+  newFieldValues[2] = pp->dest;
+  newFieldValues[3] = pp->payload;
+  if (fieldValues[0] == newFieldValues[0]
+      || fieldValues[1] == newFieldValues[1]
+      || fieldValues[2] == newFieldValues[2]
+      || fieldValues[3] == newFieldValues[3])
   {
 	  errorCount++;
 	  cout << TBS_ERROR << "Value(s) did not change after next" << endl;

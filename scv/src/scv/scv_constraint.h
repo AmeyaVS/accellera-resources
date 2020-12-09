@@ -630,6 +630,11 @@ private:
 class scv_constraint_base;
 extern bddNodeT& _scv_bdd_and(bddNodeT& bh, bddNodeT& bs, const scv_constraint_base* c);
 
+// Declare internal functions _scv_pop_constraint and _scv_copy_values
+// to make them accessible to SCV_CONSTRAINT_CTOR
+void _scv_pop_constraint();
+void _scv_copy_values(scv_constraint_base* to, scv_constraint_base* from);
+
 class scv_constraint_base : public scv_object_if {
 public: // default constructor for the constraint classes
   scv_constraint_base(); 
@@ -735,7 +740,7 @@ private: // implementation specific interface
   list<scv_smart_ptr_if*>& get_members(void); 
 
 
-private: // friend methods and classes for solving constraints 
+private: // friend methods and classes for solving constraints
   friend class _scv_constraint_manager;
   friend void _scv_pop_constraint();
   friend scv_extensions_if * _scv_find_extension(scv_constraint_base * c,

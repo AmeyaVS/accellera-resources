@@ -1,10 +1,6 @@
 #include "constraint.h"
 
-#ifdef _MSC_VER 
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif 
 
 // nbcode "head" start
 SC_MODULE(test) {

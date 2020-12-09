@@ -46,7 +46,7 @@
 #undef SCV_USE_IOSTREAM_H
 #undef _SCV_USE_SC_REPORT
 
-#undef SC_VERSION
+#undef SCV_SC_VERSION
 
 #ifdef __cplusplus
 
@@ -88,7 +88,7 @@ using namespace std;
 # define _USE_FMTFLAGS_TYPE
 # define _USE_FRIEND_FOR_EQUAL
 # define _USE_EXPLICIT_NEQ
-# define SC_VERSION 2000001
+# define SCV_SC_VERSION 2000001
 # define HAVE_STDDEF_H
 # define _SCV_USE_SC_REPORT
 #endif

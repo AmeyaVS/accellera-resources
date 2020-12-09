@@ -1,5 +1,5 @@
-        INSTALL NOTES FOR SystemC Verification Library Release 1.0p2-sysc2.2
-        --------------------------------------------------------------------
+        INSTALL NOTES FOR SystemC Verification Library Release 2.0 public_review
+        ------------------------------------------------------------------------
 
 Contents:
 
@@ -24,29 +24,24 @@ are different from the core library makefiles.
 System Requirements
 ===================
 
-SystemC version 2.1v1 or 2.2 must be installed before starting the install process
+SystemC version 2.2.0 or 2.3.0 must be installed before starting the install process
 for this version of SCV.
 
-The SystemC Verification Library can be installed on the following UNIX platforms
-
-   o Sun Solaris 2.7 and 2.8 with GNU C++ compiler version gcc-2.95.2 
-   o Sun Solaris 2.7 and 2.8 with GNU C++ compiler version gcc-3.2
-   o Sun Solaris 2.7 and 2.8 with Forte 7 compiler version 5.4
-   o Linux Redhat 7.1 with GNU C++ compiler version gcc-2.96-85 or gcc-2.95.3
-   o Linux Redhat 7.2 with GNU C++ compiler version gcc-2.96-98 or gcc-2.95.3
-   o Linux Redhat 8.0 with GNU C++ compiler version gcc-3.2
-   o Linux Redhat EE 2.1 with GNU C++ compiler version gcc-3.2.3
-   o Linux (2.6.9-34.EL kernel) with GNU C++ compiler versions gcc-3.4.5
-     and gcc-4.1.0  (requires slight modification to install files) 
-   o HP-UX 11.00 with HP C++ compiler version A.03.39
-   o HP-UX 11.00 with GNU C++ compiler version gcc-3.2
-
-NOTES:
-
-  Sun C++ compiler versions SC5.1 and SC5.2 are not supported due to problems
-  with template specialization. 
+For the list of supported platforms, please see the README file.
 
   We recommend not compiling SCV on machines with less than 256Mb of RAM.
+
+  When using SCV with SystemC version 2.2.0 on 64-bit architectures, one has to 
+  provide a relocatable version of the SystemC library. This is because SCV is 
+  built as a dynamically linked library. Since this is not default in 64-bit 
+  version of gcc, the -fPIC flag has to be added in the build process of the 
+  SystemC library. A simple way is to add the flag directly to the compiler 
+  call (CXXFLAGS is not supported by SystemC 2.2.0 build process). Remember 
+  to reset the environment variable after building SystemC. 
+
+        > setenv CXX "g++ -fPIC" (csh)
+        > export CXX="g++ -fPIC" (bash)
+
 
 Sources for Compilers and Related Tools
 =======================================
@@ -77,11 +72,6 @@ To install SCV on a UNIX system, do the following steps:
 
         > mkdir objdir
 
-  2a.For gcc 3.4.x and 4.x.x. minor changes are required to the configure file:
-     Line 5642:  replace "#include <strstream.h>" with "#include <sstream>"
-     Line 5654:  replace "ostrstream outString(buf,STRING_SIZE);" with
-                 "std::ostringstream outString;"
-  
   3. Change to the temporary directory, e.g.,
 
         > cd objdir
@@ -149,9 +139,6 @@ To install SCV on a UNIX system, do the following steps:
      need to use the `sh ../configure' command instead of '../configure'.
      Otherwise, `csh' will attempt to `configure' itself.
 
-  5a.For gcc 3.4.x and 4.x.x. an edit is required to the generated config.h file:
-     Line 44: comment-out line, i.e. change to "//#define _USE_HASH_MAP
-  
   6. Compile the package.
 
         > gmake   (or gmake debug to build debug version of library)
@@ -250,19 +237,22 @@ Note for developers:
   `Makefile.am' files:
 
   - Run 'make distclean' to remove the generated `configure' script, 
-    the generated `aclocal.m4' file and the generated `Makefile.am'
+    the generated `aclocal.m4' file and the generated `Makefile.in'
     files.
 
-  - Use the GNU auto-tools `aclocal', `automake', and `autoconf' to
-    generate the `configure' script.  We use the following sequence.
-    If you are using a non-GNU compiler you may need to add the
-    --include-deps option on the automake line:
+  - Use the GNU autotools `aclocal', `libtoolize' (called `glibtoolize'
+    on Mac OS X), `autoheader', `automake', and `autoconf' to generate
+    the `configure' script. We use the following sequence:
 
-      autoheader
       aclocal
+      libtoolize --automake --force --copy
+      autoheader --force
       automake --add-missing --copy
       autoconf
-      autoheader
+
+    If you are using a non-GNU compiler you may need to add the
+    --include-deps option on the automake line. The script `./bootstrap'
+    containing this command sequence is provided for your convenience.
 
 
 Compilation and Linking Options
@@ -364,10 +354,10 @@ Use the `--help' option to print a list.
 
 3. Installation Notes for Windows
 ---------------------------------
-Note - this *only* compiles with .NET 2003; it won't work with earlier versions of 
-Microsoft C++. 
+Note - this *only* compiles with .NET 2003 or later; it won't work with earlier 
+versions of Microsoft C++. 
 
-SystemC version 2.1v1 or 2.2 must be installed before starting the install process
+SystemC version 2.2.0 or 2.3.0 must be installed before starting the install process
 for this version of SCV. An environment variable named 'SYSTEMC' with a variable 
 value that contains the path to the SystemC install is required by the project that
 builds the SCV library (e.g. 'C:\apps\systemc-2.2\msvc71'). Instructions on how to
@@ -478,7 +468,7 @@ from the 'System Properties' page and click the 'Environment Variables' button.
 Create a new environment variable named 'SYSTEMC' with a variable value that 
 contains the path to the SystemC install (e.g. 'C:\apps\systemc-2.2\msvc71').
 Create a new environment variable named 'SCV' with a variable value that 
-contains the path to the SCV install (e.g. 'C:\apps\scv-1.0p2-sysc2.2\msvc71').
+contains the path to the SCV install (e.g. 'C:\apps\scv-2.0\msvc71').
 Click OK to save the environment variables (note the environment variables must
 be set before starting Visual C++).
   

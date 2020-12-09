@@ -197,7 +197,7 @@ cuddZddCountStep(
 	return(1);
 
     /* Check cache. */
-    if (st_lookup(table, (char *)P, (char **)(&dummy))) {
+    if (st_lookup(table, (char *)P, (char **)(void *)&dummy)) {
 	res = *dummy;
 	return(res);
     }
@@ -247,7 +247,7 @@ cuddZddCountDoubleStep(
 	return((double)1.0);
 
     /* Check cache */
-    if (st_lookup(table, (char *)P, (char **)(&dummy))) {
+    if (st_lookup(table, (char *)P, (char **)(void *)&dummy)) {
 	res = *dummy;
 	return(res);
     }

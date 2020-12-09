@@ -1,10 +1,6 @@
 #include "scv.h"
 
-#ifdef _MSC_VER
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
 
 // nbcode "def" start
 //create a constraint class

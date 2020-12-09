@@ -1,7 +1,7 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2002 by all Contributors.
+##  source code Copyright (c) 1996-2012 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
@@ -30,27 +30,36 @@
 ##  MODIFICATION LOG - modifiers, enter your name, affiliation, date and
 ##  changes you are making here.
 ##
-##      Name, Affiliation, Date:
-##  Description of Modification:
+##      Name, Affiliation, Date: Eric Paire, Jerome Cornet, 
+##                               STMicroelectronics, 2012-04-27
+##  Description of Modification: Revamp of autotool build system for 64-bit
+##                               support, 32-bit compilation on 64-bit host
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
-lib_LIBRARIES = libutil.a 
+noinst_LTLIBRARIES = libutil.la 
 
-libutil_a_SOURCES = \
-		util-std.h util.h \
-		cpu_time.c cpu_stats.c getopt.c safe_mem.c strsav.c texpand.c \
-		ptime.c prtime.c pipefork.c pathsearch.c stub.c \
-  		restart.c tmpfile.c datalimit.c
+libutil_la_SOURCES = \
+	cpu_stats.c \
+	cpu_time.c \
+	datalimit.c \
+	getopt.c \
+	pathsearch.c \
+	pipefork.c \
+	prtime.c \
+	ptime.c \
+	restart.c \
+	safe_mem.c \
+	strsav.c \
+	stub.c \
+	texpand.c \
+	tmpfile.c \
+	util-std.h \
+	util.h
 
-INCLUDES = \
+libutil_la_LDFLAGS = \
+	$(LIBTOOL_LDFLAGS)
+
+libutil_la_CPPFLAGS = \
 	-I${top_srcdir}/src \
-	-I${buildInc} \
-	-DSCV_VERSION=\"$(VERSION)\"
-
-copyFiles = ${top_builddir}/scripts/copyFiles.sh
-
-all : all-am
-	${copyFiles} -s . ${buildLib} ${lib_LIBRARIES}
+	-I${buildInc}

@@ -1,0 +1,45 @@
+# ignore common patterns
+.*.sw?
+.#*
+*~
+*.exe
+*.l[oa]
+*.[oa]
+*.Plo
+*.so
+*.trs
+*.dylib
+*.dSYM
+
+# ignore autoconf files
+/aclocal.m4
+/autom4te.cache/
+config.guess
+config.sub
+config.h.in
+config.log
+compile
+depcomp
+install-sh
+ltmain.sh
+missing
+test-driver
+configure
+
+Makefile.in
+Makefile
+
+# ignore recommended build directory and variants of it
+/objdir*/
+
+# ignore temporary directories created during the build process
+.deps/
+.libs/
+
+# ignore in-tree installation
+/include/
+/lib-*/
+
+# ignore Doxygen documentation
+/docs/*/doxygen/html/
+/docs/*/doxygen/*.tag/

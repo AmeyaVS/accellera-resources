@@ -1465,6 +1465,7 @@ zdd_group_move(
 	gybot = table->subtableZ[gybot].next;
     yprev = gybot;
 
+    swapx = swapy = 0; /* To shut up GCC warnings */
     while (x <= y) {
 	while (y > gxtop) {
 	    /* Set correct symmetries. */
@@ -1569,6 +1570,7 @@ zdd_group_move_backward(
     while (table->subtableZ[gybot].next != (unsigned) y)
 	gybot = table->subtableZ[gybot].next;
     yprev = gybot;
+    size = 0; /* To shut up GCC warnings */
 
     while (x <= y) {
 	while (y > gxtop) {

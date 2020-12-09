@@ -1,7 +1,7 @@
 dnl ****************************************************************************
 dnl
 dnl  The following code is derived, directly or indirectly, from the SystemC
-dnl  source code Copyright (c) 1996-2002 by all Contributors.
+dnl  source code Copyright (c) 1996-2012 by all Contributors.
 dnl  All Rights reserved.
 dnl
 dnl  The contents of this file are subject to the restrictions and limitations
@@ -31,12 +31,32 @@ dnl
 dnl  MODIFICATION LOG - modifiers, enter your name, affiliation, date and
 dnl  changes you are making here.
 dnl
-dnl      Name, Affiliation, Date:
-dnl  Description of Modification:
+dnl      Name, Affiliation, Date: Eric Paire, Jerome Cornet,
+dnl                               STMicroelectronics, 2012-04-27
+dnl  Description of Modification: Revamp of autotool build system for 64-bit
+dnl                               support, 32-bit compilation on 64-bit host.
+dnl
+dnl      Name, Affiliation, Date: Stephan Schulz,
+dnl                               Fraunhofer IIS-EAS, 2013-02-21
+dnl  Description of Modification: Added support for mingw32 and fixed missing
+dnl                               '$' in SystemC check.
+dnl
+dnl      Name, Affiliation, Date: Stephan Schulz,
+dnl                               Fraunhofer IIS-EAS, 2013-04-23
+dnl  Description of Modification: Added check for Solaris 9/10/11,
+dnl                               removed -m8v flag which unsupported by newer
+dnl                               gcc compilers.
+dnl
+dnl      Name, Affiliation, Date: Torsten Maehne,
+dnl                               Universite Pierre et Marie Curie, 2013-05-04
+dnl  Description of Modification: Added support for Darwin platform (Mac OS X);
+dnl                               fixed SCV version number handling, autotools
+dnl                               warnings, test execution, and typos.
 dnl
 dnl ****************************************************************************
 
-AC_INIT(src/scv.h)
+AC_INIT([SCV],[2.0.0])
+AC_CONFIG_SRCDIR([NEWS])
 #AC_CONFIG_AUX_DIR(config)
 
 cfgdir=`dirname $0`
@@ -110,6 +130,91 @@ else
 fi
 
 dnl
+dnl add bottom lines in config.h
+dnl
+AH_TOP([/*
+ * The following code is derived, directly or indirectly, from the SystemC
+ * source code Copyright (c) 1996-2002 by all Contributors.
+ * All Rights reserved.
+ *
+ * The contents of this file are subject to the restrictions and limitations
+ * set forth in the SystemC Open Source License Version 2.3 (the "License");
+ * You may not use this file except in compliance with such restrictions and
+ * limitations. You may obtain instructions on how to receive a copy of the
+ * License at http://www.systemc.org/. Software distributed by Contributors
+ * under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific
+ * language governing rights and limitations under the License.
+ */])
+AH_TEMPLATE([ARCH_IS_X86],[Define if we're on Linux/i386])
+AH_TEMPLATE([ARCH_IS_X86_64],[Define if we're on Linux/x86_64])
+AH_TEMPLATE([SHLIB_EXT],[ A string that contains the shared library extention (e.g. .so or .sl)])
+AH_TEMPLATE([TARGET],[the full canonical system: cpu, vendor, os])
+AH_TEMPLATE([HAVE_DL_INFO],[found Dl_info in dlfcn.h])
+AH_TEMPLATE([RWSTD_MULTI_THREAD])
+AH_TEMPLATE([RW_MULTI_THREAD])
+AH_TEMPLATE([_REENTRANT])
+AH_TEMPLATE([__HPACC_THREAD_SAFE_RB_TREE])
+AH_TEMPLATE([HP_THREAD_SAFE])
+AH_TEMPLATE([_THREAD_SAFE])
+AH_TEMPLATE([_POSIX_C_SOURCE])
+AH_TEMPLATE([hp_hpux11])
+AH_TEMPLATE([_USE_FMTFLAGS_TYPE])
+AH_TEMPLATE([_USE_FRIEND_FOR_EQUAL])
+AH_TEMPLATE([_USE_EXPLICIT_NEQ])
+AH_TEMPLATE([_USE_HASH_MAP])
+AH_TEMPLATE([_USE_PADDING_ON_STRUCTS])
+AH_TEMPLATE([_USE_UINT64_WRITE])
+AH_TEMPLATE([SCV_USE_IOSTREAM_H])
+AH_TEMPLATE([_SCV_USE_SC_REPORT])
+AH_TEMPLATE([SCV_SC_VERSION])
+AH_BOTTOM([
+#ifdef __cplusplus
+
+/* cc on HPUX seems to define this automatically so avoid redefinition warnings by */
+/* conditionally defining it. */
+#undef _HPUX_SOURCE
+
+#if defined (__SUNPRO_CC)
+#include <list>
+#include <map>
+#include <string>
+#endif
+
+/* HP-UX's aCC doesn't have std defined until it sees a std lib header file */
+/* (unlike g++ and SunWorks CC.) */
+/* So define it here empty.  Namespaces are extensible, so this is harmless. */
+namespace std {}
+using namespace std;
+
+#ifdef DELETE
+#undef DELETE
+#endif
+#ifdef ERROR
+#undef ERROR
+#endif
+
+#endif // __cplusplus
+
+#if defined (__SUNPRO_CC)
+  using std::list;
+  using std::pair;
+  using std::map;
+  using std::less;
+  using std::string;
+  using std::equal_to;
+#endif
+
+#if defined(_MSC_VER)
+# define _USE_FMTFLAGS_TYPE
+# define _USE_FRIEND_FOR_EQUAL
+# define _USE_EXPLICIT_NEQ
+# define SCV_SC_VERSION 2000001
+# define HAVE_STDDEF_H
+#endif
+])
+
+dnl
 dnl Work around bug in config.guess in automake 1.4 with HP 9000/800.
 dnl The test is overconstrained and fails for 9000/800.
 dnl This macro sets the variable HP_ARCH so that config.guess doesn't need to determine it.
@@ -125,23 +230,8 @@ dnl
 AC_CANONICAL_SYSTEM
 
 AC_DEFINE_UNQUOTED(TARGET, "${target}")
-MAJ=`cat ${srcdir}/majorrev.txt`
-MIN=`cat ${srcdir}/minorrev.txt`
-KIT=`cat ${srcdir}/kitnumber.txt`
-TYPE=`cat ${srcdir}/kittype.txt`
-REL=`cat ${srcdir}/relnumber.txt`
 
-MAJPADDED=`echo $MAJ | awk '{printf("%.2d",$1)}'`
-KITPADDED=`echo $KIT | awk '{printf("%.3d",$1)}'`
-RELPADDED=`echo $REL | awk '{printf("%.3d",$1)}'`
-
-if test "$TYPE" = "d"; then
-  VERSION="${MAJPADDED}.${MIN}0-${TYPE}${KITPADDED}"
-else
-  VERSION="${MAJPADDED}.${MIN}0-${TYPE}${RELPADDED}"
-fi
-
-AM_INIT_AUTOMAKE(scv,${VERSION})
+AM_INIT_AUTOMAKE
 
 DEF_GNU_OPT=-O2
 DEF_SUN_CC_OPT=-xO1
@@ -152,6 +242,11 @@ DEF_SUN_CC_DBG="-xs -g"
 DEF_HP_ACC_DBG=-g0
 
 if test "$target_os" = "hpux11.11"; then DEF_HP_ACC_OPT=+O1; fi
+
+if test "$target_os" = "mingw32"; then
+	DEF_GNU_OPT+=" -D__MSVCRT_VERSION__=0x601";
+	DEF_GNU_DBG+=" -D__MSVCRT_VERSION__=0x601";
+fi
 
 dnl
 dnl Parameters used in the definition of CXXFLAGS
@@ -317,15 +412,58 @@ dnl Allow purecov_ver string starting with "200" without further checking.
 ,
 )
 
-GNU_PIC=-fPIC
-SUN_CC_PIC=-KPIC
-HP_ACC_PIC=+Z
+dnl
+dnl On Linux, producing a 32-bit objects from 64-bit build system requires
+dnl "--host=i686-pc-linux-gnu" as configure option. Notice that this setup
+dnl must be done before the call to AC_PROG_LIBTOOL.
+dnl
+AC_MSG_CHECKING(support 32-bit host compilation using 64-bit tools)
+case "$build" in
+x86_64-*linux*)
+	case "$host" in
+	i[[34567]]86-*linux*)
+		linux_64_32="-m32"
+		build_64_32="yes"
+		;;
+	*)
+		linux_64_32=""
+		build_64_32="no"
+		;;
+	esac
+	;;
+*)
+	linux_64_32=""
+	build_64_32="no"
+	;;
+esac
+AC_MSG_RESULT(${build_64_32})
 
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER([config.h])
 
 AC_PROG_CC
+if test -n "${GCC}" -a -n "${linux_64_32}"; then
+    CC="${CC} ${linux_64_32}"
+fi
+
 AC_PROG_CXX
-AC_PROG_RANLIB
+if test -n "${GXX}" -a -n "${linux_64_32}"; then
+    CXX="${CXX} ${linux_64_32}"
+fi
+
+AC_LIBTOOL_DLOPEN
+AC_ENABLE_STATIC
+AC_ENABLE_SHARED
+AC_PROG_LIBTOOL
+
+case "${host}" in
+*)
+    # On UNIX systems, versioning is done through library name`
+    LIBTOOL_LDFLAGS_RELEASE="-release ${PACKAGE_VERSION}"
+    LIBTOOL_LDFLAGS=""
+    ;;
+esac
+AC_SUBST([LIBTOOL_LDFLAGS])
+AC_SUBST([LIBTOOL_LDFLAGS_RELEASE])
 
 dnl
 dnl setup Rational linker options, do this after AC_PROG_CXX because program may be changed
@@ -453,6 +591,8 @@ hppa*)
 	is_hppa="yes";;
 i[[3456]]86*)
 	is_linux="yes";;
+x86_64*)
+	is_linux="yes";;
 *)
 	AC_MSG_ERROR(Target CPU type not supported: "$target_cpu");;
 esac
@@ -495,46 +635,12 @@ else
   fi
 fi
 
-if test "$gnu_ld" = "yes"; then
-  SHARED="-shared"
-else
-  if test "$ac_cv_prog_gxx" = "yes"; then
-    if test "$is_hppa" = "yes"; then
-      SHARED="-shared -fPIC"
-    else
-      SHARED="-Wl,-G"
-    fi
-  else
-    if test "$is_hppa" = "yes"; then
-      SHARED=-b
-    else
-      SHARED=-G
-    fi
-  fi
-fi
-
-
-dnl
-dnl  An assembler (as) must be found in the PATH
-dnl
-
-AC_MSG_CHECKING(for assembler)
-
-dnl Search for assembler
-assemblerfound=`as --version 2>&1`
-
-if test -z "$assemblerfound"; then
-  AC_MSG_ERROR(GNU or system assembler is required in PATH)
-else
-  AC_MSG_RESULT(Assembler found)
-fi
-
 dnl get compiler versions
 rh_gxx_prog=no
 case "`basename $CXX`" in
   aCC)
     cxx_version=`$CXX -V 2>&1 | head | awk '{print $6;}'`;;
-  g++* | c++*)
+  g++* | *-g++* | c++*)
     cxx_version=`$CXX -dumpversion`
     if test "$is_linux" = "yes"; then
        rh_version=`/usr/bin/g++ -dumpversion`
@@ -549,7 +655,7 @@ case "`basename $CXX`" in
     AC_MSG_WARN(Unrecognized C++ compiler $CXX);;
 esac
 case "`basename $CC`" in
-  gcc*)
+  gcc*|*-gcc*)
     cc_version=`$CC -dumpversion`;;
   cc|acc)
     cc_version=`$CC -V 2>&1 | sed "s/cc:.*C \([[0-9]]*\.[[0-9]]*\).*/\1/"`;;
@@ -560,7 +666,7 @@ esac
 CXX_VERSION=""
 compiler_prefix=""
 if test "$CHECK_COMPILER" = "yes"; then
-  AC_MSG_CHECKING("for supported C++ compiler")
+  AC_MSG_CHECKING([for supported C++ compiler])
   case "`basename $CXX`" in
   aCC|insure)
     dnl
@@ -570,12 +676,12 @@ if test "$CHECK_COMPILER" = "yes"; then
     CXX_VERSION=`$CXX -V 2>&1 | head | sed 's/.*\(A\.[[0-9]]*\.[[0-9]]*\).*/\1/'`
     compiler_prefix="acc"
     ;;
-  g++*|c++)
+  g++*|*-g++*|c++)
     dnl
-    dnl Use $CXX here instead of g++ or c++ in case -V2.95.2 or other options are set in the
-    dnl environment variable CXX.
+    dnl Use $CXX here instead of g++ or c++ in case -V2.95.2 or other options
+    dnl are set in the environment variable CXX.
     dnl
-    SUPPORTED_CXX_VERSIONS="(2.95|2.96|3.2)"
+    SUPPORTED_CXX_VERSIONS="(3.2|3.4|4.1|4.2|4.3|4.4|4.5|4.6|4.7)"
     CXX_VERSION=`$CXX -v 2>&1 | grep "gcc version" | sed "s/gcc version \([[0-9]]*\.[[0-9]]*\).*/\1/"`
     compiler_prefix="gcc"
     ;;
@@ -599,13 +705,14 @@ fi
 
 dnl
 dnl We support:
-dnl   Solaris 2.5, 2.6, 2.7, 2.8
+dnl   Solaris 2.5, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11
 dnl   HP 11
 dnl   Linux
+dnl   Darwin (Mac OS X >= 10.6)
+dnl   MinGW32
 dnl
-AC_MSG_CHECKING("for supported operating system")
-case "$target_os" in
-solaris2.5*|solaris2.6|solaris2.7|solaris2.8|hpux11*|linux-gnu)
+AC_MSG_CHECKING([for supported operating system])
+case "$target_os" in solaris2.5*|solaris2.6|solaris2.7|solaris2.8|solaris2.9|solaris2.10|solaris2.11|hpux11*|linux-gnu|darwin*|mingw32)
   AC_MSG_RESULT($target_os is supported);;
 *)
   AC_MSG_ERROR($target_os is not supported);;
@@ -640,10 +747,16 @@ dnl The switch -mv8 is really Sparc related, not Solaris related, since
 dnl Solaris be run on X86 cpus.
 dnl
 HPPA_ACC_CXXFLAGS="-ext ${AA_OPT} -Aa -z"
-HPPA_GNU_CXXFLAGS="-Wall -mlong-load-store"
-LINUX_GNU_CXXFLAGS="-Wall"
+HPPA_GNU_CXXFLAGS="-Wall -mlong-load-store -Wformat"
+LINUX_GNU_CXXFLAGS="-Wall -Wformat"
 SPARC_CC_CXXFLAGS="-pto"
-SPARC_GNU_CXXFLAGS="-mv8 -Wall"
+SPARC_GNU_CXXFLAGS="-Wall -Wformat"
+
+HPPA_ACC_CFLAGS="-ext ${AA_OPT} -Aa -z"
+HPPA_GNU_CFLAGS="-Wall -mlong-load-store -Wformat"
+LINUX_GNU_CFLAGS="-Wall -Wformat"
+SPARC_CC_CFLAGS="-pto"
+SPARC_GNU_CFLAGS="-Wall -Wformat"
 
 dnl
 dnl In the Bourne shell ;; means "jump to the esac", like "break" in C
@@ -658,26 +771,21 @@ sparc)
 	AC_CHECK_HEADERS(sys/regset.h)
 	AC_CHECK_HEADERS(sys/frame.h)
 	AC_CHECK_HEADERS(sys/link.h)
-	AC_DEFINE(SHLIB_EXT,".so")
-	AC_DEFINE(_REENTRANT,)
-	SHLIB_EXT=.so
-	SH_LIB_EXT=so
+	AC_DEFINE(_REENTRANT, [], [Define if we're on the SOLARIS/SPARC])
 	echo 'setting compiler flags for sparc'
 	muldefs="-Wl,-z,muldefs"
 	case "$GXX" in
 	yes) echo 'setting compiler flags for g++'
-	     CXXFLAGS="$SPARC_GNU_CXXFLAGS $GNU_OPT $GNU_DBG"
-	     CXXFLAGS_DEBUG="$SPARC_GNU_CXXFLAGS $DEF_GNU_DBG"
-	     CXXFLAGS_OPT="$SPARC_GNU_CXXFLAGS $DEF_GNU_OPT"
+	     AM_CXXFLAGS="$SPARC_GNU_CXXFLAGS"
+	     CXXFLAGS="$GNU_OPT $GNU_DBG"
+	     CXXFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CXXFLAGS_OPT="$DEF_GNU_OPT"
+	     AM_CFLAGS="$SPARC_GNU_CFLAGS"
 	     CFLAGS="$GNU_OPT $GNU_DBG"
 	     CFLAGS_DEBUG="$DEF_GNU_DBG"
 	     CFLAGS_OPT="$DEF_GNU_OPT"
 	     OPTFLAGS="$GNU_OPT"
 	     DBGFLAGS="$GNU_DBG"
-	     PICFLAGS="$GNU_PIC"
-	     scvCXXopts="$SPARC_GNU_CXXFLAGS $GNU_DBG $GNU_PIC"
-	     cxxDepFlags="-M -MMD"
-	     scvLinkerOpts="$SHARED $EXPORT_DYNAMIC $UNDEF_SYMBOLS"
 	     CXX_NAME=gcc
 	     CXX_FULL_VER=`$CXX -dumpversion`
 	     CXX_VER=`echo $CXX_FULL_VER | awk -F. '{print $1"."$2}'`
@@ -691,17 +799,16 @@ sparc)
 	     dnl up .stab in the object files and therefore doesn't need this switch (unless you move or 
 	     dnl delete your objects!)
 	     dnl
-	     CXXFLAGS="$SPARC_CC_CXXFLAGS $SUN_CC_OPT $SUN_CC_DBG"
-	     CXXFLAGS_DEBUG="$SPARC_CC_CXXFLAGS $DEF_SUN_CC_DBG"
-	     CXXFLAGS_OPT="$SPARC_CC_CXXFLAGS $DEF_SUN_CC_OPT"
+	     AM_CXXFLAGS="$SPARC_CC_CXXFLAGS"
+	     CXXFLAGS="$SUN_CC_OPT $SUN_CC_DBG"
+	     CXXFLAGS_DEBUG="$DEF_SUN_CC_DBG"
+	     CXXFLAGS_OPT="$DEF_SUN_CC_OPT"
+	     AM_CFLAGS="$SPARC_CC_CFLAGS"
 	     CFLAGS="$SUN_CC_OPT $SUN_CC_DBG"
 	     CFLAGS_DEBUG="$DEF_SUN_CC_DBG"
 	     CFLAGS_OPT="$DEF_SUN_CC_OPT"
 	     OPTFLAGS="$SUN_CC_OPT"
 	     DBGFLAGS="$SUN_CC_DBG"
-	     PICFLAGS="$SUN_CC_PIC"
-	     scvCXXopts="$SPARC_CC_CXXFLAGS $SUN_CC_DBG $SUN_CC_PIC"
-	     cxxDepFlags=""
 	     scvLinkerOpts="$SHARED -library=Cstd -library=Crun $EXPORT_DYNAMIC $UNDEF_SYMBOLS"
 	     CXX_NAME=sunw
 	     CXX_VER=5.2
@@ -710,32 +817,37 @@ sparc)
         esac;;
 hppa*) 
 	AC_CHECK_HEADERS(a.out.h)
-	AC_DEFINE(SHLIB_EXT,".sl")
-	SHLIB_EXT=.sl
-        SH_LIB_EXT=sl
 	echo 'setting compiler flags for hppa*'
-        muldefs=""
 	case "$GXX" in
         yes) echo 'setting compiler flags for g++'
-	     AC_DEFINE(RWSTD_MULTI_THREAD,)
-	     AC_DEFINE(RW_MULTI_THREAD,)
-	     AC_DEFINE(_REENTRANT,)
-	     AC_DEFINE(__HPACC_THREAD_SAFE_RB_TREE,)
-	     AC_DEFINE(HP_THREAD_SAFE,)
-	     AC_DEFINE(_THREAD_SAFE,)
-	     AC_DEFINE(_POSIX_C_SOURCE, 199506L)
-	     AC_DEFINE(hp_hpux11,)
-	     CXXFLAGS="$HPPA_GNU_CXXFLAGS $GNU_PIC $GNU_OPT $GNU_DBG"
-	     CXXFLAGS_DEBUG="$HPPA_GNU_CXXFLAGS $GNU_PIC $DEF_GNU_DBG"
-	     CXXFLAGS_OPT="$HPPA_GNU_CXXFLAGS $GNU_PIC $DEF_GNU_OPT"
-	     CFLAGS="$GNU_PIC $GNU_OPT $GNU_DBG"
-	     CFLAGS_DEBUG="$GNU_PIC $DEF_GNU_DBG"
-	     CFLAGS_OPT="$GNU_PIC $DEF_GNU_OPT"
+	     AC_DEFINE([RWSTD_MULTI_THREAD], [],
+                       [Define if we're on the HP-UX 11])
+	     AC_DEFINE([RW_MULTI_THREAD], [],
+                       [Define if we're on the HP-UX 11])
+	     AC_DEFINE([_REENTRANT], [],
+                       [Define if we're on the HP-UX 11])
+	     AC_DEFINE([__HPACC_THREAD_SAFE_RB_TREE], [],
+                       [Define if we're on the HP-UX 11])
+	     AC_DEFINE([HP_THREAD_SAFE], [],
+                       [Define if we're on the HP-UX 11])
+	     AC_DEFINE([_THREAD_SAFE], [],
+                       [Define if we're on the HP-UX 11])
+	     AC_DEFINE([_POSIX_C_SOURCE], 199506L [],
+                       [Define if we're on the HP-UX 11])
+	     AC_DEFINE([hp_hpux11], [],
+                       [Define if we're on the HP-UX 11])
+	     AM_CXXFLAGS="$HPPA_GNU_CXXFLAGS"
+	     CXXFLAGS="$GNU_OPT $GNU_DBG"
+	     CXXFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CXXFLAGS_OPT="$DEF_GNU_OPT"
+	     AM_CFLAGS="$HPPA_GNU_CFLAGS"
+	     CFLAGS="$GNU_OPT $GNU_DBG"
+	     CFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CFLAGS_OPT="$DEF_GNU_OPT"
              OPTFLAGS="$GNU_OPT"
              DBGFLAGS="$GNU_DBG"
-             PICFLAGS="$GNU_PIC"
-             scvCXXopts="$HPPA_GNU_CXXFLAGS $GNU_PIC $GNU_DBG"
-	     scvLinkerOpts="$HPPA_GNU_CXXFLAGS $GNU_PIC $SHARED $EXPORT_DYNAMIC $UNDEF_SYMBOLS -Wl,-B,nonfatal -Wl,+s"
+             scvCXXopts="$HPPA_GNU_CXXFLAGS $GNU_DBG"
+	     scvLinkerOpts="$HPPA_GNU_CXXFLAGS $SHARED $EXPORT_DYNAMIC $UNDEF_SYMBOLS -Wl,-B,nonfatal -Wl,+s"
              cxxDepFlags="-M -MMD"
 	     CXX_NAME=gcc
              collector=`$CXX -print-prog-name=collect2`
@@ -743,75 +855,111 @@ hppa*)
 	     CXX_VER=`echo $CXX_FULL_VER | awk -F. '{print $1"."$2}'`
 	     ;;
         '')  echo 'setting compiler flags and defines for HP aCC'
-	     AC_DEFINE(RWSTD_MULTI_THREAD,)
-	     AC_DEFINE(RW_MULTI_THREAD,)
-	     AC_DEFINE(_REENTRANT,)
-	     AC_DEFINE(__HPACC_THREAD_SAFE_RB_TREE,)
-	     AC_DEFINE(HP_THREAD_SAFE,)
-	     AC_DEFINE(_THREAD_SAFE,)
-	     AC_DEFINE(_POSIX_C_SOURCE, 199506L)
-	     AC_DEFINE(hp_hpux11,)
-	     AC_DEFINE(_HPUX_SOURCE,)
-	     CXXFLAGS="$HPPA_ACC_CXXFLAGS $HP_ACC_PIC $HP_ACC_OPT $HP_ACC_DBG"
-	     CXXFLAGS_DEBUG="$HPPA_ACC_CXXFLAGS $HP_ACC_PIC $DEF_HP_ACC_DBG"
-	     CXXFLAGS_OPT="$HPPA_ACC_CXXFLAGS $HP_ACC_PIC $DEF_HP_ACC_OPT"
-	     CFLAGS="$HP_ACC_PIC $HP_ACC_OPT $HP_ACC_DBG"
-	     CFLAGS_DEBUG="$HP_ACC_PIC $DEF_HP_ACC_DBG"
-	     CFLAGS_OPT="$HP_ACC_PIC $DEF_HP_ACC_OPT"
+	     AC_DEFINE([_HPUX_SOURCE], [], [Define if we're on the HP-UX 11])
+	     AM_CXXFLAGS="$HPPA_ACC_CXXFLAGS"
+	     CXXFLAGS="$HP_ACC_OPT $HP_ACC_DBG"
+	     CXXFLAGS_DEBUG="$DEF_HP_ACC_DBG"
+	     CXXFLAGS_OPT="$DEF_HP_ACC_OPT"
+	     AM_CFLAGS="$HPPA_ACC_XFLAGS"
+	     CFLAGS="$HP_ACC_OPT $HP_ACC_DBG"
+	     CFLAGS_DEBUG="$DEF_HP_ACC_DBG"
+	     CFLAGS_OPT="$DEF_HP_ACC_OPT"
              OPTFLAGS=
              DBGFLAGS="$HP_ACC_DBG"
-             PICFLAGS="$HP_ACC_PIC"
              HP_EXT_OPT="-ext ${AA_OPT} -Aa"
-             scvCXXopts="$HPPA_ACC_CXXFLAGS $HP_ACC_PIC $HP_ACC_DBG"
+             scvCXXopts="$HPPA_ACC_CXXFLAGS $HP_ACC_DBG"
              cxxDepFlags="+md -P"
 	     scvLinkerOpts="$SHARED $EXPORT_DYNAMIC $UNDEF_SYMBOLS -Wl,+s"
 	     CXX_NAME=acc
              collector=""
 	     CXX_VER=`$CXX -V 2> ver.txt; cat ver.txt | awk '{print $6}' | awk -F. '{print $2"."$3}'; rm ver.txt`
 	     if test "$scv_enable_v2" = "no"; then
-	       AC_DEFINE(SCV_USE_IOSTREAM_H,)
+	       AC_DEFINE(SCV_USE_IOSTREAM_H, [],
+                         [Define if <iostream.h> should be included instead of <iostream>])
 	     fi
 	     echo 'setting library options for HP aCC'
 	     ;;
 	esac;;
 i[[3456]]86*) 
-	AC_DEFINE(SHLIB_EXT,".so")
-	SHLIB_EXT=.so
-	SH_LIB_EXT=so
-	echo 'setting compiler flags for Intel (Linux)'
-        muldefs="-Wl,-z,muldefs"
+	echo 'setting compiler flags for Linux/i386)'
 	case "$GXX" in
         yes) echo 'setting compiler flags for g++'
-	     AC_DEFINE(_USE_FRIEND_FOR_EQUAL,)
-	     AC_DEFINE(ARCH_IS_X86,)
-	     CXXFLAGS="$LINUX_GNU_CXXFLAGS $GNU_OPT $GNU_DBG"
-	     CXXFLAGS_DEBUG="$LINUX_GNU_CXXFLAGS $DEF_GNU_DBG"
-	     CXXFLAGS_OPT="$LINUX_GNU_CXXFLAGS $DEF_GNU_OPT"
+	     AC_DEFINE(ARCH_IS_X86, [], [Define if we're on Linux/i386])
+	     AC_DEFINE([_USE_FRIEND_FOR_EQUAL], [],
+                       [Define if we use gcc-3.2])
+	     AM_CXXFLAGS="$LINUX_GNU_CXXFLAGS"
+	     CXXFLAGS="$GNU_OPT $GNU_DBG"
+	     CXXFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CXXFLAGS_OPT="$DEF_GNU_OPT"
+	     AM_CFLAGS="$LINUX_GNU_CFLAGS"
 	     CFLAGS="$GNU_OPT $GNU_DBG"
 	     CFLAGS_DEBUG="$DEF_GNU_DBG"
 	     CFLAGS_OPT="$DEF_GNU_OPT"
              OPTFLAGS="$GNU_OPT"
              DBGFLAGS="$GNU_DBG"
-             PICFLAGS="$GNU_PIC"
-             scvCXXopts="$LINUX_GNU_CXXFLAGS $GNU_DBG $GNU_PIC"
+             scvCXXopts="$LINUX_GNU_CXXFLAGS $GNU_DBG"
              cxxDepFlags="-M -MMD"
 	     scvLinkerOpts="$SHARED $EXPORT_DYNAMIC $UNDEF_SYMBOLS"
 	     CXX_NAME=gcc
 	     CXX_FULL_VER=`$CXX -dumpversion`
 	     CXX_VER=`echo $CXX_FULL_VER | awk -F. '{print $1"."$2}'`
-	     echo 'setting library options for g++ on Intel Linux'
+	     echo 'setting library options for g++ on Linux/i386'
 	     ;;
         '')  echo 'setting compiler flags for NOT g++'
-	     CXXFLAGS="$LINUX_GNU_CXXFLAGS $GNU_OPT $GNU_DBG"
-	     CXXFLAGS_DEBUG="$LINUX_GNU_CXXFLAGS $DEF_GNU_DBG"
-	     CXXFLAGS_OPT="$LINUX_GNU_CXXFLAGS $DEF_GNU_OPT"
+	     AM_CXXFLAGS="$LINUX_GNU_CXXFLAGS"
+	     CXXFLAGS="$GNU_OPT $GNU_DBG"
+	     CXXFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CXXFLAGS_OPT="$DEF_GNU_OPT"
+	     AM_CFLAGS="$LINUX_GNU_CFLAGS"
 	     CFLAGS="$GNU_OPT $GNU_DBG"
 	     CFLAGS_DEBUG="$DEF_GNU_DBG"
 	     CFLAGS_OPT="$DEF_GNU_OPT"
              OPTFLAGS="$GNU_OPT"
              DBGFLAGS="$GNU_DBG"
-             PICFLAGS="$GNU_PIC"
-	     scvCXXopts="$LINUX_GNU_CXXFLAGS $GNU_DBG $GNU_PIC"
+	     scvCXXopts="$LINUX_GNU_CXXFLAGS $GNU_DBG"
+             cxxDepFlags=""
+	     scvLinkerOpts="-G $EXPORT_DYNAMIC $UNDEF_SYMBOLS"
+	     CXX_NAME=gcc
+	     CXX_VER=`$CXX -dumpversion | awk -F. '{print $1"."$2}'`
+	     ;;
+        esac;;
+x86_64*) 
+	echo 'setting compiler flags for Linux/x86_64'
+	case "$GXX" in
+        yes) echo 'setting compiler flags for g++'
+	     AC_DEFINE(ARCH_IS_X86_64, [], [Define if we're on Linux/x86_64])
+	     AC_DEFINE([_USE_FRIEND_FOR_EQUAL], [],
+                       [Define if we use gcc-3.2])
+	     AM_CXXFLAGS="$LINUX_GNU_CXXFLAGS"
+	     CXXFLAGS="$GNU_OPT $GNU_DBG"
+	     CXXFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CXXFLAGS_OPT="$DEF_GNU_OPT"
+	     AM_CFLAGS="$LINUX_GNU_CFLAGS"
+	     CFLAGS="$GNU_OPT $GNU_DBG"
+	     CFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CFLAGS_OPT="$DEF_GNU_OPT"
+             OPTFLAGS="$GNU_OPT"
+             DBGFLAGS="$GNU_DBG"
+             scvCXXopts="$LINUX_GNU_CXXFLAGS $GNU_DBG"
+             cxxDepFlags="-M -MMD"
+	     scvLinkerOpts="$SHARED $EXPORT_DYNAMIC $UNDEF_SYMBOLS"
+	     CXX_NAME=gcc
+	     CXX_FULL_VER=`$CXX -dumpversion`
+	     CXX_VER=`echo $CXX_FULL_VER | awk -F. '{print $1"."$2}'`
+	     echo 'setting library options for g++ on Linux/x86_64'
+	     ;;
+        '')  echo 'setting compiler flags for NOT g++'
+	     AM_CXXFLAGS="$LINUX_GNU_CXXFLAGS"
+	     CXXFLAGS="$GNU_OPT $GNU_DBG"
+	     CXXFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CXXFLAGS_OPT="$DEF_GNU_OPT"
+	     AM_CFLAGS="$LINUX_GNU_CFLAGS"
+	     CFLAGS="$GNU_OPT $GNU_DBG"
+	     CFLAGS_DEBUG="$DEF_GNU_DBG"
+	     CFLAGS_OPT="$DEF_GNU_OPT"
+             OPTFLAGS="$GNU_OPT"
+             DBGFLAGS="$GNU_DBG"
+	     scvCXXopts="$LINUX_GNU_CXXFLAGS $GNU_DBG"
              cxxDepFlags=""
 	     scvLinkerOpts="-G $EXPORT_DYNAMIC $UNDEF_SYMBOLS"
 	     CXX_NAME=gcc
@@ -825,11 +973,14 @@ esac
 scvCompiler="${CXX_NAME}_$CXX_VER"
 
 if test "$scvCompiler" = "gcc_3.2"; then
-  AC_DEFINE(_USE_FMTFLAGS_TYPE,)
-  AC_DEFINE(_USE_FRIEND_FOR_EQUAL,)
+  AC_DEFINE([_USE_FMTFLAGS_TYPE], [], [Define if we use gcc version = 3.2])
+  AC_DEFINE([_USE_FRIEND_FOR_EQUAL], [], [Define if we use gcc version = 3.2])
 elif test "$GXX" = "yes"; then
-  AC_DEFINE(_USE_PADDING_ON_STRUCTS,)
-  AC_DEFINE(_USE_HASH_MAP,)
+  AC_DEFINE([_USE_PADDING_ON_STRUCTS], [], [Define if we use gcc])
+  if test -z "`echo ${CXX_VER} | sed -e '/^[0-2]/d' -e '/^3\.[0-3]/d'`"; then
+    dnl define _USE_HASH_MAP for gcc version < 3.4
+    AC_DEFINE([_USE_HASH_MAP], [], [Define if we use gcc version < 3.4])
+  fi
 fi
 
 dnl
@@ -839,12 +990,23 @@ SCV_TEST_CC_SANITY([$scvCXXopts])
 
 dnl
 dnl Check whether we need to build support for cout << ull
-dnl Sets scv_have_ull_write
+dnl Sets scv_cv_have_ull_write
 dnl
 SCV_TEST_ULL_WRITE([$scvCXXopts])
 if test "$scv_have_ull_write" = "no"; then
-  AC_DEFINE(_USE_UINT64_WRITE,)
+  AC_DEFINE([_USE_UINT64_WRITE], [],
+            [Define if "cout << ull" is correctly supported])
 fi
+
+dnl
+dnl Check C basic type lengths
+dnl
+old_cflags=${CFLAGS}
+CFLAGS="${AM_CFLAGS} ${CFLAGS}"
+AC_CHECK_SIZEOF([int])
+AC_CHECK_SIZEOF([long])
+AC_CHECK_SIZEOF([void *])
+CFLAGS="${old_cflags}"
 
 dnl
 dnl This trick with AC_DEFINE -- having a 3rd argument and nothing in acconfig.h
@@ -856,16 +1018,13 @@ dnl  AC_DEFINE(ARCH_IS_X86,,[cpu variable matched x86])
 dnl fi
 
 dnl
-dnl Check for ability to dlopen a library and see
-dnl data objects. There is a bug in old versions Sun's ld.so.1
-dnl and there could be generic linking problems that cause this.
-dnl
-SCV_TEST_LD_SO([$scvCXXopts], [$scvLinkerOpts])
-
-dnl
 dnl determine which simulators to build for
 dnl
-
+AC_ARG_WITH([systemc],
+  [AS_HELP_STRING([--with-systemc],
+    [path to SystemC])],
+  [],
+  [with_systemc=""])
 case "${with_systemc:-}" in
   "no")  systemc_enab="no";    systemc_path="";;
   "yes") systemc_enab="yes";   systemc_path="";;
@@ -906,7 +1065,7 @@ if test "$systemc_enab" != "no"; then
     systemc_path=`cd $systemc_path;pwd`;
   else
     AC_MSG_ERROR(SystemC installation root directory does not exist.
-       Was systemC installed correctly?)
+       Was SystemC installed correctly?)
   fi
 fi
 
@@ -926,7 +1085,23 @@ case "$target" in
     ;;
   *linux*)
     if test "$rh_gxx_prog" = "no"; then EXTRA_GNU_DIR="/gnu"; fi
-    SYSC_TARGET="linux";;
+    case "$target_cpu" in
+      i[[3456]]86*)
+        SYSC_TARGET="linux";;
+      x86_64*)
+        SYSC_TARGET="linux64";;
+    esac;;
+  *darwin*)
+    case "$target_cpu" in
+      i[[3456]86*])
+        SYSC_TARGET="macosx";;
+      x86_64*)
+        SYSC_TARGET="macosx64";;
+      powerpc)
+        SYSC_TARGET="macosxppc";;
+      powerpc64)
+        SYSC_TARGET="macosxppc64";;
+    esac;;
   *cygwin*)
     SYSC_TARGET="cygwin";;
   *hpux11*)
@@ -935,18 +1110,20 @@ case "$target" in
       *) SYSC_TARGET="gcchpux11"; EXTRA_GNU_DIR="/gnu";;
     esac
     ;;
+  *mingw32*)
+    SYSC_TARGET="mingw";;
 esac
 
 if test "$systemc_enab" != "no"; then
   SYSC_SRC_PREFIX=$systemc_path/src
   lib_found=0
   header_found=0
-  if test "SYSC_TARGET" = ""; then
-    AC_MSG_ERROR(Unable to determine the systemC target architecture from $target)
+  if test "$SYSC_TARGET" = ""; then
+    AC_MSG_ERROR(Unable to determine the SystemC target architecture from $target)
   fi
   if test $lib_found = 0; then
     SYSC_LIB_PREFIX="$systemc_path/lib-$SYSC_TARGET"
-    AC_MSG_CHECKING("for $SYSC_LIB_PREFIX/libsystemc.a")
+    AC_MSG_CHECKING([for $SYSC_LIB_PREFIX/libsystemc.a])
     if test -r "$SYSC_LIB_PREFIX/libsystemc.a"; then
       lib_found=1
       AC_MSG_RESULT(yes)
@@ -956,8 +1133,48 @@ if test "$systemc_enab" != "no"; then
   fi
   if test $lib_found = 0; then
     SYSC_LIB_PREFIX="$systemc_path/lib$EXTRA_GNU_DIR"
-    AC_MSG_CHECKING("for $SYSC_LIB_PREFIX/libsystemc.a")
+    AC_MSG_CHECKING([for $SYSC_LIB_PREFIX/libsystemc.a])
     if test -r "$SYSC_LIB_PREFIX/libsystemc.a"; then
+      lib_found=1
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  fi
+  if test $lib_found = 0; then
+    SYSC_LIB_PREFIX="$systemc_path/lib-$SYSC_TARGET"
+    AC_MSG_CHECKING("for $SYSC_LIB_PREFIX/libsystemc.so")
+    if test -r "$SYSC_LIB_PREFIX/libsystemc.so"; then
+      lib_found=1
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  fi
+  if test $lib_found = 0; then
+    SYSC_LIB_PREFIX="$systemc_path/lib$EXTRA_GNU_DIR"
+    AC_MSG_CHECKING("for $SYSC_LIB_PREFIX/libsystemc.so")
+    if test -r "$SYSC_LIB_PREFIX/libsystemc.so"; then
+      lib_found=1
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  fi
+  if test $lib_found = 0; then
+    SYSC_LIB_PREFIX="$systemc_path/lib-$SYSC_TARGET"
+    AC_MSG_CHECKING("for $SYSC_LIB_PREFIX/libsystemc.dylib")
+    if test -r "$SYSC_LIB_PREFIX/libsystemc.dylib"; then
+      lib_found=1
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  fi
+  if test $lib_found = 0; then
+    SYSC_LIB_PREFIX="$systemc_path/lib$EXTRA_GNU_DIR"
+    AC_MSG_CHECKING("for $SYSC_LIB_PREFIX/libsystemc.dylib")
+    if test -r "$SYSC_LIB_PREFIX/libsystemc.dylib"; then
       lib_found=1
       AC_MSG_RESULT(yes)
     else
@@ -966,7 +1183,7 @@ if test "$systemc_enab" != "no"; then
   fi
   if test $header_found = 0; then
     SYSC_INC_PREFIX="$systemc_path/include"
-    AC_MSG_CHECKING("for $SYSC_INC_PREFIX/systemc.h")
+    AC_MSG_CHECKING([for $SYSC_INC_PREFIX/systemc.h])
     if test -r "$SYSC_INC_PREFIX/systemc.h"; then
       header_found=1
       AC_MSG_RESULT(yes)
@@ -976,7 +1193,7 @@ if test "$systemc_enab" != "no"; then
   fi
   if test $header_found = 0; then
     SYSC_INC_PREFIX=`cd $systemc_path/../include; pwd`
-    AC_MSG_CHECKING("for $SYSC_INC_PREFIX/systemc.h")
+    AC_MSG_CHECKING([for $SYSC_INC_PREFIX/systemc.h])
     if test -r "$SYSC_INC_PREFIX/systemc.h"; then
       header_found=1
       AC_MSG_RESULT(yes)
@@ -986,16 +1203,19 @@ if test "$systemc_enab" != "no"; then
   fi
   if test $lib_found = 0 -o $header_found = 0; then
     AC_MSG_ERROR(Could not find all required files for SystemC. 
-       Was systemC installed correctly?)
+       Was SystemC installed correctly?)
   fi
 fi
 
-SC_VERSION_CHECK($CXXFLAGS, $SYSC_INC_PREFIX, $SYSC_LIB_PREFIX)
-if test "$sc_version" = "unknown" -o -z "$sc_version"; then
-  sc_version=2000001
+SCV_SC_VERSION_CHECK($CXXFLAGS, $SYSC_INC_PREFIX, $SYSC_LIB_PREFIX)
+if test "$scv_cv_sc_version" = "unknown" -o -z "$scv_cv_sc_version"; then
+  scv_cv_sc_version=2000001
 fi
-AC_DEFINE_UNQUOTED(SC_VERSION, ${sc_version})
-SC_VERSION=$sc_version
+
+AC_DEFINE_UNQUOTED([SCV_SC_VERSION], [${scv_cv_sc_version}],
+                   [Define version of SystemC linked with: VRRRPPP where V=Version,RRR=Pevision,PPP=Patchlevel])
+
+SCV_SC_VERSION=$scv_cv_sc_version
 
 dnl
 dnl Check whether we need to explicitly define an
@@ -1003,7 +1223,8 @@ dnl operator!= for each operator==.
 dnl
 SCV_TEST_AUTO_NEQ([$scvCXXopts -I$SYSC_INC_PREFIX])
 if test "$scv_have_auto_neq" = "no"; then
-  AC_DEFINE(_USE_EXPLICIT_NEQ,)
+  AC_DEFINE([_USE_EXPLICIT_NEQ], [],
+            [Define if an operator== should be defined for each operator!=])
 fi
 
 dnl
@@ -1017,19 +1238,28 @@ if test "$use_scv_report" = "maybe"; then
     if test -r $file; then file_found=1; fi
   fi
   if test $file_found = 0; then
+    file=$SYSC_INC_PREFIX/sysc/utils/sc_report_handler.h;
+    if test -r $file; then file_found=1; fi
+  fi
+  if test $file_found = 0; then
     file=$SYSC_INC_PREFIX/systemc/utils/sc_report.h;
+    if test -r $file; then file_found=1; fi
+  fi
+  if test $file_found = 0; then
+    file=$SYSC_INC_PREFIX/sysc/utils/sc_report.h;
     if test -r $file; then file_found=1; fi
   fi
   use_scv_report="yes";
   if test $file_found = 1; then  
     flag=0
     if grep set_actions $file >/dev/null; then flag=1; fi
-    if test "$SC_VERSION" -lt "2001000"; then flag=0; fi
+    if test "$SCV_SC_VERSION" -lt "2001000"; then flag=0; fi
     if test $flag = 1; then use_scv_report="no"; fi
   fi
 fi
 if test "$use_scv_report" = "no"; then
-  AC_DEFINE(_SCV_USE_SC_REPORT,)
+  AC_DEFINE([_SCV_USE_SC_REPORT], [],
+            [Define if sc_report should be used instead of internal scv_report])
 fi
 
 dummy_install="do_not_install"
@@ -1052,10 +1282,15 @@ else
   includedir=$SYSC_INC_PREFIX
 fi
 
+SCV_INC_PREFIX="`dirname $libdir`/include"
+SCV_LIB_PREFIX="$libdir" 
+
 dnl
 dnl substitution variables
 dnl
 
+AC_SUBST(AM_CXXFLAGS)
+AC_SUBST(AM_CFLAGS)
 AC_SUBST(CFLAGS_DEBUG)
 AC_SUBST(CFLAGS_OPT)
 AC_SUBST(CXXFLAGS_DEBUG)
@@ -1068,6 +1303,8 @@ AC_SUBST(MAJ)
 AC_SUBST(MIN)
 AC_SUBST(OPTFLAGS)
 AC_SUBST(SHLIB_EXT)
+AC_SUBST(SCV_INC_PREFIX)
+AC_SUBST(SCV_LIB_PREFIX)
 AC_SUBST(SYSC_INC_PREFIX)
 AC_SUBST(SYSC_LIB_PREFIX)
 AC_SUBST(SYSC_SRC_PREFIX)
@@ -1132,7 +1369,8 @@ dnl HP has dlfcn.h but it does not define dl_info.
 dnl Linux has Dl_info in dlfcn.h but it is conditionally compiled in
 dnl an mode we don't use
 dnl
-AC_EGREP_HEADER(Dl_info,dlfcn.h,AC_DEFINE(HAVE_DL_INFO))
+AC_EGREP_HEADER(Dl_info,dlfcn.h,
+		AC_DEFINE(HAVE_DL_INFO), [], [Found Dl_info in dlfcn.h])
 
 dnl
 dnl Just having dlopen in libdl is not a guarantee that dladdr
@@ -1145,8 +1383,38 @@ dnl
 dnl list generated Makefiles
 dnl
 
-AC_OUTPUT( \
+AC_CONFIG_FILES( \
   Makefile \
+  docs/Makefile \
+  docs/scv/Makefile \
+  docs/scv/scvref/Makefile \
+  examples/Makefile \
+  examples/data_structures/Makefile \
+  examples/data_structures/scv_bag/Makefile \
+  examples/data_structures/scv_sparse_array/Makefile \
+  examples/extensions/Makefile \
+  examples/extensions/ex_01_userdata/Makefile \
+  examples/extensions/ex_02_enumdata/Makefile \
+  examples/extensions/ex_03_nestdata/Makefile \
+  examples/extensions/introspection1/Makefile \
+  examples/extensions/private/Makefile \
+  examples/general/Makefile \
+  examples/general/hello/Makefile \
+  examples/randomization/Makefile \
+  examples/randomization/constraints/Makefile \
+  examples/randomization/debug/Makefile \
+  examples/randomization/ex_04_simplerand/Makefile \
+  examples/randomization/ex_05_disablerand/Makefile \
+  examples/randomization/ex_07_seedfile/Makefile \
+  examples/randomization/ex_08_dist/Makefile \
+  examples/randomization/ex_09_distrange/Makefile \
+  examples/randomization/ex_10_basicconstraint/Makefile \
+  examples/randomization/ex_11_softconstraint/Makefile \
+  examples/randomization/ex_12_hier_constraint/Makefile \
+  examples/randomization/ex_13_custom_next/Makefile \
+  examples/randomization/pythagoras/Makefile \
+  examples/transactions/Makefile \
+  examples/transactions/overview/Makefile \
   scripts/Makefile \
   src/Makefile \
   src/cudd/Makefile \
@@ -1167,10 +1435,6 @@ AC_OUTPUT( \
   src/cudd/2.3.0/mnemosyne/Makefile \
   src/cudd/2.3.0/sis/Makefile \
   src/scv/Makefile \
-  docs/Makefile \
-  docs/scv/Makefile \
-  docs/scv/scvref/Makefile \
-  examples/Makefile
 )
 
 dnl
@@ -1179,3 +1443,5 @@ dnl
 if test "$purify_enab" = "yes" -o "$quantify_enab" = "yes" -o "$purecov_enab" = "yes"; then
   AC_MSG_WARN(Rational tools do not work well with quickthreads)
 fi
+
+AC_OUTPUT

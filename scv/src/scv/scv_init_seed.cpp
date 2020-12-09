@@ -31,20 +31,20 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Stephan Schulz, Fraunhofer IIS-EAS, 2013-02-21
+  Description of Modification: Added check for _WIN32 macro to support mingw32
 
  *****************************************************************************/
 
 #include "scv/scv_config.h"
 
-#ifndef _MSC_VER
+#if ! ((defined _MSC_VER) || (defined _WIN32))
 #include <sys/times.h>
 #endif
 
 #include <string.h>
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 # include <sys/time.h>
 #else 
 #include <time.h>
@@ -55,7 +55,7 @@ extern unsigned long long _scv_get_global_seed(void);
 unsigned long long
 _scv_default_global_init_seed(unsigned long job_number)
 {
-#ifdef _MSC_VER
+#if ((defined _MSC_VER) || (defined _WIN32))
   __time64_t ltime_sec;
   _time64( &ltime_sec );
   unsigned __int64 ltime_usec = 0;

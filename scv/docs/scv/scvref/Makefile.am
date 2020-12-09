@@ -1,7 +1,7 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2002 by all Contributors.
+##  source code Copyright (c) 1996-2012 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
@@ -30,23 +30,17 @@
 ##  MODIFICATION LOG - modifiers, enter your name, affiliation, date and
 ##  changes you are making here.
 ##
-##      Name, Affiliation, Date:
-##  Description of Modification:
+##      Name, Affiliation, Date: Eric Paire, Jerome Cornet, 
+##                               STMicroelectronics, 2012-04-27
+##  Description of Modification: Revamp of autotool build system for 64-bit
+##                               support, 32-bit compilation on 64-bit host
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
+my_data_DATA = \
+	vwg_1_0e.pdf
 
-AUTOMAKE_OPTIONS = foreign
-
-copyFiles = ${top_builddir}/scripts/copyFiles.sh
-
-@dummy_install@ :
-	@echo "Build directory and install directory are the same."
-	@echo "No install is necessary."
-
-@actual_install@ :
-	${copyFiles} ${srcdir} ${prefix}/docs/scv/scvref vwg_1_0e.pdf
+my_datadir = ${prefix}/docs/scv/scvref
 
 dist-hook :
 	mkdir -p ${distdir}

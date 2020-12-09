@@ -219,6 +219,7 @@ Cudd_addHarwell(
 	v >>= 1;
     }
     lny = i;
+    lxn = NULL; /* To shut up GCC warnings */
 
     /* Allocate or reallocate arrays for variables as needed */
     if (*nx == 0) {
@@ -235,6 +236,7 @@ Cudd_addHarwell(
 	    }
 	} else {
 	    *x = *xn = NULL;
+	    lx = *xn = NULL; /* To Shut up GCC warnings */
 	}
     } else if (lnx > *nx) {
 	*x = lx = REALLOC(DdNode *, *x, lnx);
@@ -265,6 +267,7 @@ Cudd_addHarwell(
 	    }
 	} else {
 	    *y = *yn_ = NULL;
+	    ly = lyn = NULL; /* To shut up GCC warnings */
 	}
     } else if (lny > *ny) {
 	*y = ly = REALLOC(DdNode *, *y, lny);

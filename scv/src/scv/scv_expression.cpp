@@ -363,8 +363,14 @@ static string _get_expression_string(const scv_expression& e) {
   case scv_expression::SC_BV_CONSTANT: {
     sc_bv_base val(e.get_bit_width());
     e.get_value(val);
-    for (int i=0; i < val.size(); i++) { 
+    for (int i=0; i < val.size(); i++) {
+      // sc_bv_base::get_word() used to return unsigned long before
+      // SystemC 2.2. Since then, it returns unsigned int.
+#if SCV_SC_VERSION < 2002000
+      sprintf(tmpString , "%d%s", val.get_word(i), tmpString) ;
+#else
       sprintf(tmpString , "%ld%s", val.get_word(i), tmpString) ;
+#endif
     }
     return tmpString;
   }

@@ -3,7 +3,7 @@
 // nbinclude "main" start
 int sc_main(int argc, char** argv) {
   test t("test");
-  sc_start(-1);
+  sc_start();
   return (0);
 }
 // nbinclude "main" end

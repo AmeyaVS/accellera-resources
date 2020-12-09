@@ -1,6 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "scv/scv_config.h"
+
 /* These are potential duplicates. */
 #ifndef EXTERN
 #   ifdef __cplusplus
@@ -42,16 +44,6 @@
 #   define UTIL_UNUSED
 #endif
 
-#ifndef SIZEOF_VOID_P
-#define SIZEOF_VOID_P 4
-#endif
-#ifndef SIZEOF_INT
-#define SIZEOF_INT 4
-#endif
-#ifndef SIZEOF_LONG
-#define SIZEOF_LONG 4
-#endif
-
 #if SIZEOF_VOID_P == 8 && SIZEOF_INT == 4
 typedef long util_ptrint;
 #else
@@ -68,8 +60,6 @@ typedef int util_ptrint;
 extern char *optarg;
 extern int optind, opterr;
 #endif
-
-#include "scv/scv_config.h"
 
 #if !defined(__linux__) && !defined(_MSC_VER)
 #if defined(__STDC__) || defined(__cplusplus)

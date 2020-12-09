@@ -182,7 +182,8 @@ Cudd_DebugCheck(
 		    /* Increment the internal reference count for the
 		    ** then child of the current node.
 		    */
-		    if (st_lookup(edgeTable,(char *)cuddT(f),(char **)&count)) {
+		    if (st_lookup(edgeTable,(char *)cuddT(f),
+                                  (char **)(void *)&count)) {
 			count++;
 		    } else {
 			count = 1;
@@ -196,7 +197,8 @@ Cudd_DebugCheck(
 		    /* Increment the internal reference count for the
 		    ** else child of the current node.
 		    */
-		    if (st_lookup(edgeTable,(char *)Cudd_Regular(cuddE(f)),(char **)&count)) {
+		    if (st_lookup(edgeTable,(char *)Cudd_Regular(cuddE(f)),
+                                  (char **)(void *)&count)) {
 			count++;
 		    } else {
 			count = 1;
@@ -287,7 +289,8 @@ Cudd_DebugCheck(
 		    /* Increment the internal reference count for the
 		    ** then child of the current node.
 		    */
-		    if (st_lookup(edgeTable,(char *)cuddT(f),(char **)&count)) {
+		    if (st_lookup(edgeTable,(char *)cuddT(f),
+                                  (char **)(void *)&count)) {
 			count++;
 		    } else {
 			count = 1;
@@ -301,7 +304,8 @@ Cudd_DebugCheck(
 		    /* Increment the internal reference count for the
 		    ** else child of the current node.
 		    */
-		    if (st_lookup(edgeTable,(char *)cuddE(f),(char **)&count)) {
+		    if (st_lookup(edgeTable,(char *)cuddE(f),
+                                  (char **)(void *)&count)) {
 			count++;
 		    } else {
 			count = 1;
@@ -381,7 +385,7 @@ Cudd_DebugCheck(
 	flag = 1;
     }
     gen = st_init_gen(edgeTable);
-    while (st_gen(gen,(char **)&f,(char **)&count)) {
+    while (st_gen(gen,(char **)(void *)&f,(char **)(void *)&count)) {
 	if (count > (int)(f->ref) && f->ref != DD_MAXREF) {
 #if SIZEOF_VOID_P == 8
 	    fprintf(table->err,"ref count error at node 0x%lx, count = %d, id = %d, ref = %d, then = 0x%lx, else = 0x%lx\n",(unsigned long)f,count,f->index,f->ref,(unsigned long)cuddT(f),(unsigned long)cuddE(f));

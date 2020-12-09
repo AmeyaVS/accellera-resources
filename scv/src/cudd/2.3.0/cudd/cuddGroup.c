@@ -556,6 +556,7 @@ ddFindNodeHiLo(
     }
 
     *lower = low = (unsigned int) table->perm[treenode->index];
+    *upper = low; /* To shut up GCC warnings */
     high = (int) (low + treenode->size - 1);
 
     if (high >= table->size) {
@@ -1402,6 +1403,8 @@ ddGroupMove(
 #if defined(DD_DEBUG) && defined(DD_VERBOSE)
     initialSize = bestSize = table->keys - table->isolated;
 #endif
+    swapx = swapy = 0; /* To shut up warnings */
+
     /* Sift the variables of the second group up through the first group */
     for (i = 1; i <= ysize; i++) {
         for (j = 1; j <= xsize; j++) {

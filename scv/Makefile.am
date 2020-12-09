@@ -1,7 +1,7 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2002 by all Contributors.
+##  source code Copyright (c) 1996-2012 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
@@ -30,12 +30,29 @@
 ##  MODIFICATION LOG - modifiers, enter your name, affiliation, date and
 ##  changes you are making here.
 ##
-##      Name, Affiliation, Date:
-##  Description of Modification:
+##      Name, Affiliation, Date: Eric Paire, Jerome Cornet, 
+##                               STMicroelectronics, 2012-03-27
+##  Description of Modification: Revamp of autotool build system for 64-bit
+##                               support, 32-bit compilation on 64-bit host
+##
+##      Name, Affiliation, Date: Torsten Maehne, 
+##                               Universite Pierre et Marie Curie, 2013-05-03
+##  Description of Modification: Remove manual definition of the
+##                               SHELL variable in all Makefile.am files, as it
+##                               is already properly initialized by automake to
+##                               POSIX-compliant shell.
+##                               Remove AUTOMAKE_OPTIONS from all Makefile.am,
+##                               where it doesn't have an effect.
+##                               Replace INCLUDES variables by per-target
+##                               _CPPFLAGS variables in all Makefile.am files
+##                               to fix deprecation warnings.
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
+AUTOMAKE_OPTIONS = foreign
+
+BUILT_SOURCES = \
+	scv_config.h
 
 SUBDIRS = \
 	scripts \
@@ -43,46 +60,55 @@ SUBDIRS = \
 	docs \
 	examples
 
-AUTOMAKE_OPTIONS = foreign
-
-copyFiles = ${top_builddir}/scripts/copyFiles.sh
-
 TEXTDOCS = LICENSE README AUTHORS COPYING INSTALL NEWS RELEASENOTES
 
-EXTRA_DIST = ${TEXTDOCS} kitnumber.txt majorrev.txt minorrev.txt \
-        kittype.txt relnumber.txt osci_issues_for_scv.txt
+my_data_DATA = $(TEXTDOCS:=.scv)
 
-scv_config.h : config.h
-	cp config.h scv_config.h
-	echo "#undef PACKAGE" >>scv_config.h
+my_datadir = $(prefix)
+
+nodist_my_includes_HEADERS = \
+	${buildInc}/scv/scv_config.h
+
+my_includesdir = $(includedir)/scv
+
+%.scv : %
+	cp -fp $< $@
+
+EXTRA_DIST = \
+	${TEXTDOCS} \
+	osci_issues_for_scv.txt \
+	msvc71/cudd/cudd.vcproj \
+	msvc71/cudd/ReadMe.txt \
+	msvc71/mtr/mtr.vcproj \
+	msvc71/mtr/ReadMe.txt \
+	msvc71/st/st.vcproj \
+	msvc71/st/ReadMe.txt \
+	msvc71/dddmp/dddmp.vcproj \
+	msvc71/dddmp/ReadMe.txt \
+	msvc71/obj/ReadMe.txt \
+	msvc71/obj/obj.vcproj \
+	msvc71/util/util.vcproj \
+	msvc71/util/ReadMe.txt \
+	msvc71/scv_config.h \
+	msvc71/README \
+	msvc71/scv.vcproj
+
+${buildInc}/scv/scv_config.h : config.h
+	rm -f $@ $@.tmp
 	mkdir -p ${buildInc}/scv
-	( HOLD=`pwd`; cd ${buildInc}/scv; rm -f scv_config.h; ln -s $$HOLD/scv_config.h . )
+	cp $< $@.tmp
+	echo "#undef PACKAGE" >>$@.tmp
+	mv $@.tmp $@
+
+scv_config.h : ${buildInc}/scv/scv_config.h
+	cp -fp $< $@
+
+CLEANFILES = \
+	scv_config.h \
+	${buildInc}/scv/scv_config.h
 
 debug:
 	$(MAKE) all CXXFLAGS="$(CXXFLAGS_DEBUG)" CFLAGS="$(CFLAGS_DEBUG)"
 
 opt:
 	$(MAKE) all CXXFLAGS="$(CXXFLAGS_OPT)" CFLAGS="$(CFLAGS_OPT)"
-
-all : scv_config.h
-	$(MAKE) $(AM_MAKEFLAGS) all-recursive
-
-clean : clean-recursive
-	-rm -rf ${buildBin} ${buildInc} ${buildLib} scv_config.h
-
-distclean : distclean-recursive
-	-rm -rf ${buildBin} ${buildInc} ${buildLib} scv_config.h config.status
-
-@actual_install@ : scv_config.h
-	${copyFiles} . ${includedir}/scv scv_config.h
-	for f in ${TEXTDOCS}; do cp ${srcdir}/$$f ${prefix}/$$f.scv; done
-	for f in ${TEXTDOCS}; do chmod u+w ${prefix}/$$f.scv; done
-
-uninstall : uninstall-recursive
-	for f in ${TEXTDOCS}; do rm -f ${prefix}/$$f.scv; done
-	-rm -rf ${prefix}/docs/scv ${prefix}/examples/scv ${prefix}/include/scv
-
-dist-hook :
-	mkdir -p ${distdir}
-	rm -rf ${distdir}/msvc71
-	cp -r ${srcdir}/msvc71 ${distdir}

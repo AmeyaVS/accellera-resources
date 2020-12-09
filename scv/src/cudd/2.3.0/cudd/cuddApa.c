@@ -856,7 +856,7 @@ cuddApaCountMintermAux(
 	    return(max);
 	}
     }
-    if (node->ref > 1 && st_lookup(table, (char *)node, (char **)&mint)) {
+    if (node->ref > 1 && st_lookup(table, (char *)node, (char **)(void *)&mint)) {
 	return(mint);
     }
 

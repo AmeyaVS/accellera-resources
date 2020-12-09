@@ -35,13 +35,9 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
-
 EXTRA_DIST = README \
 	mnemconf.h  \
 	mnemosyne.h \
 	mnemalyse.c \
 	mnemosyne.c \
 	mtest.c 
-

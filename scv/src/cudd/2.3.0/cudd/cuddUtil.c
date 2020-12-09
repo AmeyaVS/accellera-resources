@@ -1133,6 +1133,7 @@ Cudd_bddPickArbitraryMinterms(
     old = ALLOC(DdNode *, k);
     saveString = ALLOC(char, size + 1);
     saveFlag = 0;
+    savePoint = 0; /* To shut up GCC warnings */
 
     /* Build result BDD array. */
     for (i = 0; i < k; i++) {
@@ -1625,7 +1626,7 @@ Cudd_FirstNode(
     }
 
     /* Find the first node. */
-    retval = st_gen(gen->gen.nodes.stGen, (char **) &(gen->node), NULL);
+    retval = st_gen(gen->gen.nodes.stGen, (char **)(void *) &(gen->node), NULL);
     if (retval != 0) {
 	gen->status = CUDD_GEN_NONEMPTY;
 	*node = gen->node;
@@ -1657,7 +1658,7 @@ Cudd_NextNode(
     int retval;
 
     /* Find the next node. */
-    retval = st_gen(gen->gen.nodes.stGen, (char **) &(gen->node), NULL);
+    retval = st_gen(gen->gen.nodes.stGen, (char **)(void *) &(gen->node), NULL);
     if (retval == 0) {
 	gen->status = CUDD_GEN_EMPTY;
     } else {
@@ -2634,7 +2635,7 @@ ddCountPathAux(
     if (cuddIsConstant(node)) {
 	return(1.0);
     }
-    if (st_lookup(table, (char *)node, (char **)&dummy)) {
+    if (st_lookup(table, (char *)node, (char **)(void *)&dummy)) {
 	paths = *dummy;
 	return(paths);
     }

@@ -35,11 +35,7 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-
 SUBDIRS = scvref
-
-AUTOMAKE_OPTIONS = foreign
 
 CLEANFILES = ChangeLog README LICENSE
 

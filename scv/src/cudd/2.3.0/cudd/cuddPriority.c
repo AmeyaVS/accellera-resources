@@ -895,6 +895,7 @@ cuddCProjectionRecur(
 	}
     } else {
 	RT = RE = R;
+	index = 0; /* To shut up GCC warnings */
     }
 
     if (topY > top) {

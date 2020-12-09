@@ -242,7 +242,7 @@ bddCorrelationAux(
     ** correlation(f,g') = 1 - correlation(f,g)
     ** to minimize the risk of cancellation.
     */
-    if (st_lookup(table, (char *)entry, (char **)&dummy)) {
+    if (st_lookup(table, (char *)entry, (char **)(void *)&dummy)) {
 	min = *dummy;
 	FREE(entry);
 	return(min);
@@ -345,7 +345,7 @@ bddCorrelationWeightsAux(
     ** correlation(f,g') = 1 - correlation(f,g)
     ** to minimize the risk of cancellation.
     */
-    if (st_lookup(table, (char *)entry, (char **)&dummy)) {
+    if (st_lookup(table, (char *)entry, (char **)(void *)&dummy)) {
 	min = *dummy;
 	FREE(entry);
 	return(min);

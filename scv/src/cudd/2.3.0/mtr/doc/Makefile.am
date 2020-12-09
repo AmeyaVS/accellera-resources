@@ -35,9 +35,6 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
-
 EXTRA_DIST = \
 	mtr.doc	\
 	mtrAllAbs.html \

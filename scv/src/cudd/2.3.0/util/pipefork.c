@@ -9,7 +9,7 @@
  */
 /* LINTLIBRARY */
 
-#ifndef _MSC_VER
+#if ! ((defined _MSC_VER) || (defined _WIN32))
 #include <sys/wait.h>
 #endif
 

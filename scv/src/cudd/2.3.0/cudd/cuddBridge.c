@@ -422,7 +422,7 @@ cuddBddTransfer(
     ** reordering. */
     gen = st_init_gen(table);
     if (gen == NULL) goto failure;
-    while (st_gen(gen, (char **) &key, (char **) &value)) {
+    while (st_gen(gen, (char **)(void *) &key, (char **)(void *) &value)) {
 	Cudd_RecursiveDeref(ddD, value);
     }
     st_free_gen(gen); gen = NULL;
@@ -935,7 +935,7 @@ cuddBddTransferRecur(
     /* Now f is a regular pointer to a non-constant node. */
 
     /* Check the cache. */
-    if(st_lookup(table, (char *)f, (char **) &res))
+    if(st_lookup(table, (char *)f, (char **)(void *) &res))
 	return(Cudd_NotCond(res,comple));
     
     /* Recursive step. */

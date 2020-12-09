@@ -296,7 +296,7 @@ _SCV_TAG_FINAL_COMPONENT(test_uint<N> );
 #define _SCV_IMPL5(op) { v.initialize(); return u op *v._get_instance(); }
 #define _SCV_MAP(return_type,method) return_type method() const { this->initialize(); return this->_get_instance()->method(); }
 
-#if SC_VERSION > 2000000
+#if SCV_SC_VERSION > 2000000
 using namespace sc_dt;
 #endif
 
@@ -610,7 +610,7 @@ public:
   return_type& operator = (const sc_uint_subref&        v) _SCV_IMPL
 #endif
 //for 2.0.1beta, remove sc_uint_concat usage
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
 #ifndef _SCV_INTROSPECTION_ONLY
   template<class T1, class T2>
     return_type& operator = (const sc_uint_concat<T1,T2>& v) _SCV_IMPL
@@ -697,7 +697,7 @@ public:
   return_type& operator = (const sc_int_subref&         v) _SCV_IMPL
 #endif
 //for 2.0.1beta, remove sc_int_concat usage
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
 #ifndef _SCV_INTROSPECTION_ONLY
   template<class T1, class T2>
   return_type& operator = (const sc_int_concat<T1,T2>&  v) _SCV_IMPL
@@ -1179,7 +1179,7 @@ public:
   return_type& operator = ( bool v ) _SCV_IMPL
   return_type& operator = ( char v ) _SCV_IMPL
   //for 2.0.1beta, assignment from sc_logic to bit is not available
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
   return_type& operator = ( const sc_logic& v ) _SCV_IMPL
 #endif
   return_type& operator &= ( const sc_bit& v ) _SCV_IMPL2(&=)
@@ -1210,7 +1210,7 @@ public:
 
   return_type& operator=(const return_type& v) _SCV_IMPL1
   //for 2.0.1beta, sc_logic::Log_enum is changed to sc_dt::sc_logic_value_t
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
   return_type& operator = ( sc_logic::Log_enum v ) _SCV_IMPL
 #else
   return_type& operator = ( sc_dt::sc_logic_value_t v ) _SCV_IMPL
@@ -1218,7 +1218,7 @@ public:
   return_type& operator = ( const sc_logic& v ) _SCV_IMPL
   return_type& operator = ( char v ) _SCV_IMPL
   //for 2.0.1beta, no sc_logic::operator=(long)
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
   return_type& operator = ( long v ) _SCV_IMPL
 #endif
   return_type& operator = ( int v ) _SCV_IMPL
@@ -1227,7 +1227,7 @@ public:
   return_type& operator |= ( const sc_logic& v ) _SCV_IMPL2(|=)
   return_type& operator ^= ( const sc_logic& v ) _SCV_IMPL2(^=)
   //for 2.0.1beta, sc_logic::negate() is removed
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
   return_type& negate() { this->initialize(); this->_get_instance()->negate(); this->trigger_value_change_cb(); return *this; }
 #endif
   bool operator == ( const sc_logic& r ) const { this->initialize(); return *this->_get_instance() == r; }
@@ -1235,17 +1235,17 @@ public:
   bool operator != ( const sc_logic& r ) const { this->initialize(); return *this->_get_instance() != r; }
   bool operator != ( char r ) const { this->initialize(); return *this->_get_instance() != r; }
   //for 2.0.1beta, sc_logic::operator! is removed
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
   sc_logic operator ! () { this->initialize(); return !*this->_get_instance(); }
 #endif
   _SCV_MAP(char,to_char);
   //for 2.0.1beta, sc_logic::to_long() is removed
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
   _SCV_MAP(long,to_long);
 #endif
   _SCV_MAP(bool,is_01);
   //for 2.0.1beta, check_01 is changed to invalid_01 and is now private
-#if SC_VERSION < 2000001
+#if SCV_SC_VERSION < 2000001
   _SCV_MAP(void,check_01);
 #endif
   _SCV_MAP(bool,to_bool);

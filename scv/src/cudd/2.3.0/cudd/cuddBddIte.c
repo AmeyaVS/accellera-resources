@@ -640,6 +640,7 @@ cuddBddIteRecur(
 	Fv = cuddT(f); Fnv = cuddE(f);
     } else {
 	Fv = Fnv = f;
+	index = 0; /* To shut up GCC warnings */
     }
     if (topg == v) {
 	index = g->index;

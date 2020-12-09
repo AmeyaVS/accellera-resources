@@ -195,7 +195,7 @@ Cudd_ShortestPath(
 
     F = Cudd_Regular(f);
 
-    st_lookup(visited, (char *)F, (char **)&rootPair);
+    st_lookup(visited, (char *)F, (char **)(void *)&rootPair);
     
     if (complement) {
 	cost = rootPair->neg;
@@ -265,7 +265,7 @@ Cudd_LargestCube(
 
     F = Cudd_Regular(f);
 
-    st_lookup(visited, (char *)F, (char **)&rootPair);
+    st_lookup(visited, (char *)F, (char **)(void *)&rootPair);
     
     if (complement) {
 	cost = rootPair->neg;
@@ -332,7 +332,7 @@ Cudd_ShortestLength(
 
     F = Cudd_Regular(f);
 
-    st_lookup(visited, (char *)F, (char **)&my_pair);
+    st_lookup(visited, (char *)F, (char **)(void *)&my_pair);
     
     if (complement) {
 	cost = my_pair->neg;
@@ -705,7 +705,7 @@ get_shortest(
 
     my_root = Cudd_Regular(root);
 
-    if (st_lookup(visited, (char *)my_root, (char **)&my_pair)) {
+    if (st_lookup(visited, (char *)my_root, (char **)(void *)&my_pair)) {
 	if (Cudd_IsComplement(root)) {
 	    res_pair.pos = my_pair->neg;
 	    res_pair.neg = my_pair->pos;
@@ -812,7 +812,7 @@ get_path(
 
 	if (complement) {T = Cudd_Not(T); E = Cudd_Not(E);}
 
-	st_lookup(visited, (char *)Cudd_Regular(T), (char **)&T_pair);
+	st_lookup(visited, (char *)Cudd_Regular(T), (char **)(void *)&T_pair);
 	if ((Cudd_IsComplement(T) && T_pair->neg == Tcost) ||
 	(!Cudd_IsComplement(T) && T_pair->pos == Tcost)) {
 	    tmp = cuddBddAndRecur(manager,manager->vars[my_dd->index],sol);
@@ -829,7 +829,7 @@ get_path(
 	    cost = Tcost;
 	    continue;
 	}
-	st_lookup(visited, (char *)Cudd_Regular(E), (char **)&E_pair);
+	st_lookup(visited, (char *)Cudd_Regular(E), (char **)(void *)&E_pair);
 	if ((Cudd_IsComplement(E) && E_pair->neg == Ecost) ||
 	(!Cudd_IsComplement(E) && E_pair->pos == Ecost)) {
 	    tmp = cuddBddAndRecur(manager,Cudd_Not(manager->vars[my_dd->index]),sol);
@@ -886,7 +886,7 @@ get_largest(
 
     my_root = Cudd_Regular(root);
 
-    if (st_lookup(visited, (char *)my_root, (char **)&my_pair)) {
+    if (st_lookup(visited, (char *)my_root, (char **)(void *)&my_pair)) {
 	if (Cudd_IsComplement(root)) {
 	    res_pair.pos = my_pair->neg;
 	    res_pair.neg = my_pair->pos;
@@ -986,7 +986,7 @@ get_cube(
 
 	if (complement) {T = Cudd_Not(T); E = Cudd_Not(E);}
 
-	st_lookup(visited, (char *)Cudd_Regular(T), (char **)&T_pair);
+	st_lookup(visited, (char *)Cudd_Regular(T), (char **)(void *)&T_pair);
 	if ((Cudd_IsComplement(T) && T_pair->neg == Tcost) ||
 	(!Cudd_IsComplement(T) && T_pair->pos == Tcost)) {
 	    tmp = cuddBddAndRecur(manager,manager->vars[my_dd->index],sol);
@@ -1003,7 +1003,7 @@ get_cube(
 	    cost = Tcost;
 	    continue;
 	}
-	st_lookup(visited, (char *)Cudd_Regular(E), (char **)&E_pair);
+	st_lookup(visited, (char *)Cudd_Regular(E), (char **)(void *)&E_pair);
 	if ((Cudd_IsComplement(E) && E_pair->neg == Ecost) ||
 	(!Cudd_IsComplement(E) && E_pair->pos == Ecost)) {
 	    tmp = cuddBddAndRecur(manager,Cudd_Not(manager->vars[my_dd->index]),sol);

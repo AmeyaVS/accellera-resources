@@ -555,7 +555,8 @@ cuddZddSwapInPlace(
 	    if (f01 != empty) {
 		newf1 = f01;
 		cuddSatInc(newf1->ref);
-	    }
+	    } else
+		newf1 = NULL; /* To shut up GCC warnings */
 	    /* else case was already handled when finding nodes
 	    ** with both children below level y
 	    */
@@ -736,6 +737,7 @@ cuddZddSwapping(
 
     nvars = upper - lower + 1;
     iterate = nvars;
+    pivot = 0; /* To shut up GCC warnings */
 
     for (i = 0; i < iterate; i++) {
 	if (heuristic == CUDD_REORDER_RANDOM_PIVOT) {

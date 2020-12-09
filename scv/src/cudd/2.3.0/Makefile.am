@@ -35,11 +35,10 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
 AUTOMAKE_OPTIONS = foreign
+
 SUBDIRS = cudd dddmp mtr st util obj mnemosyne nanotrav sis
 
 EXTRA_DIST = \
 	README \
 	RELEASE.NOTES
-

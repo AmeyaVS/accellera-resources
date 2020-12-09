@@ -35,11 +35,8 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
 SUBDIRS = 2.3.0 
 
 @dummy_install@ :
 	@echo "Build directory and install directory are the same."
 	@echo "No install is necessary."
-

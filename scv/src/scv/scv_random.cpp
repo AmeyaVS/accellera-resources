@@ -33,8 +33,8 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Stephan Schulz, Fraunhofer IIS-EAS, 2013-02-21
+  Description of Modification: Added check for _WIN32 macro to support mingw32
 
  *****************************************************************************/
 
@@ -47,7 +47,7 @@
 #include <stdlib.h>
 
 
-#ifdef _MSC_VER
+#if ((defined _MSC_VER) || (defined _WIN32))
 inline int rand_r(unsigned int *) { return rand(); }
 #endif
 
@@ -960,7 +960,7 @@ static string _scv_extract_name(const char * str) {
 //     various different platforms
 //////////////////////////////////////////////////////////////////////
 
-#if defined(__linux__) || defined(_MSC_VER)
+#if defined(__linux__) || defined(_MSC_VER) || defined(_WIN32)
 
 struct _scv_linux_drand48_data
 {
@@ -1021,7 +1021,7 @@ static long int _scv_linux_jrand48(unsigned short xsubi[3])
 #endif
 
 static inline unsigned int _scv_jrand48(unsigned short next[3]) {
-#if defined(__linux__) || defined(_MSC_VER)
+#if defined(__linux__) || defined(_MSC_VER) || defined(_WIN32)
   return (unsigned int) _scv_linux_jrand48(next);
 #else
   return (unsigned int) jrand48(next);

@@ -35,9 +35,6 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-AUTOMAKE_OPTIONS = foreign
-
 ## The order that these are processed in is important since
 ## scv depends on cudd ... etc.
 

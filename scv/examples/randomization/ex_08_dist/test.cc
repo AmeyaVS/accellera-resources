@@ -1,10 +1,6 @@
 #include "data_ext.h"
 
-#ifdef _MSC_VER
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
 
 void stateOut(scv_smart_ptr<data_t> data_p, int count[], onehot_t state) {
   scv_out << setw(0) << data_p->state.get_enum_string(state) << ": "

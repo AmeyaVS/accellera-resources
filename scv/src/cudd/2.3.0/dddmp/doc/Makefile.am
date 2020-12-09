@@ -35,8 +35,6 @@
 ##
 ## ****************************************************************************
 
-SHELL = /bin/sh
-
 EXTRA_DIST = \
 	cmdIndex.html \
 	commands.html \
@@ -55,5 +53,3 @@ EXTRA_DIST = \
 	dddmpTitle.html \
 	packages.html \
 	pkgIndex.html 
-
-AUTOMAKE_OPTIONS = foreign

@@ -1454,6 +1454,7 @@ ddSymmGroupMove(
 	ybot = table->subtables[ybot].next;
     ytop = y;
     ysize = ybot - ytop + 1;
+    size = swapx = swapy = 0; /* To shut up GCC warnings */
 
     /* Sift the variables of the second group up through the first group. */
     for (i = 1; i <= ysize; i++) {
@@ -1533,6 +1534,7 @@ ddSymmGroupMoveBackward(
 	ybot = table->subtables[ybot].next;
     ytop = y;
     ysize = ybot - ytop + 1;
+    size = 0; /* To shut up GCC warnings */
 
     /* Sift the variables of the second group up through the first group. */
     for (i = 1; i <= ysize; i++) {
