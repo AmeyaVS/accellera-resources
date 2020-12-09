@@ -54,7 +54,7 @@ target_triplet = @target@
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(top_srcdir)/config/config.h.in AUTHORS COPYING ChangeLog \
+	$(top_srcdir)/config/config.h.in AUTHORS NOTICE ChangeLog \
 	INSTALL NEWS README config/config.guess config/config.sub \
 	config/depcomp config/install-sh config/missing \
 	config/ltmain.sh $(top_srcdir)/config/config.guess \
@@ -365,7 +365,7 @@ SUBDIRS = \
 	docs \
 	examples
 
-TEXTDOCS = LICENSE README AUTHORS COPYING INSTALL NEWS RELEASENOTES
+TEXTDOCS = LICENSE README AUTHORS NOTICE INSTALL NEWS RELEASENOTES
 SCVDOCS = $(TEXTDOCS:=.scv)
 
 # FIXME: handle $docdir and/or $docdatadir

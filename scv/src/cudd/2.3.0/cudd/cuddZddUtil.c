@@ -261,7 +261,7 @@ Cudd_zddDumpDot(
     int		i, j;
     int		slots;
     DdNodePtr	*nodelist;
-    long	refAddr, diff, mask;
+    ptrint	refAddr, diff, mask;
 
     /* Build a bit array with the support of f. */
     sorted = ALLOC(int,nvars);
@@ -307,16 +307,16 @@ Cudd_zddDumpDot(
     */
 
     /* Find the bits that are different. */
-    refAddr = (long) f[0];
+    refAddr = (ptrint) f[0];
     diff = 0;
     gen = st_init_gen(visited);
     while (st_gen(gen, (char **) &scan, NULL)) {
-	diff |= refAddr ^ (long) scan;
+	diff |= refAddr ^ (ptrint) scan;
     }
     st_free_gen(gen);
 
     /* Choose the mask. */
-    for (i = 0; (unsigned) i < 8 * sizeof(long); i += 4) {
+    for (i = 0; (unsigned) i < 8 * sizeof(ptrint); i += 4) {
 	mask = (1 << i) - 1;
 	if (diff <= mask) break;
     }
@@ -386,7 +386,7 @@ Cudd_zddDumpDot(
 		scan = nodelist[j];
 		while (scan != NULL) {
 		    if (st_is_member(visited,(char *) scan)) {
-			retval = fprintf(fp,"\"%lx\";\n", (mask & (long) scan) / sizeof(DdNode));
+			retval = fprintf(fp,"\"%lx\";\n", (mask & (ptrint) scan) / sizeof(DdNode));
 			if (retval == EOF) goto failure;
 		    }
 		    scan = scan->next;
@@ -407,7 +407,7 @@ Cudd_zddDumpDot(
 	scan = nodelist[j];
 	while (scan != NULL) {
 	    if (st_is_member(visited,(char *) scan)) {
-		retval = fprintf(fp,"\"%lx\";\n", (mask & (long) scan) / sizeof(DdNode));
+		retval = fprintf(fp,"\"%lx\";\n", (mask & (ptrint) scan) / sizeof(DdNode));
 		if (retval == EOF) goto failure;
 	    }
 	    scan = scan->next;
@@ -426,7 +426,7 @@ Cudd_zddDumpDot(
 	}
 	if (retval == EOF) goto failure;
 	retval = fprintf(fp," -> \"%lx\" [style = solid];\n",
-			 (mask & (long) f[i]) / sizeof(DdNode));
+			 (mask & (ptrint) f[i]) / sizeof(DdNode));
 	if (retval == EOF) goto failure;
     }
 
@@ -441,13 +441,13 @@ Cudd_zddDumpDot(
 		    if (st_is_member(visited,(char *) scan)) {
 			retval = fprintf(fp,
 			    "\"%lx\" -> \"%lx\";\n",
-			    (mask & (long) scan) / sizeof(DdNode),
-			    (mask & (long) cuddT(scan)) / sizeof(DdNode));
+			    (mask & (ptrint) scan) / sizeof(DdNode),
+			    (mask & (ptrint) cuddT(scan)) / sizeof(DdNode));
 			if (retval == EOF) goto failure;
 			retval = fprintf(fp,
 					 "\"%lx\" -> \"%lx\" [style = dashed];\n",
-					 (mask & (long) scan) / sizeof(DdNode),
-					 (mask & (long) cuddE(scan)) / sizeof(DdNode));
+					 (mask & (ptrint) scan) / sizeof(DdNode),
+					 (mask & (ptrint) cuddE(scan)) / sizeof(DdNode));
 			if (retval == EOF) goto failure;
 		    }
 		    scan = scan->next;
@@ -464,7 +464,7 @@ Cudd_zddDumpDot(
 	while (scan != NULL) {
 	    if (st_is_member(visited,(char *) scan)) {
 		retval = fprintf(fp,"\"%lx\" [label = \"%g\"];\n",
-		    (mask & (long) scan) / sizeof(DdNode), cuddV(scan));
+		    (mask & (ptrint) scan) / sizeof(DdNode), cuddV(scan));
 		if (retval == EOF) goto failure;
 	    }
 	    scan = scan->next;
@@ -564,25 +564,16 @@ zp2(
     if (st_insert(t, (char *) f, NULL) == ST_OUT_OF_MEM)
 	return(0);
 
-#if SIZEOF_VOID_P == 8
     (void) fprintf(zdd->out, "ID = 0x%lx\tindex = %d\tr = %d\t",
-	(unsigned long)f / (unsigned long) sizeof(DdNode), f->index, f->ref);
-#else
-    (void) fprintf(zdd->out, "ID = 0x%x\tindex = %d\tr = %d\t",
-	(unsigned)f / (unsigned) sizeof(DdNode), f->index, f->ref);
-#endif
+	(ptruint)f / sizeof(DdNode), f->index, f->ref);
 
     n = cuddT(f);
     if (Cudd_IsConstant(n)) {
         (void) fprintf(zdd->out, "T = %d\t\t", (n == base));
 	T = 1;
     } else {
-#if SIZEOF_VOID_P == 8
-        (void) fprintf(zdd->out, "T = 0x%lx\t", (unsigned long) n /
-		       (unsigned long) sizeof(DdNode));
-#else
-        (void) fprintf(zdd->out, "T = 0x%x\t", (unsigned) n / (unsigned) sizeof(DdNode));
-#endif
+        (void) fprintf(zdd->out, "T = 0x%lx\t",
+                       (ptruint) n / sizeof(DdNode));
 	T = 0;
     }
 
@@ -591,12 +582,8 @@ zp2(
         (void) fprintf(zdd->out, "E = %d\n", (n == base));
 	E = 1;
     } else {
-#if SIZEOF_VOID_P == 8
-        (void) fprintf(zdd->out, "E = 0x%lx\n", (unsigned long) n /
-		      (unsigned long) sizeof(DdNode));
-#else
-        (void) fprintf(zdd->out, "E = 0x%x\n", (unsigned) n / (unsigned) sizeof(DdNode));
-#endif
+		(void) fprintf(zdd->out, "E = 0x%lx\t",
+                       (ptruint) n / sizeof(DdNode));
 	E = 0;
     }
 

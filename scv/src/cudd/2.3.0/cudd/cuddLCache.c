@@ -87,14 +87,9 @@ static char rcsid[] DD_UNUSED = "$Id: cuddLCache.c,v 1.1 2002/09/17 21:58:48 dlm
   SeeAlso     [ddLCHash3 ddLCHash]
 
 ******************************************************************************/
-#if SIZEOF_VOID_P == 8 && SIZEOF_INT == 4
 #define ddLCHash2(f,g,shift) \
-((((unsigned)(unsigned long)(f) * DD_P1 + \
-   (unsigned)(unsigned long)(g)) * DD_P2) >> (shift))
-#else
-#define ddLCHash2(f,g,shift) \
-((((unsigned)(f) * DD_P1 + (unsigned)(g)) * DD_P2) >> (shift))
-#endif
+((((unsigned)(ptruint)(f) * DD_P1 + \
+   (unsigned)(ptruint)(g)) * DD_P2) >> (shift))
 
 
 /**Macro***********************************************************************

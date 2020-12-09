@@ -1811,7 +1811,7 @@ Cudd_AverageDistance(
     double temeasured, nextmeasured;
     int i, j;
     int slots, nvars;
-    long diff;
+    ptrint diff;
     DdNode *scan;
     DdNodePtr *nodelist;
     DdNode *sentinel = &(dd->sentinel);
@@ -1839,13 +1839,13 @@ Cudd_AverageDistance(
 		** static code analysis.
 		*/
 		assert(scan);
-		diff = (long) scan - (long) cuddT(scan);
+		diff = scan - cuddT(scan);
 		tesubtotal += (double) ddAbs(diff);
-		diff = (long) scan - (long) Cudd_Regular(cuddE(scan));
+		diff = scan - Cudd_Regular(cuddE(scan));
 		tesubtotal += (double) ddAbs(diff);
 		temeasured += 2.0;
 		if (scan->next != NULL) {
-		    diff = (long) scan - (long) scan->next;
+		    diff = scan - scan->next;
 		    nextsubtotal += (double) ddAbs(diff);
 		    nextmeasured += 1.0;
 		}
@@ -1864,7 +1864,7 @@ Cudd_AverageDistance(
 	scan = nodelist[j];
 	while (scan != NULL) {
 	    if (scan->next != NULL) {
-		diff = (long) scan - (long) scan->next;
+		diff = scan - scan->next;
 		nextsubtotal += (double) ddAbs(diff);
 		nextmeasured += 1.0;
 	    }
@@ -2187,13 +2187,8 @@ dp2(
     }
     g = Cudd_Regular(f);
     if (cuddIsConstant(g)) {
-#if SIZEOF_VOID_P == 8
         (void) fprintf(dd->out,"ID = %c0x%lx\tvalue = %-9g\n", bang(f),
-		(unsigned long) g / (unsigned long) sizeof(DdNode),cuddV(g));
-#else
-        (void) fprintf(dd->out,"ID = %c0x%x\tvalue = %-9g\n", bang(f),
-		(unsigned) g / (unsigned) sizeof(DdNode),cuddV(g));
-#endif
+		(ptruint) g / sizeof(DdNode),cuddV(g));
 	return(1);
     }
     if (st_is_member(t,(char *) g) == 1) {
@@ -2202,32 +2197,18 @@ dp2(
     if (st_add_direct(t,(char *) g,NULL) == ST_OUT_OF_MEM)
 	return(0);
 #ifdef DD_STATS
-#if SIZEOF_VOID_P == 8
     (void) fprintf(dd->out,"ID = %c0x%lx\tindex = %d\tr = %d\t", bang(f),
-    		(unsigned long) g / (unsigned long) sizeof(DdNode), g->index, g->ref);
+    		(ptruint) g / sizeof(DdNode), g->index, g->ref);
 #else
-    (void) fprintf(dd->out,"ID = %c0x%x\tindex = %d\tr = %d\t", bang(f),
-    		(unsigned) g / (unsigned) sizeof(DdNode),g->index,g->ref);
-#endif
-#else
-#if SIZEOF_VOID_P == 8
     (void) fprintf(dd->out,"ID = %c0x%lx\tindex = %d\t", bang(f),
-    		(unsigned long) g / (unsigned long) sizeof(DdNode),g->index);
-#else
-    (void) fprintf(dd->out,"ID = %c0x%x\tindex = %d\t", bang(f),
-    		(unsigned) g / (unsigned) sizeof(DdNode),g->index);
-#endif
+    		(ptruint) g / sizeof(DdNode),g->index);
 #endif
     n = cuddT(g);
     if (cuddIsConstant(n)) {
         (void) fprintf(dd->out,"T = %-9g\t",cuddV(n));
 	T = 1;
     } else {
-#if SIZEOF_VOID_P == 8
-        (void) fprintf(dd->out,"T = 0x%lx\t",(unsigned long) n / (unsigned long) sizeof(DdNode));
-#else
-        (void) fprintf(dd->out,"T = 0x%x\t",(unsigned) n / (unsigned) sizeof(DdNode));
-#endif
+        (void) fprintf(dd->out,"T = 0x%lx\t",(ptruint) n / sizeof(DdNode));
 	T = 0;
     }
 
@@ -2237,11 +2218,7 @@ dp2(
         (void) fprintf(dd->out,"E = %c%-9g\n",bang(n),cuddV(N));
 	E = 1;
     } else {
-#if SIZEOF_VOID_P == 8
-        (void) fprintf(dd->out,"E = %c0x%lx\n", bang(n), (unsigned long) N/(unsigned long) sizeof(DdNode));
-#else
-        (void) fprintf(dd->out,"E = %c0x%x\n", bang(n), (unsigned) N/(unsigned) sizeof(DdNode));
-#endif
+        (void) fprintf(dd->out,"E = %c0x%lx\n", bang(n), (ptruint) N / sizeof(DdNode));
 	E = 0;
     }
     if (E == 0) {

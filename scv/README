@@ -1,10 +1,10 @@
-                SystemC Verification Library (Release 2.0.0)
+                SystemC Verification Library (Release 2.0.1)
                 ============================================
 
 -------------------------------------------------------------------------------
                                 IMPORTANT
 
-1. This is the production release of SCV 2.0.0. This release contains an
+1. This is the production release of SCV 2.0.1. This release contains an
    implementation of the verification extensions for Accellera Systems
    Initiative (Accellera) SystemC versions 2.3.1, 2.3.0 (both compliant with
    IEEE Std 1666-2011 (tm)), and version 2.2.0 (compliant with
@@ -130,8 +130,8 @@
 
 Licensing and Copyright
 
-   See the separate LICENSE file to determine your rights and responsiblities
-   for using SystemC.
+   See the separate LICENSE and NOTICE files to determine your rights and
+   responsiblities for using SystemC.
 
 User Documentation
 

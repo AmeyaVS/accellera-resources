@@ -1,4 +1,4 @@
-     INSTALL NOTES FOR SystemC Verification Library Release 2.0.0
+     INSTALL NOTES FOR SystemC Verification Library Release 2.0.1
      ------------------------------------------------------------
 
 Contents:
@@ -448,7 +448,7 @@ the library and its dependencies.
 The `examples' directory contains the project files to compile the SCV
 examples. In addition to the 'SYSTEMC' environment variable, an equivalent
 environment variable named 'SCV' that contains the path to the SCV install
-is required by the SCV example projects (e.g. C:\apps\scv-2.0.0\msvc80).
+is required by the SCV example projects (e.g. C:\apps\scv-2.0.1\msvc80).
 Go to one of the examples subdirectories and double-click on the
 .vcproj file to launch Visual C++ with the workspace file. The workspace
 file will have the proper switches set to compile for Visual C++ 8.0. Select
@@ -559,6 +559,6 @@ contains the path to the SystemC installation
 (e.g. 'C:\apps\systemc-2.3.1\msvc80').
 
 Create a new environment variable named 'SCV' with a variable value that
-contains the path to the SCV installation (e.g. 'C:\apps\scv-2.0.0\msvc80').
+contains the path to the SCV installation (e.g. 'C:\apps\scv-2.0.1\msvc80').
 Click OK to save the environment variables
 (note the environment variables must be set before starting Visual C++).

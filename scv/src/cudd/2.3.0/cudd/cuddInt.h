@@ -42,6 +42,7 @@
 #include "network.h"
 #endif
 
+#include <stddef.h>
 #include <math.h>
 #include "cudd.h"
 
@@ -162,13 +163,8 @@ typedef struct DdHook {		/* hook list element */
     struct DdHook *next;	/* next element in the list */
 } DdHook;
 
-#if SIZEOF_VOID_P == 8 && SIZEOF_INT == 4
-typedef long ptrint;
-typedef unsigned long ptruint;
-#else
-typedef int ptrint;
-typedef unsigned int ptruint;
-#endif
+typedef ptrdiff_t ptrint;
+typedef size_t    ptruint;
 
 #ifdef __osf__
 #pragma pointer_size save
@@ -594,14 +590,9 @@ typedef struct DdLevelQueue {
   SeeAlso     [ddCHash ddCHash2]
 
 ******************************************************************************/
-#if SIZEOF_VOID_P == 8 && SIZEOF_INT == 4
 #define ddHash(f,g,s) \
-((((unsigned)(unsigned long)(f) * DD_P1 + \
-   (unsigned)(unsigned long)(g)) * DD_P2) >> (s))
-#else
-#define ddHash(f,g,s) \
-((((unsigned)(f) * DD_P1 + (unsigned)(g)) * DD_P2) >> (s))
-#endif
+((((unsigned)(ptruint)(f) * DD_P1 + \
+   (unsigned)(ptruint)(g)) * DD_P2) >> (s))
 
 
 /**Macro***********************************************************************
@@ -615,16 +606,10 @@ typedef struct DdLevelQueue {
   SeeAlso     [ddHash ddCHash2]
 
 ******************************************************************************/
-#if SIZEOF_VOID_P == 8 && SIZEOF_INT == 4
 #define ddCHash(o,f,g,h,s) \
-((((((unsigned)(unsigned long)(f) + (unsigned)(unsigned long)(o)) * DD_P1 + \
-    (unsigned)(unsigned long)(g)) * DD_P2 + \
-   (unsigned)(unsigned long)(h)) * DD_P3) >> (s))
-#else
-#define ddCHash(o,f,g,h,s) \
-((((((unsigned)(f) + (unsigned)(o)) * DD_P1 + (unsigned)(g)) * DD_P2 + \
-   (unsigned)(h)) * DD_P3) >> (s))
-#endif
+((((((unsigned)(ptruint)(f) + (unsigned)(ptruint)(o)) * DD_P1 + \
+    (unsigned)(ptruint)(g)) * DD_P2 + \
+   (unsigned)(ptruint)(h)) * DD_P3) >> (s))
 
 
 /**Macro***********************************************************************
@@ -639,14 +624,9 @@ typedef struct DdLevelQueue {
   SeeAlso     [ddHash ddCHash]
 
 ******************************************************************************/
-#if SIZEOF_VOID_P == 8 && SIZEOF_INT == 4
 #define ddCHash2(o,f,g,s) \
-(((((unsigned)(unsigned long)(f) + (unsigned)(unsigned long)(o)) * DD_P1 + \
-   (unsigned)(unsigned long)(g)) * DD_P2) >> (s))
-#else
-#define ddCHash2(o,f,g,s) \
-(((((unsigned)(f) + (unsigned)(o)) * DD_P1 + (unsigned)(g)) * DD_P2) >> (s))
-#endif
+(((((unsigned)(ptruint)(f) + (unsigned)(ptruint)(o)) * DD_P1 + \
+   (unsigned)(ptruint)(g)) * DD_P2) >> (s))
 
 
 /**Macro***********************************************************************

@@ -30,6 +30,8 @@
 #ifndef _CUDD
 #define _CUDD
 
+#include <stddef.h> // size_t
+
 /*---------------------------------------------------------------------------*/
 /* Nested includes                                                           */
 /*---------------------------------------------------------------------------*/
@@ -266,7 +268,7 @@ typedef DdApaDigit * DdApaNumber;
   SeeAlso      [Cudd_NotCond]
 
 ******************************************************************************/
-#define Cudd_Not(node) ((DdNode *)((long)(node) ^ 01))
+#define Cudd_Not(node) ((DdNode *)((size_t)(node) ^ 01))
 
 
 /**Macro***********************************************************************
@@ -282,7 +284,7 @@ typedef DdApaDigit * DdApaNumber;
   SeeAlso      [Cudd_Not]
 
 ******************************************************************************/
-#define Cudd_NotCond(node,c) ((DdNode *)((long)(node) ^ (c)))
+#define Cudd_NotCond(node,c) ((DdNode *)((size_t)(node) ^ (c)))
 
 
 /**Macro***********************************************************************
@@ -296,7 +298,7 @@ typedef DdApaDigit * DdApaNumber;
   SeeAlso      [Cudd_Complement Cudd_IsComplement]
 
 ******************************************************************************/
-#define Cudd_Regular(node) ((DdNode *)((unsigned long)(node) & ~01))
+#define Cudd_Regular(node) ((DdNode *)((size_t)(node) & ~01))
 
 
 /**Macro***********************************************************************
@@ -310,7 +312,7 @@ typedef DdApaDigit * DdApaNumber;
   SeeAlso      [Cudd_Regular Cudd_IsComplement]
 
 ******************************************************************************/
-#define Cudd_Complement(node) ((DdNode *)((unsigned long)(node) | 01))
+#define Cudd_Complement(node) ((DdNode *)((size_t)(node) | 01))
 
 
 /**Macro***********************************************************************
@@ -324,7 +326,7 @@ typedef DdApaDigit * DdApaNumber;
   SeeAlso      [Cudd_Regular Cudd_Complement]
 
 ******************************************************************************/
-#define Cudd_IsComplement(node)	((int) ((long) (node) & 01))
+#define Cudd_IsComplement(node)	((int) ((size_t) (node) & 01))
 
 
 /**Macro***********************************************************************

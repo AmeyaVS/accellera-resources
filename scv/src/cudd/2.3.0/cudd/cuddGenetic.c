@@ -251,7 +251,7 @@ cuddGa(
 	if (st_lookup(computed,(char *)&STOREDD(i,0),(char **)&index)) {
 	    repeat[index]++;
 	} else {
-	    if (st_insert(computed,(char *)&STOREDD(i,0),(char *)(long)i) ==
+	    if (st_insert(computed,(char *)&STOREDD(i,0),(char *)(ptrint)i) ==
 	    ST_OUT_OF_MEM) {
 		FREE(storedd);
 		FREE(repeat);
@@ -354,7 +354,7 @@ cuddGa(
 		    repeat[index]++;
 		} else {
 		    if (st_insert(computed,(char *)&STOREDD(large,0),
-		    (char *)(long)large) == ST_OUT_OF_MEM) {
+		    (char *)(ptrint)large) == ST_OUT_OF_MEM) {
 			FREE(storedd);
 			FREE(repeat);
 			st_free_table(computed);

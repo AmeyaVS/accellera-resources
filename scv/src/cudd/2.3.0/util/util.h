@@ -2,6 +2,7 @@
 #define UTIL_H
 
 #include "scv/scv_config.h"
+#include <stddef.h>
 
 /* These are potential duplicates. */
 #ifndef EXTERN
@@ -44,11 +45,7 @@
 #   define UTIL_UNUSED
 #endif
 
-#if SIZEOF_VOID_P == 8 && SIZEOF_INT == 4
-typedef long util_ptrint;
-#else
-typedef int util_ptrint;
-#endif
+typedef ptrdiff_t util_ptrint;
 
 /* #define USE_MM */		/* choose libmm.a as the memory allocator */
 

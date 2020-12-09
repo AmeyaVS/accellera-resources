@@ -596,21 +596,12 @@ Cudd_EqualSupNorm(
 	} else {
 	    if (pr>0) {
 		(void) fprintf(dd->out,"Offending nodes:\n");
-#if SIZEOF_VOID_P == 8
 		(void) fprintf(dd->out,
-			       "f: address = %lx\t value = %40.30f\n",
-			       (unsigned long) f, cuddV(f));
+			       "f: address = %p\t value = %40.30f\n",
+			       f, cuddV(f));
 		(void) fprintf(dd->out,
-			       "g: address = %lx\t value = %40.30f\n",
-			       (unsigned long) g, cuddV(g));
-#else
-		(void) fprintf(dd->out,
-			       "f: address = %x\t value = %40.30f\n",
-			       (unsigned) f, cuddV(f));
-		(void) fprintf(dd->out,
-			       "g: address = %x\t value = %40.30f\n",
-			       (unsigned) g, cuddV(g));
-#endif
+			       "g: address = %p\t value = %40.30f\n",
+			       g, cuddV(g));
 	    }
 	    return(0);
 	}

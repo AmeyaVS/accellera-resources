@@ -70,8 +70,8 @@ static char rcsid[] DD_UNUSED = "$Id: cuddExport.c,v 1.1 2002/09/17 21:58:47 dlm
 /*---------------------------------------------------------------------------*/
 
 static int ddDoDumpBlif ARGS((DdManager *dd, DdNode *f, FILE *fp, st_table *visited, char **names));
-static int ddDoDumpDaVinci ARGS((DdManager *dd, DdNode *f, FILE *fp, st_table *visited, char **names, long mask));
-static int ddDoDumpDDcal ARGS((DdManager *dd, DdNode *f, FILE *fp, st_table *visited, char **names, long mask));
+static int ddDoDumpDaVinci ARGS((DdManager *dd, DdNode *f, FILE *fp, st_table *visited, char **names, ptrint mask));
+static int ddDoDumpDDcal ARGS((DdManager *dd, DdNode *f, FILE *fp, st_table *visited, char **names, ptrint mask));
 static int ddDoDumpFactoredForm ARGS((DdManager *dd, DdNode *f, FILE *fp, char **names));
 
 /**AutomaticEnd***************************************************************/
@@ -243,18 +243,10 @@ Cudd_DumpBlifBody(
     for (i = 0; i < n; i++) {
 	if (onames == NULL) {
 	    retval = fprintf(fp,
-#if SIZEOF_VOID_P == 8
-		".names %lx f%d\n", (unsigned long) f[i] / (unsigned long) sizeof(DdNode), i);
-#else
-		".names %x f%d\n", (unsigned) f[i] / (unsigned) sizeof(DdNode), i);
-#endif
+		".names %lx f%d\n", (ptruint) f[i] / sizeof(DdNode), i);
 	} else {
 	    retval = fprintf(fp,
-#if SIZEOF_VOID_P == 8
-		".names %lx %s\n", (unsigned long) f[i] / (unsigned long) sizeof(DdNode), onames[i]);
-#else
-		".names %x %s\n", (unsigned) f[i] / (unsigned) sizeof(DdNode), onames[i]);
-#endif
+		".names %lx %s\n", (ptruint) f[i] / sizeof(DdNode), onames[i]);
 	}
 	if (retval == EOF) goto failure;
 	if (Cudd_IsComplement(f[i])) {
@@ -323,7 +315,7 @@ Cudd_DumpDot(
     int		i, j;
     int		slots;
     DdNodePtr	*nodelist;
-    long	refAddr, diff, mask;
+    ptrint	refAddr, diff, mask;
 
     /* Build a bit array with the support of f. */
     sorted = ALLOC(int,nvars);
@@ -367,12 +359,12 @@ Cudd_DumpDot(
     */
 
     /* Find the bits that are different. */
-    refAddr = (long) Cudd_Regular(f[0]);
+    refAddr = (ptrint) Cudd_Regular(f[0]);
     diff = 0;
     gen = st_init_gen(visited);
     if (gen == NULL) goto failure;
     while (st_gen(gen, (char **) &scan, NULL)) {
-	diff |= refAddr ^ (long) scan;
+	diff |= refAddr ^ (ptrint) scan;
     }
     st_free_gen(gen); gen = NULL;
 
@@ -447,7 +439,7 @@ Cudd_DumpDot(
 		scan = nodelist[j];
 		while (scan != NULL) {
 		    if (st_is_member(visited,(char *) scan)) {
-			retval = fprintf(fp,"\"%lx\";\n", (mask & (long) scan) / sizeof(DdNode));
+			retval = fprintf(fp,"\"%lx\";\n", (mask & (ptrint) scan) / sizeof(DdNode));
 			if (retval == EOF) goto failure;
 		    }
 		    scan = scan->next;
@@ -468,7 +460,7 @@ Cudd_DumpDot(
 	scan = nodelist[j];
 	while (scan != NULL) {
 	    if (st_is_member(visited,(char *) scan)) {
-		retval = fprintf(fp,"\"%lx\";\n", (mask & (long) scan) / sizeof(DdNode));
+		retval = fprintf(fp,"\"%lx\";\n", (mask & (ptrint) scan) / sizeof(DdNode));
 		if (retval == EOF) goto failure;
 	    }
 	    scan = scan->next;
@@ -489,10 +481,10 @@ Cudd_DumpDot(
 	/* Account for the possible complement on the root. */
 	if (Cudd_IsComplement(f[i])) {
 	    retval = fprintf(fp," -> \"%lx\" [style = dotted];\n",
-		(mask & (long) f[i]) / sizeof(DdNode));
+		(mask & (ptrint) f[i]) / sizeof(DdNode));
 	} else {
 	    retval = fprintf(fp," -> \"%lx\" [style = solid];\n",
-		(mask & (long) f[i]) / sizeof(DdNode));
+		(mask & (ptrint) f[i]) / sizeof(DdNode));
 	}
 	if (retval == EOF) goto failure;
     }
@@ -508,19 +500,19 @@ Cudd_DumpDot(
 		    if (st_is_member(visited,(char *) scan)) {
 			retval = fprintf(fp,
 			    "\"%lx\" -> \"%lx\";\n",
-			    (mask & (long) scan) / sizeof(DdNode),
-			    (mask & (long) cuddT(scan)) / sizeof(DdNode));
+			    (mask & (ptrint) scan) / sizeof(DdNode),
+			    (mask & (ptrint) cuddT(scan)) / sizeof(DdNode));
 			if (retval == EOF) goto failure;
 			if (Cudd_IsComplement(cuddE(scan))) {
 			    retval = fprintf(fp,
 				"\"%lx\" -> \"%lx\" [style = dotted];\n",
-				(mask & (long) scan) / sizeof(DdNode),
-				(mask & (long) cuddE(scan)) / sizeof(DdNode));
+				(mask & (ptrint) scan) / sizeof(DdNode),
+				(mask & (ptrint) cuddE(scan)) / sizeof(DdNode));
 			} else {
 			    retval = fprintf(fp,
 				"\"%lx\" -> \"%lx\" [style = dashed];\n",
-				(mask & (long) scan) / sizeof(DdNode),
-				(mask & (long) cuddE(scan)) / sizeof(DdNode));
+				(mask & (ptrint) scan) / sizeof(DdNode),
+				(mask & (ptrint) cuddE(scan)) / sizeof(DdNode));
 			}
 			if (retval == EOF) goto failure;
 		    }
@@ -538,7 +530,7 @@ Cudd_DumpDot(
 	while (scan != NULL) {
 	    if (st_is_member(visited,(char *) scan)) {
 		retval = fprintf(fp,"\"%lx\" [label = \"%g\"];\n",
-		    (mask & (long) scan) / sizeof(DdNode), cuddV(scan));
+		    (mask & (ptrint) scan) / sizeof(DdNode), cuddV(scan));
 		if (retval == EOF) goto failure;
 	    }
 	    scan = scan->next;
@@ -595,7 +587,7 @@ Cudd_DumpDaVinci(
     int		retval;
     int		i;
     st_generator *gen;
-    long	refAddr, diff, mask;
+    ptrint	refAddr, diff, mask;
 
     /* Initialize symbol table for visited nodes. */
     visited = st_init_table(st_ptrcmp, st_ptrhash);
@@ -619,16 +611,16 @@ Cudd_DumpDaVinci(
     */
 
     /* Find the bits that are different. */
-    refAddr = (long) Cudd_Regular(f[0]);
+    refAddr = (ptrint) Cudd_Regular(f[0]);
     diff = 0;
     gen = st_init_gen(visited);
     while (st_gen(gen, (char **) &scan, NULL)) {
-	diff |= refAddr ^ (long) scan;
+	diff |= refAddr ^ (ptrint) scan;
     }
     st_free_gen(gen);
 
     /* Choose the mask. */
-    for (i = 0; (unsigned) i < 8 * sizeof(long); i += 4) {
+    for (i = 0; (unsigned) i < 8 * sizeof(ptrint); i += 4) {
 	mask = (1 << i) - 1;
 	if (diff <= mask) break;
     }
@@ -711,7 +703,7 @@ Cudd_DumpDDcal(
     int		retval;
     int		i;
     st_generator *gen;
-    long	refAddr, diff, mask;
+    ptrint	refAddr, diff, mask;
 
     /* Initialize symbol table for visited nodes. */
     visited = st_init_table(st_ptrcmp, st_ptrhash);
@@ -735,11 +727,11 @@ Cudd_DumpDDcal(
     */
 
     /* Find the bits that are different. */
-    refAddr = (long) Cudd_Regular(f[0]);
+    refAddr = (ptrint) Cudd_Regular(f[0]);
     diff = 0;
     gen = st_init_gen(visited);
     while (st_gen(gen, (char **) &scan, NULL)) {
-	diff |= refAddr ^ (long) scan;
+	diff |= refAddr ^ (ptrint) scan;
     }
     st_free_gen(gen);
 
@@ -799,7 +791,7 @@ Cudd_DumpDDcal(
 	}
 	if (retval == EOF) goto failure;
 	retval = fprintf(fp, "n%lx%s\n",
-			 ((long) f[i] & mask) / sizeof(DdNode),
+			 ((ptrint) f[i] & mask) / sizeof(DdNode),
 			 Cudd_IsComplement(f[i]) ? "'" : "");
 	if (retval == EOF) goto failure;
     }
@@ -947,11 +939,7 @@ ddDoDumpBlif(
 
     /* Check for special case: If constant node, generate constant 1. */
     if (f == DD_ONE(dd)) {
-#if SIZEOF_VOID_P == 8
-        retval = fprintf(fp, ".names %lx\n1\n",(unsigned long) f / (unsigned long) sizeof(DdNode));
-#else
-        retval = fprintf(fp, ".names %x\n1\n",(unsigned) f / (unsigned) sizeof(DdNode));
-#endif
+        retval = fprintf(fp, ".names %lx\n1\n",(ptruint) f / sizeof(DdNode));
         if (retval == EOF) {
             return(0);
         } else {
@@ -963,11 +951,7 @@ ddDoDumpBlif(
     ** with the general case.
     */
     if (f == DD_ZERO(dd)) {
-#if SIZEOF_VOID_P == 8
-        retval = fprintf(fp, ".names %lx\n",(unsigned long) f / (unsigned long) sizeof(DdNode));
-#else
-        retval = fprintf(fp, ".names %x\n",(unsigned) f / (unsigned) sizeof(DdNode));
-#endif
+        retval = fprintf(fp, ".names %lx\n",(ptruint) f / sizeof(DdNode));
         if (retval == EOF) {
             return(0);
         } else {
@@ -994,31 +978,18 @@ ddDoDumpBlif(
     if (retval == EOF)
 	return(0);
 
-#if SIZEOF_VOID_P == 8
     if (Cudd_IsComplement(cuddE(f))) {
         retval = fprintf(fp," %lx %lx %lx\n11- 1\n0-0 1\n",
-	    (unsigned long) T / (unsigned long) sizeof(DdNode),
-	    (unsigned long) E / (unsigned long) sizeof(DdNode),
-	    (unsigned long) f / (unsigned long) sizeof(DdNode));
+	    (ptruint) T / sizeof(DdNode),
+	    (ptruint) E / sizeof(DdNode),
+	    (ptruint) f / sizeof(DdNode));
     } else {
         retval = fprintf(fp," %lx %lx %lx\n11- 1\n0-1 1\n",
-	    (unsigned long) T / (unsigned long) sizeof(DdNode),
-	    (unsigned long) E / (unsigned long) sizeof(DdNode),
-	    (unsigned long) f / (unsigned long) sizeof(DdNode));
+	    (ptruint) T / sizeof(DdNode),
+	    (ptruint) E / sizeof(DdNode),
+	    (ptruint) f / sizeof(DdNode));
     }
-#else
-    if (Cudd_IsComplement(cuddE(f))) {
-        retval = fprintf(fp," %x %x %x\n11- 1\n0-0 1\n",
-	    (unsigned) T / (unsigned) sizeof(DdNode),
-	    (unsigned) E / (unsigned) sizeof(DdNode),
-	    (unsigned) f / (unsigned) sizeof(DdNode));
-    } else {
-        retval = fprintf(fp," %x %x %x\n11- 1\n0-1 1\n",
-	    (unsigned) T / (unsigned) sizeof(DdNode),
-	    (unsigned) E / (unsigned) sizeof(DdNode),
-	    (unsigned) f / (unsigned) sizeof(DdNode));
-    }
-#endif
+
     if (retval == EOF) {
         return(0);
     } else {
@@ -1049,17 +1020,17 @@ ddDoDumpDaVinci(
   FILE * fp,
   st_table * visited,
   char ** names,
-  long  mask)
+  ptrint  mask)
 {
     DdNode	*T, *E;
     int		retval;
-    long	id;
+    ptrint	id;
 
 #ifdef DD_DEBUG
     assert(!Cudd_IsComplement(f));
 #endif
 
-    id = ((long) f & mask) / sizeof(DdNode);
+    id = ((ptrint) f & mask) / sizeof(DdNode);
 
     /* If already visited, insert a reference. */
     if (st_is_member(visited, (char *) f) == 1) {
@@ -1142,17 +1113,17 @@ ddDoDumpDDcal(
   FILE * fp,
   st_table * visited,
   char ** names,
-  long  mask)
+  ptrint  mask)
 {
     DdNode	*T, *E;
     int		retval;
-    long	id, idT, idE;
+    ptrint	id, idT, idE;
 
 #ifdef DD_DEBUG
     assert(!Cudd_IsComplement(f));
 #endif
 
-    id = ((long) f & mask) / sizeof(DdNode);
+    id = ((ptrint) f & mask) / sizeof(DdNode);
 
     /* If already visited, do nothing. */
     if (st_is_member(visited, (char *) f) == 1) {
@@ -1186,8 +1157,8 @@ ddDoDumpDDcal(
     E = Cudd_Regular(cuddE(f));
     retval = ddDoDumpDDcal(dd,E,fp,visited,names,mask);
     if (retval != 1) return(retval);
-    idT = ((long) T & mask) / sizeof(DdNode);
-    idE = ((long) E & mask) / sizeof(DdNode);
+    idT = ((ptrint) T & mask) / sizeof(DdNode);
+    idE = ((ptrint) E & mask) / sizeof(DdNode);
     if (names != NULL) {
 	retval = fprintf(fp, "n%lx = %s * n%lx + %s' * n%lx%s\n",
 			 id, names[f->index], idT, names[f->index],

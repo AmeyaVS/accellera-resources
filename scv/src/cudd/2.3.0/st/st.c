@@ -12,8 +12,8 @@
 #include "st.h"
 
 #define ST_NUMCMP(x,y) ((x) != (y))
-#define ST_NUMHASH(x,size) (ABS((long)x)%(size))
-#define ST_PTRHASH(x,size) ((int)((unsigned long)(x)>>2)%size)
+#define ST_NUMHASH(x,size) (ABS((util_ptrint)x)%(size))
+#define ST_PTRHASH(x,size) ((int)((size_t)(x)>>2)%size)
 #define EQUAL(func, x, y) \
     ((((func) == st_numcmp) || ((func) == st_ptrcmp)) ?\
       (ST_NUMCMP((x),(y)) == 0) : ((*func)((x), (y)) == 0))
@@ -456,7 +456,7 @@ st_strhash(char *string, int modulus)
 int
 st_numhash(char *x, int size)
 {
-    return ST_NUMHASH(x, size);
+    return (int) ST_NUMHASH(x, size);
 }
 
 int
@@ -540,7 +540,7 @@ st_gen_int(st_generator *gen, char **key_p, long *value_p)
     }
     *key_p = gen->entry->key;
     if (value_p != NIL(long)) {
-   	*value_p = (long) gen->entry->record;
+   	*value_p = (long)(util_ptrint) gen->entry->record;
     }
     gen->entry = gen->entry->next;
     return 1;

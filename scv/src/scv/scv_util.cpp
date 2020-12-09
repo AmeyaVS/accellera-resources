@@ -1,18 +1,22 @@
 //  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
 /*****************************************************************************
 
-  The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2014 by all Contributors.
-  All Rights reserved.
-
-  The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License (the "License");
-  You may not use this file except in compliance with such restrictions and
-  limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.accellera.org/. Software distributed by Contributors
-  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-  ANY KIND, either express or implied. See the License for the specific
-  language governing rights and limitations under the License.
+  Licensed to Accellera Systems Initiative Inc. (Accellera) 
+  under one or more contributor license agreements.  See the 
+  NOTICE file distributed with this work for additional 
+  information regarding copyright ownership. Accellera licenses 
+  this file to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
 
  *****************************************************************************/
 
@@ -32,14 +36,16 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Stephan Gerth, Fraunhofer IIS-EAS, 2017-11-01
+  Description of Modification: Added header and namespaces for C string library
+                               calls
 
  *****************************************************************************/
 
 #include "scv/scv_util.h"
 #include "scv/_scv_associative_array.h"
 #include "scv/scv_report.h"
+#include <cstring>
 
 /* ************************************************************************** */
 
@@ -102,9 +108,9 @@ int _scv_make_unique_id(const std::string& name, const std::string& kind)
 const std::string _scv_make_unique_name(const std::string& name, int id)
 {
   static char *image = 0;
-  static int len = 0;
+  static std::size_t len = 0;
   if ( id == 0 ) return name;
-  int tmp = strlen(name.c_str()) + 36;
+  std::size_t tmp = std::strlen(name.c_str()) + 36;
   if ( tmp > len ) {
     delete [] image;
     image = new char[tmp];
@@ -163,14 +169,14 @@ int _scv_out_buf_t::sync() {
     return 0;
   }
   _scv_out_buffer[_scv_out_buffer_index] = '\0';
-  if (_scv_prefix == NULL || strlen(_scv_prefix) == 0) {
+  if (_scv_prefix == NULL || std::strlen(_scv_prefix) == 0) {
     _scv_out_buffer_index = 0;
     std::cout << _scv_out_buffer;
     return 0;
   }
   char scv_prefix[10];
   if (_add_scv_prefix) {
-    strcpy(scv_prefix, _scv_prefix);
+    std::strcpy(scv_prefix, _scv_prefix);
   } else {
     scv_prefix[0] = '\0';
   }
@@ -180,8 +186,8 @@ int _scv_out_buf_t::sync() {
   char *chr;
   for (chr = &_scv_out_buffer[0]; *chr != '\0'; chr++) {
     if (*chr == '\n') {
-      strcpy(spare_buffer, scv_prefix);
-      spare_buffer += strlen(scv_prefix);
+      std::strcpy(spare_buffer, scv_prefix);
+      spare_buffer += std::strlen(scv_prefix);
       while (begin_line != chr) {
         *spare_buffer++ = *begin_line++;
       }
@@ -195,7 +201,7 @@ int _scv_out_buf_t::sync() {
   if (*(chr-1) == '\n') {
     *(spare_buffer-2) = '\0';
   }
-  strcpy(_scv_out_buffer, scv_spare_buffer);
+  std::strcpy(_scv_out_buffer, scv_spare_buffer);
   _scv_out_buffer_index = 0;
   std::cout << _scv_out_buffer << std::endl;
   return 0;

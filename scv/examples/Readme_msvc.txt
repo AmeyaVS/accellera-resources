@@ -7,4 +7,4 @@ Debug or Release modes.
 The project files assume environment variables named SYSTEMC and SCV exist and 
 contain the paths to the MSVC subdirectories that are part of the SystemC and
 SCV installations respectively (e.g. C:\apps\systemc-2.3.0\msvc80 and
-C:\apps\scv-2.0.0\msvc80).
+C:\apps\scv-2.0.1\msvc80).

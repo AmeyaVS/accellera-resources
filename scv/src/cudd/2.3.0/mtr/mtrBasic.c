@@ -399,17 +399,10 @@ Mtr_PrintTree(
 {
     if (node == NULL) return;
     (void) fprintf(stdout,
-#if SIZEOF_VOID_P == 8
-    "N=0x%-8lx C=0x%-8lx Y=0x%-8lx E=0x%-8lx P=0x%-8lx F=%x L=%d S=%d\n",
-    (unsigned long) node, (unsigned long) node->child,
-    (unsigned long) node->younger, (unsigned long) node->elder,
-    (unsigned long) node->parent, node->flags, node->low, node->size);
-#else
-    "N=0x%-8x C=0x%-8x Y=0x%-8x E=0x%-8x P=0x%-8x F=%x L=%d S=%d\n",
-    (unsigned) node, (unsigned) node->child,
-    (unsigned) node->younger, (unsigned) node->elder,
-    (unsigned) node->parent, node->flags, node->low, node->size);
-#endif
+        "N=%-8p C=%-8p Y=%-8p E=%-8p P=%-8p F=%x L=%d S=%d\n",
+        node, node->child, node->younger, node->elder,
+        node->parent, node->flags, node->low, node->size);
+
     if (!MTR_TEST(node,MTR_TERMINAL)) Mtr_PrintTree(node->child);
     Mtr_PrintTree(node->younger);
     return;

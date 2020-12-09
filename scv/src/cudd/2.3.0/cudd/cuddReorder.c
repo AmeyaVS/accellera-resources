@@ -265,7 +265,7 @@ Cudd_ReduceHeap(
     /* Run hook functions. */
     hook = table->postReorderingHook;
     while (hook != NULL) {
-	int res = (hook->f)(table, "BDD", (void *)localTime);
+	int res = (hook->f)(table, "BDD", (void *)&localTime);
 	if (res == 0) return(0);
 	hook = hook->next;
     }
@@ -377,7 +377,7 @@ cuddDynamicAllocNode(
 #endif
 	    return(NULL);
 	} else {	/* successful allocation; slice memory */
-	    unsigned long offset;
+	    ptruint offset;
 	    table->memused += (DD_MEM_CHUNK + 1) * sizeof(DdNode);
 	    mem[0] = (DdNode *) table->memoryList;
 	    table->memoryList = mem;
@@ -386,10 +386,10 @@ cuddDynamicAllocNode(
 	    ** power of 2 and a multiple of the size of a pointer.
 	    ** If we align one node, all the others will be aligned
 	    ** as well. */
-	    offset = (unsigned long) mem & (sizeof(DdNode) - 1);
+	    offset = (ptruint) mem & (sizeof(DdNode) - 1);
 	    mem += (sizeof(DdNode) - offset) / sizeof(DdNodePtr);
 #ifdef DD_DEBUG
-	    assert(((unsigned long) mem & (sizeof(DdNode) - 1)) == 0);
+	    assert(((ptruint) mem & (sizeof(DdNode) - 1)) == 0);
 #endif
 	    list = (DdNode *) mem;
 

@@ -442,11 +442,7 @@ CorrelHash(
     int val = 0;
 
     entry = (HashEntry *) key;
-#if SIZEOF_VOID_P == 8 && SIZEOF_INT == 4
-    val = ((int) ((long)entry->f))*997 + ((int) ((long)entry->g));
-#else
-    val = ((int) entry->f)*997 + ((int) entry->g);
-#endif
+    val = ((int) ((ptrint)entry->f))*997 + ((int) ((ptrint)entry->g));
 
     return ((val < 0) ? -val : val) % modulus;
 
