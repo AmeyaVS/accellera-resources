@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -29,11 +27,11 @@
 
 #include <cassert>
 #include <math.h>
+#include <stddef.h>
 #include <stdio.h>
 
 #include "sysc/kernel/sc_event.h"
 #include "sysc/kernel/sc_kernel_ids.h"
-#include "sysc/kernel/sc_macros_int.h"
 #include "sysc/kernel/sc_module.h"
 #include "sysc/kernel/sc_module_registry.h"
 #include "sysc/kernel/sc_name_gen.h"
@@ -42,6 +40,7 @@
 #include "sysc/kernel/sc_process_handle.h"
 #include "sysc/kernel/sc_simcontext.h"
 #include "sysc/kernel/sc_simcontext_int.h"
+#include "sysc/kernel/sc_object_int.h"
 #include "sysc/kernel/sc_reset.h"
 #include "sysc/communication/sc_communication_ids.h"
 #include "sysc/communication/sc_interface.h"
@@ -381,9 +380,8 @@ sc_module::before_end_of_elaboration()
 void
 sc_module::construction_done()
 {
-    simcontext()->hierarchy_push( this );
+    hierarchy_scope scope(this);
     before_end_of_elaboration();
-    simcontext()->hierarchy_pop();
 }
 
 // called by elaboration_done (does nothing by default)
@@ -408,9 +406,8 @@ sc_module::elaboration_done( bool& error_ )
 	}
 	error_ = true;
     }
-    simcontext()->hierarchy_push( this );
+    hierarchy_scope scope(this);
     end_of_elaboration();
-    simcontext()->hierarchy_pop();
 }
 
 // called by start_simulation (does nothing by default)
@@ -422,9 +419,8 @@ sc_module::start_of_simulation()
 void
 sc_module::start_simulation()
 {
-    simcontext()->hierarchy_push( this );
+    hierarchy_scope scope(this);
     start_of_simulation();
-    simcontext()->hierarchy_pop();
 }
 
 // called by simulation_done (does nothing by default)
@@ -436,9 +432,8 @@ sc_module::end_of_simulation()
 void
 sc_module::simulation_done()
 {
-    simcontext()->hierarchy_push( this );
+    hierarchy_scope scope(this);
     end_of_simulation();
-    simcontext()->hierarchy_pop();
 }
 
 void
@@ -651,7 +646,7 @@ sc_module::operator () ( const sc_bind_proxy& p001,
     {
         warn_only_once = false;
 	SC_REPORT_INFO(SC_ID_IEEE_1666_DEPRECATION_,
-	 "multiple () binding depreacted, use explicit port binding instead." );
+	 "multiple () binding deprecated, use explicit port binding instead." );
     }
 
     TRY_BIND( p001 );

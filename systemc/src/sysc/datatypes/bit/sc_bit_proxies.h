@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -60,6 +58,11 @@ class sc_bitref_r
 
 public:
 
+    // typedefs
+
+    typedef typename T::traits_type          traits_type;
+    typedef typename traits_type::bit_type   bit_type;
+
     // constructor
 
     sc_bitref_r( const T& obj_, int index_ )
@@ -83,14 +86,14 @@ public:
 
     // bitwise complement
 
-    const sc_logic operator ~ () const
-	{ return sc_logic( sc_logic::not_table[value()] ); }
+    const bit_type operator ~ () const
+        { return bit_type( sc_logic::not_table[value()] ); }
 
 
-    // implicit conversion to sc_logic
+    // implicit conversion to bit_type
 
-    operator const sc_logic() const
-	{ return sc_logic( m_obj.get_bit( m_index ) ); }
+    operator const bit_type() const
+        { return bit_type( m_obj.get_bit( m_index ) ); }
 
 
     // explicit conversions
@@ -738,12 +741,12 @@ operator , ( const sc_logic&, sc_subref_r<T> );
 
 template <class T>
 inline
-sc_concref_r<sc_subref_r<T>,sc_lv_base>
+sc_concref_r<sc_subref_r<T>,sc_bv_base>
 operator , ( sc_subref_r<T>, bool );
 
 template <class T>
 inline
-sc_concref_r<sc_lv_base,sc_subref_r<T> >
+sc_concref_r<sc_bv_base,sc_subref_r<T> >
 operator , ( bool, sc_subref_r<T> );
 
 
@@ -789,12 +792,12 @@ concat( const sc_logic&, sc_subref_r<T> );
 
 template <class T>
 inline
-sc_concref_r<sc_subref_r<T>,sc_lv_base>
+sc_concref_r<sc_subref_r<T>,sc_bv_base>
 concat( sc_subref_r<T>, bool );
 
 template <class T>
 inline
-sc_concref_r<sc_lv_base,sc_subref_r<T> >
+sc_concref_r<sc_bv_base,sc_subref_r<T> >
 concat( bool, sc_subref_r<T> );
 
 
@@ -862,12 +865,12 @@ operator , ( const sc_logic&, sc_subref<T> );
 
 template <class T>
 inline
-sc_concref_r<sc_subref_r<T>,sc_lv_base>
+sc_concref_r<sc_subref_r<T>,sc_bv_base>
 operator , ( sc_subref<T>, bool );
 
 template <class T>
 inline
-sc_concref_r<sc_lv_base,sc_subref_r<T> >
+sc_concref_r<sc_bv_base,sc_subref_r<T> >
 operator , ( bool, sc_subref<T> );
 
 
@@ -933,12 +936,12 @@ concat( const sc_logic&, sc_subref<T> );
 
 template <class T>
 inline
-sc_concref_r<sc_subref_r<T>,sc_lv_base>
+sc_concref_r<sc_subref_r<T>,sc_bv_base>
 concat( sc_subref<T>, bool );
 
 template <class T>
 inline
-sc_concref_r<sc_lv_base,sc_subref_r<T> >
+sc_concref_r<sc_bv_base,sc_subref_r<T> >
 concat( bool, sc_subref<T> );
 
 #endif
@@ -1215,12 +1218,12 @@ operator , ( const sc_logic&, sc_concref_r<T1,T2> );
 
 template <class T1, class T2>
 inline
-sc_concref_r<sc_concref_r<T1,T2>,sc_lv_base>
+sc_concref_r<sc_concref_r<T1,T2>,sc_bv_base>
 operator , ( sc_concref_r<T1,T2>, bool );
 
 template <class T1, class T2>
 inline
-sc_concref_r<sc_lv_base,sc_concref_r<T1,T2> >
+sc_concref_r<sc_bv_base,sc_concref_r<T1,T2> >
 operator , ( bool, sc_concref_r<T1,T2> );
 
 
@@ -1266,12 +1269,12 @@ concat( const sc_logic&, sc_concref_r<T1,T2> );
 
 template <class T1, class T2>
 inline
-sc_concref_r<sc_concref_r<T1,T2>,sc_lv_base>
+sc_concref_r<sc_concref_r<T1,T2>,sc_bv_base>
 concat( sc_concref_r<T1,T2>, bool );
 
 template <class T1, class T2>
 inline
-sc_concref_r<sc_lv_base,sc_concref_r<T1,T2> >
+sc_concref_r<sc_bv_base,sc_concref_r<T1,T2> >
 concat( bool, sc_concref_r<T1,T2> );
 
 
@@ -1339,12 +1342,12 @@ operator , ( const sc_logic&, sc_concref<T1,T2> );
 
 template <class T1, class T2>
 inline
-sc_concref_r<sc_concref_r<T1,T2>,sc_lv_base>
+sc_concref_r<sc_concref_r<T1,T2>,sc_bv_base>
 operator , ( sc_concref<T1,T2>, bool );
 
 template <class T1, class T2>
 inline
-sc_concref_r<sc_lv_base,sc_concref_r<T1,T2> >
+sc_concref_r<sc_bv_base,sc_concref_r<T1,T2> >
 operator , ( bool, sc_concref<T1,T2> );
 
 
@@ -1410,12 +1413,12 @@ concat( const sc_logic&, sc_concref<T1,T2> );
 
 template <class T1, class T2>
 inline
-sc_concref_r<sc_concref_r<T1,T2>,sc_lv_base>
+sc_concref_r<sc_concref_r<T1,T2>,sc_bv_base>
 concat( sc_concref<T1,T2>, bool );
 
 template <class T1, class T2>
 inline
-sc_concref_r<sc_lv_base,sc_concref_r<T1,T2> >
+sc_concref_r<sc_bv_base,sc_concref_r<T1,T2> >
 concat( bool, sc_concref<T1,T2> );
 
 #endif
@@ -1619,12 +1622,12 @@ operator , ( const sc_logic&, const sc_proxy<T>& );
 
 template <class T>
 inline
-sc_concref_r<T,sc_lv_base>
+sc_concref_r<T,sc_bv_base>
 operator , ( const sc_proxy<T>&, bool );
 
 template <class T>
 inline
-sc_concref_r<sc_lv_base,T>
+sc_concref_r<sc_bv_base,T>
 operator , ( bool, const sc_proxy<T>& );
 
 
@@ -1670,12 +1673,12 @@ concat( const sc_logic&, const sc_proxy<T>& );
 
 template <class T>
 inline
-sc_concref_r<T,sc_lv_base>
+sc_concref_r<T,sc_bv_base>
 concat( const sc_proxy<T>&, bool );
 
 template <class T>
 inline
-sc_concref_r<sc_lv_base,T>
+sc_concref_r<sc_bv_base,T>
 concat( bool, const sc_proxy<T>& );
 
 
@@ -1743,12 +1746,12 @@ operator , ( const sc_logic&, sc_proxy<T>& );
 
 template <class T>
 inline
-sc_concref_r<T,sc_lv_base>
+sc_concref_r<T,sc_bv_base>
 operator , ( sc_proxy<T>&, bool );
 
 template <class T>
 inline
-sc_concref_r<sc_lv_base,T>
+sc_concref_r<sc_bv_base,T>
 operator , ( bool, sc_proxy<T>& );
 
 
@@ -1814,12 +1817,12 @@ concat( const sc_logic&, sc_proxy<T>& );
 
 template <class T>
 inline
-sc_concref_r<T,sc_lv_base>
+sc_concref_r<T,sc_bv_base>
 concat( sc_proxy<T>&, bool );
 
 template <class T>
 inline
-sc_concref_r<sc_lv_base,T>
+sc_concref_r<sc_bv_base,T>
 concat( bool, sc_proxy<T>& );
 
 #endif

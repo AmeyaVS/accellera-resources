@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -38,6 +36,7 @@ public:
   ~circular_buffer();
 
   void resize( int size );
+  void clear();
 
   T read();
   void write( const T & );
@@ -127,11 +126,20 @@ circular_buffer<T>::circular_buffer( int size )
 }
 
 template < typename T >
-circular_buffer<T>::~circular_buffer()
+void
+circular_buffer<T>::clear()
 {
   for( int i=0; i < used(); i++ ) {
     buf_clear( m_buf, i );
   }
+  m_free = m_size;
+  m_used = m_ri = m_wi = 0;
+}
+
+template < typename T >
+circular_buffer<T>::~circular_buffer()
+{
+  clear();
   buf_free( m_buf );
 }
 
@@ -146,7 +154,7 @@ circular_buffer<T>::resize( int size )
   for( i = 0; i < size && i < used(); i++ ) {
 
     buf_write( new_buf, i, peek_data( i ) );
-    buf_clear( m_buf, (m_ri + i) % size );
+    buf_clear( m_buf, (m_ri + i) % m_size );
 
   }
 
@@ -231,17 +239,26 @@ circular_buffer<T>::buf_free( void* & buf )
 template < typename T >
 inline void
 circular_buffer<T>::buf_write( void* buf, int n, const T & t )
-    { new (static_cast<T*>(buf) + n) T(t); }
+{
+  T* p = static_cast<T*>(buf) + n;
+  new (p) T(t);
+}
 
 template < typename T >
 inline T&
 circular_buffer<T>::buf_read( void* buf, int n ) const
-    { return *(static_cast<T*>(buf) + n); }
+{
+  T* p = static_cast<T*>(buf) + n;
+  return *p;
+}
 
 template < typename T >
 inline void
 circular_buffer<T>::buf_clear( void* buf, int n )
-    { (static_cast<T*>(buf) + n)->~T(); }
+{
+  T* p = static_cast<T*>(buf) + n;
+  p->~T();
+}
 
 } // namespace tlm
 

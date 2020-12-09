@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -30,15 +28,10 @@
 #ifndef SC_EVENT_H
 #define SC_EVENT_H
 
+#include "sysc/kernel/sc_cmnhdr.h"
 #include "sysc/kernel/sc_kernel_ids.h"
 #include "sysc/kernel/sc_simcontext.h"
 #include "sysc/communication/sc_writer_policy.h"
-
-namespace sc_dt {
-
-class sc_logic; // needed for sc_signal<sc_logic> friend
-
-} // namespace sc_std
 
 namespace sc_core {
 
@@ -259,8 +252,6 @@ class sc_event
     friend class sc_method_process;
     friend class sc_thread_process;
     template<typename IF, sc_writer_policy POL> friend class sc_signal;
-    friend class sc_signal<bool>;
-    friend class sc_signal<sc_dt::sc_logic>;
     friend void sc_thread_cor_fn( void* arg );
 
 public:
@@ -709,7 +700,7 @@ sc_event_or_list::swap( sc_event_or_list & that )
 
 inline
 sc_event_and_list::sc_event_and_list()
-  : sc_event_list( false )
+  : sc_event_list( true )
 {}
 
 inline

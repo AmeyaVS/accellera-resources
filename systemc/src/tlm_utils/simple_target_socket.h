@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -33,7 +31,12 @@
 #ifndef __SIMPLE_TARGET_SOCKET_H__
 #define __SIMPLE_TARGET_SOCKET_H__
 
-#include "tlm.h"
+#ifndef SC_INCLUDE_DYNAMIC_PROCESSES // needed for sc_spawn
+#  define SC_INCLUDE_DYNAMIC_PROCESSES
+#endif
+
+#include <systemc>
+#include <tlm>
 #include "tlm_utils/peq_with_get.h"
 #include <sstream>
 
@@ -264,29 +267,22 @@ private:
 
       } else if (m_b_transport_ptr) {
         if (phase == tlm::BEGIN_REQ) {
-          // create thread to do blocking call
-          sc_core::sc_spawn_options opts;
-          opts.dont_initialize();
-          sc_core::sc_event *e = new sc_core::sc_event;
-          opts.set_sensitivity(e);
-
-          //       sc_core::sc_spawn(sc_bind(&fw_process::nb2b_thread, this, sc_ref(trans), e),
-          //                  sc_core::sc_gen_unique_name("nb2b_thread"), &opts);
-
-          process_handle_class * ph = m_process_handle.get_handle(&trans,e);
+          // prepare thread to do blocking call
+          process_handle_class * ph = m_process_handle.get_handle(&trans);
 
           if (!ph) { // create new dynamic process
-            ph = new process_handle_class(&trans,e);
+            ph = new process_handle_class(&trans);
             m_process_handle.put_handle(ph);
 
-            sc_core::sc_spawn(sc_bind(&fw_process::nb2b_thread,this, ph, sc_ref(trans), e),
+            sc_core::sc_spawn_options opts;
+            opts.dont_initialize();
+            opts.set_sensitivity(&ph->m_e);
+
+            sc_core::sc_spawn(sc_bind(&fw_process::nb2b_thread,this, ph),
                             sc_core::sc_gen_unique_name("nb2b_thread"), &opts);
-          } else { // reuse existing dynamic process and resume it
-            ph->m_wakeup.notify(); // immidiate notification
           }
 
-
-          e->notify(t);
+          ph->m_e.notify(t);
           return tlm::TLM_ACCEPTED;
 
         } else if (phase == tlm::END_RESP) {
@@ -385,13 +381,11 @@ private:
 
     class process_handle_class {
     public:
-      process_handle_class(transaction_type * trans,
-                           sc_core::sc_event* e):
-        m_trans(trans),m_e(e),m_suspend(false){}
+      explicit process_handle_class(transaction_type * trans)
+        : m_trans(trans),m_suspend(false) {}
 
       transaction_type*  m_trans;
-      sc_core::sc_event* m_e;
-      sc_core::sc_event  m_wakeup;
+      sc_core::sc_event  m_e;
       bool m_suspend;
     };
 
@@ -399,14 +393,20 @@ private:
     public:
       process_handle_list() {}
 
-      process_handle_class* get_handle(transaction_type *trans,sc_core::sc_event* e)
+      ~process_handle_list() {
+        for( typename std::vector<process_handle_class*>::iterator
+               it=v.begin(), end = v.end(); it != end; ++it )
+          delete *it;
+      }
+
+      process_handle_class* get_handle(transaction_type *trans)
       {
         typename std::vector<process_handle_class*>::iterator it;
 
         for(it = v.begin(); it != v.end(); it++) {
           if ((*it)->m_suspend) {  // found suspended dynamic process, re-use it
-            (*it)->m_trans = trans; // replace to new one
-            (*it)->m_e = e;
+            (*it)->m_trans   = trans; // replace to new one
+            (*it)->m_suspend = false;
             return *it;
           }
         }
@@ -425,13 +425,11 @@ private:
     process_handle_list m_process_handle;
 
 
-    void nb2b_thread(process_handle_class* h,transaction_type &trans1, sc_core::sc_event *e1)
+    void nb2b_thread(process_handle_class* h)
     {
-      transaction_type *trans = &trans1;
-      sc_core::sc_event* e = e1;
 
       while(1) {
-
+        transaction_type *trans = h->m_trans;
         sc_core::sc_time t = sc_core::SC_ZERO_TIME;
 
         // forward call
@@ -445,24 +443,16 @@ private:
           sc_core::wait(m_end_response);
         }
         t = sc_core::SC_ZERO_TIME;
-        phase_type phase = tlm::BEGIN_RESP;
-        if (m_owner->bw_nb_transport(*trans, phase, t) != tlm::TLM_COMPLETED) {
+        phase_type phase    = tlm::BEGIN_RESP;
+        sync_enum_type sync = m_owner->bw_nb_transport(*trans, phase, t);
+        if ( !(sync == tlm::TLM_COMPLETED ||
+              (sync == tlm::TLM_UPDATED && phase == tlm::END_RESP)) ) {
           m_response_in_progress = true;
         }
 
-        // cleanup
-        delete e;
-
         // suspend until next transaction
         h->m_suspend = true;
-        sc_core::wait(h->m_wakeup);
-
-        // start next transaction
-        h->m_suspend = false;
-        trans = h->m_trans;
-        e = h->m_e;
-
-        sc_core::wait(*e); // JA bug fix
+        sc_core::wait();
       }
     }
 
@@ -821,28 +811,23 @@ private:
 
       } else if (m_b_transport_ptr) {
         if (phase == tlm::BEGIN_REQ) {
-          // create thread to do blocking call
-          sc_core::sc_spawn_options opts;
-          opts.dont_initialize();
-          sc_core::sc_event *e = new sc_core::sc_event;
-          opts.set_sensitivity(e);
 
-          // sc_core::sc_spawn(sc_bind(&fw_process::nb2b_thread, this, sc_ref(trans), e),
-          //                  sc_core::sc_gen_unique_name("nb2b_thread"), &opts);
-
-          process_handle_class * ph = m_process_handle.get_handle(&trans,e);
+          // prepare thread to do blocking call
+          process_handle_class * ph = m_process_handle.get_handle(&trans);
 
           if (!ph) { // create new dynamic process
-            ph = new process_handle_class(&trans,e);
+            ph = new process_handle_class(&trans);
             m_process_handle.put_handle(ph);
 
-            sc_core::sc_spawn(sc_bind(&fw_process::nb2b_thread, this, ph, sc_ref(trans), e),
+            sc_core::sc_spawn_options opts;
+            opts.dont_initialize();
+            opts.set_sensitivity(&ph->m_e);
+
+            sc_core::sc_spawn(sc_bind(&fw_process::nb2b_thread, this, ph),
                             sc_core::sc_gen_unique_name("nb2b_thread"), &opts);
-          } else { // reuse existing dynamic process and resume it
-            ph->m_wakeup.notify(); // immidiate notification
           }
 
-          e->notify(t);
+          ph->m_e.notify(t);
           return tlm::TLM_ACCEPTED;
 
         } else if (phase == tlm::END_RESP) {
@@ -940,13 +925,11 @@ private:
 
     class process_handle_class {
     public:
-      process_handle_class(transaction_type * trans,
-                           sc_core::sc_event* e):
-        m_trans(trans),m_e(e),m_suspend(false){}
+      explicit process_handle_class(transaction_type * trans)
+        : m_trans(trans),m_suspend(false){}
 
       transaction_type*  m_trans;
-      sc_core::sc_event* m_e;
-      sc_core::sc_event  m_wakeup;
+      sc_core::sc_event  m_e;
       bool m_suspend;
     };
 
@@ -954,14 +937,20 @@ private:
     public:
       process_handle_list() {}
 
-      process_handle_class* get_handle(transaction_type *trans,sc_core::sc_event* e)
+      ~process_handle_list() {
+        for( typename std::vector<process_handle_class*>::iterator
+               it=v.begin(), end = v.end(); it != end; ++it )
+          delete *it;
+      }
+
+      process_handle_class* get_handle(transaction_type *trans)
       {
         typename std::vector<process_handle_class*>::iterator it;
 
         for(it = v.begin(); it != v.end(); it++) {
           if ((*it)->m_suspend) {  // found suspended dynamic process, re-use it
-            (*it)->m_trans = trans; // replace to new one
-            (*it)->m_e = e;
+            (*it)->m_trans   = trans; // replace to new one
+            (*it)->m_suspend = false;
             return *it;
           }
         }
@@ -979,12 +968,11 @@ private:
 
     process_handle_list m_process_handle;
 
-    void nb2b_thread(process_handle_class* h,transaction_type &trans1, sc_core::sc_event *e1)
+    void nb2b_thread(process_handle_class* h)
     {
-      transaction_type *trans = &trans1;
-      sc_core::sc_event* e = e1;
 
       while(1) {
+        transaction_type * trans = h->m_trans;
         sc_core::sc_time t = sc_core::SC_ZERO_TIME;
 
         // forward call
@@ -998,24 +986,16 @@ private:
           sc_core::wait(m_end_response);
         }
         t = sc_core::SC_ZERO_TIME;
-        phase_type phase = tlm::BEGIN_RESP;
-        if (m_owner->bw_nb_transport(*trans, phase, t) != tlm::TLM_COMPLETED) {
+        phase_type phase    = tlm::BEGIN_RESP;
+        sync_enum_type sync = m_owner->bw_nb_transport(*trans, phase, t);
+        if ( !(sync == tlm::TLM_COMPLETED ||
+              (sync == tlm::TLM_UPDATED && phase == tlm::END_RESP)) ) {
           m_response_in_progress = true;
         }
 
-        // cleanup
-        delete e;
-
         // suspend until next transaction
         h->m_suspend = true;
-        sc_core::wait(h->m_wakeup);
-
-        // start next transaction
-        h->m_suspend = false;
-        trans = h->m_trans;
-        e = h->m_e;
-
-        sc_core::wait(*e); // JA bug fix
+        sc_core::wait();
       }
     }
 

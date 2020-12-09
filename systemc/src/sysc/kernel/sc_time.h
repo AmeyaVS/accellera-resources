@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -34,7 +32,6 @@
 #include "sysc/datatypes/int/sc_nbdefs.h"
 #include "sysc/datatypes/fx/scfx_ieee.h"
 #include "sysc/utils/sc_iostream.h"
-#include "sysc/utils/sc_string.h"
 
 namespace sc_core {
 
@@ -77,15 +74,20 @@ class sc_time
 {
 public:
 
+    typedef sc_dt::uint64 value_type;
+
     // constructors
 
     sc_time();
     sc_time( double, sc_time_unit );
     sc_time( double, sc_time_unit, sc_simcontext* );
-    sc_time( double, bool scale );
-    sc_time( sc_dt::uint64, bool scale );
     sc_time( const sc_time& );
 
+    static sc_time from_value( value_type );
+
+    // deprecated, use from_value(v)
+    sc_time( double, bool scale );
+    sc_time( value_type, bool scale );
 
     // assignment operator
 
@@ -94,7 +96,7 @@ public:
 
     // conversion functions
 
-    sc_dt::uint64 value() const;      // relative to the time resolution
+    value_type value() const;      // relative to the time resolution
     double to_double() const;  // relative to the time resolution
     double to_default_time_units() const;
     double to_seconds() const;
@@ -121,11 +123,13 @@ public:
 
     sc_time& operator *= ( double );
     sc_time& operator /= ( double );
+    sc_time& operator %= ( const sc_time& );
 
     friend const sc_time operator * ( const sc_time&, double );
     friend const sc_time operator * ( double, const sc_time& );
     friend const sc_time operator / ( const sc_time&, double );
     friend double        operator / ( const sc_time&, const sc_time& );
+    friend const sc_time operator % ( const sc_time&, const sc_time& );
 
 
     // print function
@@ -134,7 +138,7 @@ public:
 
 private:
 
-    sc_dt::uint64 m_value;
+    value_type m_value;
 };
 
 
@@ -172,7 +176,7 @@ sc_time::operator = ( const sc_time& t )
 // conversion functions
 
 inline
-sc_dt::uint64
+sc_time::value_type
 sc_time::value() const  // relative to the time resolution
 {
     return m_value;
@@ -286,6 +290,13 @@ sc_time::operator /= ( double d )
     return *this;
 }
 
+inline
+sc_time&
+sc_time::operator %= ( const sc_time& t )
+{
+    m_value %= t.m_value;
+    return *this;
+}
 
 inline
 const sc_time
@@ -318,6 +329,13 @@ operator / ( const sc_time& t1, const sc_time& t2 )
     return ( t1.to_double() / t2.to_double() );
 }
 
+inline
+const sc_time
+operator % ( const sc_time& t1, const sc_time& t2 )
+{
+    sc_time tmp(t1);
+    return tmp %= t2;
+}
 
 // print operator
 
@@ -342,8 +360,8 @@ struct sc_time_params
     bool   time_resolution_specified;
     bool   time_resolution_fixed;
 
-    sc_dt::uint64 default_time_unit;		// in time resolution
-    bool   default_time_unit_specified;
+    sc_time::value_type default_time_unit;		// in time resolution
+    bool                default_time_unit_specified;
 
     sc_time_params();
     ~sc_time_params();

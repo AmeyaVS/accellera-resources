@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -51,12 +49,14 @@
 #   define DEBUG_MSG(NAME,P,MSG) \
     { \
         if ( P && ( (strlen(NAME)==0) || !strcmp(NAME,P->name())) ) \
-          std::cout << sc_time_stamp() << ": " << P->name() << " ******** " \
-                    << MSG << std::endl; \
+          std::cout << "**** " << sc_time_stamp() << " ("  \
+	            << sc_get_current_process_name() << "): " << MSG \
+		    << " - " << P->name() << std::endl; \
     }
 #else
 #   define DEBUG_MSG(NAME,P,MSG) 
 #endif
+
 
 namespace sc_core {
 
@@ -163,7 +163,6 @@ class sc_thread_process : public sc_process_b {
 
   protected:
     sc_cor*                          m_cor_p;        // Thread's coroutine.
-    static sc_cor*                   m_dead_cor_p;   // Coroutine to delete.
     std::vector<sc_process_monitor*> m_monitor_q;    // Thread monitors.
     std::size_t                      m_stack_size;   // Thread stack size.
     int                              m_wait_cycle_n; // # of waits to be done.
@@ -236,12 +235,12 @@ inline void sc_thread_process::suspend_me()
     {
       case THROW_ASYNC_RESET:
       case THROW_SYNC_RESET:
-        DEBUG_MSG( DEBUG_NAME , this,"throwing reset");
+        DEBUG_MSG( DEBUG_NAME , this, "throwing reset for");
 	if ( m_reset_event_p ) m_reset_event_p->notify();
         throw sc_unwind_exception( this, true ); 
 
       case THROW_USER:
-        DEBUG_MSG( DEBUG_NAME, this, "throwing user exception");
+        DEBUG_MSG( DEBUG_NAME, this, "invoking throw_it for");
 	m_throw_status = m_active_areset_n ? THROW_ASYNC_RESET :
 	                                  (m_active_reset_n ? THROW_SYNC_RESET :
 			                  THROW_NONE);
@@ -249,7 +248,7 @@ inline void sc_thread_process::suspend_me()
 	break;
 
       case THROW_KILL:
-        DEBUG_MSG( DEBUG_NAME, this, "throwing kill");
+        DEBUG_MSG( DEBUG_NAME, this, "throwing kill for");
 	throw sc_unwind_exception( this, false );
 
       default: // THROWING_NOW

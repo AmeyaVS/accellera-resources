@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -30,7 +28,13 @@
 #ifndef SC_WRITER_POLICY_H_INCLUDED_
 #define SC_WRITER_POLICY_H_INCLUDED_
 
-
+#if !defined(SC_DEFAULT_WRITER_POLICY)
+#  if defined(SC_NO_WRITE_CHECK)
+#    define SC_DEFAULT_WRITER_POLICY SC_UNCHECKED_WRITERS
+#  else
+#    define SC_DEFAULT_WRITER_POLICY SC_ONE_WRITER
+#  endif
+#endif
 
 namespace sc_core {
 
@@ -56,7 +60,7 @@ enum sc_writer_policy
 };
 
 // signal forward declaration
-template< typename T, sc_writer_policy POL = SC_ONE_WRITER >
+template< typename T, sc_writer_policy POL = SC_DEFAULT_WRITER_POLICY >
 class sc_signal;
 
 template< sc_writer_policy >

@@ -1,19 +1,17 @@
 /*****************************************************************************
 
-  Licensed to Accellera Systems Initiative Inc. (Accellera) under one or
-  more contributor license agreements.  See the NOTICE file distributed
-  with this work for additional information regarding copyright ownership.
-  Accellera licenses this file to you under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with the
-  License.  You may obtain a copy of the License at
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-  implied.  See the License for the specific language governing
-  permissions and limitations under the License.
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
 
  *****************************************************************************/
 
@@ -32,6 +30,7 @@
 #include <vector>
 #include <iterator>
 #include <string>
+#include <algorithm> // std::swap
 
 #include "sysc/kernel/sc_object.h"
 #include "sysc/packages/boost/config.hpp"
@@ -320,10 +319,10 @@ public:
   this_type  operator--(int){ this_type old(*this); --it_; return old; }
 
   // advance
-  this_type  operator+( difference_type n )
+  this_type  operator+( difference_type n ) const
     { return this_type( it_ + n, get_policy()); }
-  this_type  operator-( difference_type n )
-    { return this_type( it_ + n, get_policy()); }
+  this_type  operator-( difference_type n ) const
+    { return this_type( it_ - n, get_policy()); }
 
   this_type& operator+=( difference_type n ) { it_+=n; return *this; }
   this_type& operator-=( difference_type n ) { it_-=n; return *this; }
@@ -565,12 +564,18 @@ public:
     , child_vec_(0)
   {}
 
-  sc_vector_assembly& operator=( const sc_vector_assembly& other )
+  sc_vector_assembly& operator=( sc_vector_assembly other_copy )
   {
-    vec_ = other.vec_;
-    ptr_ = other.ptr_;
-    delete child_vec_;
-    child_vec_ = 0;
+    swap( other_copy );
+    return *this;
+  }
+
+  void swap( sc_vector_assembly & that )
+  {
+    using std::swap;
+    swap( vec_,       that.vec_ );
+    swap( ptr_,       that.ptr_ );
+    swap( child_vec_, that.child_vec_ );
   }
 
   void report_empty_bind( const char* kind_, bool dst_empty_ ) const
