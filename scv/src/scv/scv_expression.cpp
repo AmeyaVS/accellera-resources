@@ -64,8 +64,6 @@ scv_expression::scv_expression(unsigned long long u) : core_(new scv_expression_
 
 scv_expression::scv_expression(double d) : core_(new scv_expression_core(d)) {}
 
-scv_expression::scv_expression(sc_string s) : core_(new scv_expression_core(s)) {}
-
 scv_expression::scv_expression(string s) : core_(new scv_expression_core(s)) {}
 
 scv_expression::~scv_expression() {}
@@ -336,9 +334,6 @@ void scv_expression::get_value(double& v) const{
   core_->get_value(v);
 }
 void scv_expression::get_value(string& v) const{ 
-  core_->get_value(v);
-}
-void scv_expression::get_value(sc_string& v) const{ 
   core_->get_value(v);
 }
 void scv_expression::get_value(sc_bv_base& v) const{ 
@@ -695,12 +690,6 @@ scv_expression_core::scv_expression_core(string s) : core_(NULL) , _data(NULL){
   *(_value._str) = s;
   _operator = scv_expression::STRING_CONSTANT;
 }
-scv_expression_core::scv_expression_core(sc_string s) : core_(NULL) , _data(NULL){
-  _value._sc_str = new sc_string;
-  _bit_width = s.length();
-  *(_value._sc_str) = s;
-  _operator = scv_expression::SC_STRING_CONSTANT;
-}
 scv_expression_core::~scv_expression_core() {
   if (_operator == scv_expression::SC_BIGINT_CONSTANT ||
     _operator == scv_expression::SC_BIGUINT_CONSTANT ||       
@@ -831,17 +820,6 @@ void scv_expression_core::get_value(string& val) const {
   } else {
     _scv_expression_error::illegalAccess("get_value(string&)");
     return ;                                               
-  }
-}
-
-void scv_expression_core::get_value(sc_string& val) const {
-  if (_operator == scv_expression::SC_STRING_CONSTANT) {
-    val = *(_value._sc_str);
-  } else if (_operator == scv_expression::STRING_CONSTANT) {
-    val = (_value._str)->c_str();
-  } else {
-    _scv_expression_error::illegalAccess("get_value(sc_string&)");
-    return ;                                                  
   }
 }
 

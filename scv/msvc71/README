@@ -1,6 +1,6 @@
 The following text was included in a README file as part of the MS 
-VC++ port.  In it, Robert Clark discusses some of the changes he
-made.
+VC++ port in the original production release of SCV (scv-01.00p001).  
+In it, Robert Clark discusses some of the changes he made.
 
 --
 
@@ -217,13 +217,13 @@ Under C/C++ additions include directories enter the following:
 "$(SYSTEMC)";"$(SCV)";"$(PTHREADS)\include"
 
 Under C/C++ General:
-Detect 64-bit Potability Issues		No
+Detect 64-bit Potability Issues         No
 
 Under C/C++ Language:
-Enable Run-Time Type Info		Yes
+Enable Run-Time Type Info               Yes
 
 Under C/C++ Precompiled Headers:
-Create/Use Precompiled Header		Not Using Precompiled Headers
+Create/Use Precompiled Header           Not Using Precompiled Headers
 
 You will now need to add the libraries. Do this by right clicking on
 the solution and selecting Add->Add Existing Item...

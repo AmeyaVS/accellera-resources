@@ -55,7 +55,7 @@
 #define SCV_VERSION "<SCV_VERSION undefined>"
 #endif
 
-#ifndef SCV_KIT_DATE 
+#ifndef SCV_KIT_DATE
 #define SCV_KIT_DATE "<SCV_KIT_DATE undefined>"
 #endif
 
@@ -128,6 +128,8 @@ _scv_process_name_server_t *_scv_process_name_server = 0;
 void _scv_set_process_name_server(_scv_process_name_server_t *server)
 { _scv_process_name_server = server; }
 
+#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
+
 const char *_scv_get_process_name(const sc_process_b *proc_p)
 // Enhance later to return unique name that's as stable as
 // possible despite changes in order of execution.
@@ -141,6 +143,25 @@ const char *scv_get_process_name(sc_process_b *proc_p)
   }
   return _scv_get_process_name(proc_p);
 }
+
+#else  //SystemC 2.2
+
+const char *_scv_get_process_name(const sc_process_handle proc_p)
+// Enhance later to return unique name that's as stable as
+// possible despite changes in order of execution.
+{ return proc_p.name(); }
+
+const char *scv_get_process_name(sc_process_handle proc_p)
+{
+  if ( proc_p.valid() ) return "<main>";
+  if ( _scv_process_name_server ) {
+    return _scv_process_name_server(proc_p);
+  }
+  return _scv_get_process_name(proc_p);
+}
+
+#endif  // !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
+
 
 //
 // Class and associated methods for scv_out

@@ -6,4 +6,4 @@ TOPDIR=../..
 
 SOURCE_FILES=test.cc
 
-include ${TOPDIR}/Makefile.rules
+include ${TOPDIR}/Makefile.rules.in

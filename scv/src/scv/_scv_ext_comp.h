@@ -110,7 +110,6 @@ inline const char * _scv_ext_util_get_name(const char* format, const char* name)
 // ----------------------------------------
 #ifdef SYSTEMC_H
 #define _SCV_SYSTEMC_BASIC_TYPE_SPECIALIZATION() \
-  _SCV_COMPONENT(sc_string); \
   _SCV_COMPONENT_1(sc_bit); \
   _SCV_COMPONENT_1(sc_logic); \
   _SCV_COMPONENT_N(sc_int); \

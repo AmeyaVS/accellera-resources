@@ -264,7 +264,7 @@ void _scv_extension_util::show(int details, int indent) const {
 bool _scv_extension_util::has_valid_extensions() const { return true; }
 bool _scv_extension_util::is_dynamic() const { return _is_dynamic(); }
 
-sc_string _scv_extension_util::get_short_name() const { return sc_string(_short_name.c_str()); }
+std::string _scv_extension_util::get_short_name() const { return std::string(_short_name.c_str()); }
 void _scv_extension_util::set_name(const char * s) { _name = s; }
 void _scv_extension_util::_set_name(const string& s) { _name = s; }
 
@@ -371,7 +371,6 @@ void _scv_extension_rw_enum::assign(unsigned long long v) { *_get_instance() = (
 void _scv_extension_rw_enum::assign(float) { _SCV_RW_ERROR(assign,float,enum); }
 void _scv_extension_rw_enum::assign(double) { _SCV_RW_ERROR(assign,double,enum); }
 void _scv_extension_rw_enum::assign(const string& s) { assert(s.c_str()); }
-void _scv_extension_rw_enum::assign(const sc_string& s) { assert(s.c_str()); }
 void _scv_extension_rw_enum::assign(const char * s) {
   list<int>& values = _get_values();
   list<const char *>& names = _get_names();
@@ -388,7 +387,7 @@ bool _scv_extension_rw_enum::get_bool() const { _SCV_RW_ERROR(get_bool,bool,obj)
 long long _scv_extension_rw_enum::get_integer() const { return *_get_instance(); }
 unsigned long long _scv_extension_rw_enum::get_unsigned() const { _SCV_RW_ERROR(get_unsigned,unsigned,obj); return 0; }
 double _scv_extension_rw_enum::get_double() const { _SCV_RW_ERROR(get_double,double,obj); return 0; }
-sc_string _scv_extension_rw_enum::get_string() const { return get_enum_string((int)get_integer()); }
+std::string _scv_extension_rw_enum::get_string() const { return get_enum_string((int)get_integer()); }
 
 _SCV_DEFAULT_RW_SYSC(_scv_extension_rw_enum,enum)
 
@@ -608,7 +607,6 @@ _SCV_EXT_TYPE_FC_I(double,double,FLOATING_POINT_NUMBER);
 _SCV_EXT_TYPE_FC_I(string,string,STRING);
 
 #ifdef SYSTEMC_H
-_SCV_EXT_TYPE_FC_I(sc_string,sc_string,STRING);
 _SCV_EXT_TYPE_1_FC_I(sc_bit,sc_bit,BIT_VECTOR);
 _SCV_EXT_TYPE_1_FC_I(sc_logic,sc_logic,LOGIC_VECTOR);
 _SCV_EXT_TYPE_D_FC_I(sc_signed,sc_signed,INTEGER);
@@ -750,7 +748,6 @@ _SCV_EXT_TYPE_D_FC_I(sc_bv_base,sc_bv_base,BIT_VECTOR);
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const sc_string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const { \
     return *(this->_get_instance()) != 0; \
@@ -764,8 +761,8 @@ _SCV_EXT_TYPE_D_FC_I(sc_bv_base,sc_bv_base,BIT_VECTOR);
   double _scv_extension_rw_ ## type_id::get_double() const { \
     return *(this->_get_instance()); \
   } \
-  sc_string _scv_extension_rw_ ## type_id::get_string() const { \
-    assert(0); return sc_string(""); \
+  std::string _scv_extension_rw_ ## type_id::get_string() const { \
+    assert(0); return std::string(""); \
   } \
   _SCV_EXT_RW_FC_ASSIGNS_SYSC_I(type_id,bitwidth) \
 
@@ -803,7 +800,6 @@ _SCV_EXT_RW_FC_I(unsigned long long,unsigned_long_long,64);
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,double); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const sc_string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const { \
     _SCV_RW_ERROR(get_bool,bool,type_name); \
@@ -820,8 +816,8 @@ _SCV_EXT_RW_FC_I(unsigned long long,unsigned_long_long,64);
   double _scv_extension_rw_ ## type_id::get_double() const { \
     return *(this->_get_instance()); \
   } \
-  sc_string _scv_extension_rw_ ## type_id::get_string() const { \
-    assert(0); return sc_string(""); \
+  std::string _scv_extension_rw_ ## type_id::get_string() const { \
+    assert(0); return std::string(""); \
   } \
   _SCV_EXT_RW_FC_BAD_ASSIGNS_SYSC_I(type_name,type_id) \
 
@@ -848,10 +844,6 @@ _SCV_EXT_RW_FC_I(double,double,dummy);
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const string&); \
-  void _scv_extension_rw_ ## type_id::assign(const sc_string& i) { \
-    *(this->_get_instance()) = i.c_str(); \
-    this->trigger_value_change_cb(); \
-  } \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const { \
     return *(this->_get_instance()) != ""; \
@@ -865,8 +857,8 @@ _SCV_EXT_RW_FC_I(double,double,dummy);
   double _scv_extension_rw_ ## type_id::get_double() const { \
     _SCV_RW_ERROR(get_double,double,type_name); return 0; \
   }	                                                      \
-  sc_string _scv_extension_rw_ ## type_id::get_string() const { \
-    return sc_string(this->_get_instance()->c_str()); \
+  std::string _scv_extension_rw_ ## type_id::get_string() const { \
+    return std::string(this->_get_instance()->c_str()); \
   }	                                                      \
   _SCV_EXT_RW_FC_BAD_ASSIGNS_SYSC_I(type_name,type_id) \
 
@@ -890,65 +882,6 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
 // ------------------------------------------------------------
 
 #ifdef SYSTEMC_H
-
-// --------------
-// sc_string
-// --------------
-
-  _SCV_EXT_RW_FC_BASE_I(sc_string,sc_string);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,bool);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,char);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,unsigned char);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,short);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,unsigned short);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,int);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,unsigned int);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,long);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,unsigned long);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,long long);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,unsigned long long);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,float);
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(sc_string,sc_string,double);
-  void _scv_extension_rw_sc_string::assign(const string& s) {
-    *(this->_get_instance()) = s.c_str();
-    this->trigger_value_change_cb();
-  }
-  void _scv_extension_rw_sc_string::assign(const sc_string& s) {
-    *(this->_get_instance()) = s;
-    this->trigger_value_change_cb();
-  }
-  void _scv_extension_rw_sc_string::assign(const char * s) {
-    *(this->_get_instance()) = s;
-    this->trigger_value_change_cb();
-  }
-  bool _scv_extension_rw_sc_string::get_bool() const {
-    return *(this->_get_instance()) != "";
-  }
-  long long _scv_extension_rw_sc_string::get_integer() const {
-    _SCV_RW_ERROR(get_integer,integer,sc_string); return 0;
-  }
-  unsigned long long _scv_extension_rw_sc_string::get_unsigned() const {
-    _SCV_RW_ERROR(get_unsigned,unsigned,sc_string); return 0;
-  }
-  double _scv_extension_rw_sc_string::get_double() const {
-    _SCV_RW_ERROR(get_double,double,sc_string); return 0;
-  }
-  sc_string _scv_extension_rw_sc_string::get_string() const {
-    return *this->_get_instance();
-  }
-  void _scv_extension_rw_sc_string::assign(const sc_bv_base& v) {
-    _SCV_RW_ERROR(assign,sc_bv_base,sc_string);
-  }
-  void _scv_extension_rw_sc_string::get_value(sc_bv_base& v) const {
-    _SCV_RW_ERROR(get_value,sc_bv_base,sc_string);
-  }
-  void _scv_extension_rw_sc_string::assign(const sc_lv_base& v) {
-    _SCV_RW_ERROR(assign,sc_lv_base,sc_string);
-  }
-  void _scv_extension_rw_sc_string::get_value(sc_lv_base& v) const {
-    _SCV_RW_ERROR(get_value,sc_lv_base,sc_string);
-  }
-
 
 // --------------
 // sc_bit and sc_logic (begin)
@@ -979,7 +912,6 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const sc_string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const { \
     return this->_get_instance()->to_bool(); \
@@ -1000,9 +932,9 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
 
   _SCV_EXT_RW_FC_BASE_I(sc_bit,sc_bit);
   _SCV_EXT_RW_FC_ASSIGNS_I(sc_bit,sc_bit);
-  sc_string _scv_extension_rw_sc_bit::get_string() const {
-    if (get_integer()) return sc_string("1");
-    else return sc_string("0");
+  std::string _scv_extension_rw_sc_bit::get_string() const {
+    if (get_integer()) return std::string("1");
+    else return std::string("0");
   }
   void _scv_extension_rw_sc_bit::assign(const sc_bv_base& v) {
     if (v.length() != 1)
@@ -1034,8 +966,10 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
 
   _SCV_EXT_RW_FC_BASE_I(sc_logic,sc_logic);
   _SCV_EXT_RW_FC_ASSIGNS_I(sc_logic,sc_logic);
-  sc_string _scv_extension_rw_sc_logic::get_string() const {
-    return sc_string(this->_get_instance()->to_char());
+  std::string _scv_extension_rw_sc_logic::get_string() const {
+	char str_val[2];
+	sprintf(str_val,"%c", this->_get_instance()->to_char());
+    return std::string(str_val);
   }
   void _scv_extension_rw_sc_logic::assign(const sc_bv_base& v) {
     _SCV_RW_ERROR(assign,sc_bv_base,sc_logic);
@@ -1106,7 +1040,6 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const sc_string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const \
     { return *(this->_get_instance()) != 0; } \
@@ -1116,8 +1049,8 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
     { return this->_get_instance()->to_uint64(); } \
   double _scv_extension_rw_ ## type_id::get_double() const \
     { return this->_get_instance()->to_double(); } \
-  sc_string _scv_extension_rw_ ## type_id::get_string() const \
-    { assert(0); return sc_string(""); } \
+  std::string _scv_extension_rw_ ## type_id::get_string() const \
+    { assert(0); return std::string(""); } \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const sc_bv_base&); \
   _SCV_EXT_RW_FC_GET_VALUE_D_I(type_name,type_id,sc_bv_base); \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const sc_lv_base&); \
@@ -1139,7 +1072,6 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const sc_string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const \
     { return *(this->_get_instance()) != 0; } \
@@ -1149,8 +1081,8 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
     { _SCV_RW_ERROR(get_unsigned,unsigned,type_name); return 0; } \
   double _scv_extension_rw_ ## type_id::get_double() const \
     { _SCV_RW_ERROR(get_double,double,type_name); return 0; } \
-  sc_string _scv_extension_rw_ ## type_id::get_string() const \
-    { assert(0); return sc_string(""); } \
+  std::string _scv_extension_rw_ ## type_id::get_string() const \
+    { assert(0); return std::string(""); } \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const sc_bv_base&); \
   _SCV_EXT_RW_FC_GET_VALUE_D_I(type_name,type_id,sc_bv_base); \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const sc_lv_base&); \
@@ -1453,7 +1385,6 @@ _SCV_EXT_RAND_FC_I(string,string);
 
 
 #ifdef SYSTEMC_H
-_SCV_EXT_RAND_FC_I(sc_string,sc_string);
 _SCV_EXT_RAND_FC_1_I(sc_bit,sc_bit);
 _SCV_EXT_RAND_FC_1_I(sc_logic,sc_logic);
 _SCV_EXT_RAND_FC_D_I(sc_signed,sc_signed);
@@ -1513,7 +1444,6 @@ _SCV_EXT_CALLBACKS_FC_I(string,string);
 
 
 #ifdef SYSTEMC_H
-_SCV_EXT_CALLBACKS_FC_I(sc_string,sc_string);
 _SCV_EXT_CALLBACKS_FC_1_I(sc_bit,sc_bit);
 _SCV_EXT_CALLBACKS_FC_1_I(sc_logic,sc_logic);
 _SCV_EXT_CALLBACKS_FC_D_I(sc_signed,sc_signed);

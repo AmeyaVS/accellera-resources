@@ -49,6 +49,10 @@ class Cudd;
 class BDDvector;
 class ADDvector;
 class ZDDvector;
+class ABDD;
+class ADD;
+class BDD;
+class ZDD;
 
 extern "C" {
 typedef void (*PFC)(char *);	// error function type

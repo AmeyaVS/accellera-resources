@@ -78,14 +78,13 @@
   virtual void assign(float) { assert(0); }		       \
   virtual void assign(double) { assert(0); }		       \
   virtual void assign(const string&) { assert(0); }	       \
-  virtual void assign(const sc_string&) { assert(0); }	       \
   virtual void assign(const char *) { assert(0); }	       \
 							       \
   virtual bool get_bool() const  { assert(0); return false; } \
   virtual long long get_integer() const  { assert(0); return 0; }	   \
   virtual unsigned long long get_unsigned() const { assert(0); return 0; } \
   virtual double get_double() const { assert(0); return 0; }		   \
-  virtual sc_string get_string() const { assert(0); return sc_string(""); } \
+  virtual std::string get_string() const { assert(0); return std::string(""); } \
 							       \
   _SCV_DEFAULT_RW_SYSC					       \
 
@@ -113,14 +112,13 @@
   virtual void assign(float); \
   virtual void assign(double); \
   virtual void assign(const string&); \
-  virtual void assign(const sc_string&); \
   virtual void assign(const char *); \
   \
   virtual bool get_bool() const; \
   virtual long long get_integer() const; \
   virtual unsigned long long get_unsigned() const; \
   virtual double get_double() const; \
-  virtual sc_string get_string() const; \
+  virtual std::string get_string() const; \
   \
   _SCV_INTROSPECTION_RW_FC_D_SYSC \
 
@@ -242,9 +240,6 @@ template<typename T, int N> void scv_extension_rw<T[N]>::assign(double) {
 template<typename T, int N> void scv_extension_rw<T[N]>::assign(const string&) {
   _SCV_RW_ERROR(assign,string,array);
 }
-template<typename T, int N> void scv_extension_rw<T[N]>::assign(const sc_string&) {
-  _SCV_RW_ERROR(assign,sc_string,array);
-}
 template<typename T, int N> void scv_extension_rw<T[N]>::assign(const char *) {
   _SCV_RW_ERROR(assign,const char *,array);
 }
@@ -261,8 +256,8 @@ template<typename T, int N> unsigned long long scv_extension_rw<T[N]>::get_unsig
 template<typename T, int N> double scv_extension_rw<T[N]>::get_double() const {
   _SCV_RW_ERROR(get_double,double,array); return 0;
 }
-template<typename T, int N> sc_string scv_extension_rw<T[N]>::get_string() const {
-  _SCV_RW_ERROR(get_string,string,array); return sc_string("");
+template<typename T, int N> std::string scv_extension_rw<T[N]>::get_string() const {
+  _SCV_RW_ERROR(get_string,string,array); return std::string("");
 }
 
 #ifdef SYSTEMC_H
@@ -388,14 +383,13 @@ public: \
   virtual void assign(float); \
   virtual void assign(double); \
   virtual void assign(const string&); \
-  virtual void assign(const sc_string&); \
   virtual void assign(const char *); \
   \
   virtual bool get_bool() const; \
   virtual long long get_integer() const; \
   virtual unsigned long long get_unsigned() const; \
   virtual double get_double() const; \
-  virtual sc_string get_string() const; \
+  virtual std::string get_string() const; \
   \
   _SCV_EXT_RW_FC_COMMON_SYSC_D \
   const basic_type& read(); \
@@ -453,12 +447,6 @@ _SCV_EXT_RW_FC_D(string,string)
 // ------------------------------------------------------------
 
 #ifdef SYSTEMC_H
-
-// --------------
-// sc_string
-// --------------
-
-_SCV_EXT_RW_FC_D(sc_string,sc_string)
 
 // --------------
 // sc_bit
@@ -544,10 +532,6 @@ public: \
     *(this->get_instance()) = s.c_str();	 \
     this->trigger_value_change_cb();		 \
   }						 \
-  virtual void assign(const sc_string& s) {	 \
-    *(this->get_instance()) = s.c_str();	 \
-    this->trigger_value_change_cb();		 \
-  }						 \
   virtual void assign(const char *s) {		 \
     *(this->get_instance()) = s;		 \
     this->trigger_value_change_cb();		 \
@@ -567,7 +551,7 @@ public: \
   virtual double get_double() const  {		     \
     return this->_get_instance()->to_double();	     \
   }						     \
-  virtual sc_string get_string() const {	     \
+  virtual std::string get_string() const {	     \
     return this->get_instance()->to_string(); \
   }						     \
 
@@ -612,7 +596,6 @@ public:
   _SCV_EXT_RW_FC_N_BASE(sc_int<N>)
   _SCV_EXT_RW_FC_N_ASSIGNS(sc_int)
   _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_int,const string&)
-  _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_int,const sc_string&)
   _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_int,const char *)
   _SCV_EXT_RW_FC_N_ASSIGNS_GET(sc_int<N>)
   _SCV_EXT_RW_FC_N_ASSIGNS_SYSC(sc_int)
@@ -631,7 +614,6 @@ public:
   _SCV_EXT_RW_FC_N_BASE(sc_uint<N>)
   _SCV_EXT_RW_FC_N_ASSIGNS(sc_uint)
   _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_uint,const string&)
-  _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_uint,const sc_string&)
   _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_uint,const char *)
   _SCV_EXT_RW_FC_N_ASSIGNS_GET(sc_uint<N>)
   _SCV_EXT_RW_FC_N_ASSIGNS_SYSC(sc_uint)
@@ -702,7 +684,7 @@ public:
     tmp = *this->_get_instance();
     return tmp.to_double();
   }
-  virtual sc_string get_string() const {
+  virtual std::string get_string() const {
     return this->get_instance()->to_string();
   }
   _SCV_EXT_RW_FC_N_ASSIGNS_SYSC(sc_bv);
@@ -739,7 +721,7 @@ public:
     tmp = *this->_get_instance();
     return tmp.to_double();
   }
-  virtual sc_string get_string() const {
+  virtual std::string get_string() const {
     return this->get_instance()->to_string();
   }
   _SCV_EXT_RW_FC_N_ASSIGNS_SYSC(sc_lv);

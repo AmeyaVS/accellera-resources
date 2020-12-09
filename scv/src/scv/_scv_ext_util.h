@@ -60,7 +60,7 @@ public:
   // extension "util"
   virtual bool has_valid_extensions() const;
   virtual bool is_dynamic() const;
-  virtual sc_string get_short_name() const;
+  virtual std::string get_short_name() const;
   virtual void set_name(const char * s);
   virtual void _set_name(const string& s);
 

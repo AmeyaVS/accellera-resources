@@ -173,6 +173,8 @@ static string& severity_string(scv_severity severity)
 }
 
 
+#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
+
 static scv_report *_update_report_cache(scv_report *newp, bool replace)
 {
   typedef map<sc_process_b*,scv_report*> map_t;
@@ -188,6 +190,27 @@ static scv_report *_update_report_cache(scv_report *newp, bool replace)
   }
   return curr;
 }
+
+#else  //SystemC 2.2
+
+static scv_report *_update_report_cache(scv_report *newp, bool replace)
+{
+  typedef map<sc_process_b*,scv_report*> map_t;
+  static map_t _map;
+
+  sc_process_b* key = sc_core::sc_get_current_process_b();
+  map_t::const_iterator _iter = _map.find(key);
+  scv_report *curr = ( _iter == _map.end() ) ? 0 : _iter->second;
+
+  if ( replace ) {
+    if ( curr ) delete curr;
+    _map[key] = curr = newp;
+  }
+  return curr;
+}
+
+
+#endif //!( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
 
 
 //
@@ -260,8 +283,8 @@ scv_report::operator const char *() const
   sprintf(
     buf,
     "severity: %s msg_type: %s time: %s process: %s file: %s line: %d msg: %s",
-    severity_string(_severity).c_str(), _msg_type.c_str(), 
-    (const char*)_time.to_string(), _process_name.c_str(), _file_name.c_str(), 
+    severity_string(_severity).c_str(), _msg_type.c_str(),
+    _time.to_string().c_str(), _process_name.c_str(), _file_name.c_str(),
     _line_number, _msg.c_str()
   );
   return buf;
@@ -428,7 +451,7 @@ const char *scv_report_handler::get_log_file_name()
 { return _scv_log_file_name; }
 
 void scv_report_handler::set_log_file_name(const char *name)
-{ 
+{
   assert(name);
   if ( _scv_log_file_stream ) return;
   if ( _scv_log_file_name ) delete [] _scv_log_file_name;
@@ -491,7 +514,7 @@ void scv_report_handler::default_handler(
     if ( _scv_log_file_stream ) {
       *_scv_log_file_stream << endl
         << "*** " << label << ": " << msg_type
-        << " at time " << time << " in process " << process << endl 
+        << " at time " << time << " in process " << process << endl
         << "    " << msg << endl;
     }
   }
@@ -499,7 +522,7 @@ void scv_report_handler::default_handler(
   if ( actions & SCV_DISPLAY ) {
     scv_out << endl
             << "*** " << label << ": " << msg_type
-            << " at time " << time << " in process " << process << endl 
+            << " at time " << time << " in process " << process << endl
             << "    " << msg << endl;
   }
 
@@ -521,7 +544,7 @@ void scv_report_handler::default_handler(
   if ( stop_flag ) {
     scv_out << endl
             << "*** " << severity_string(SCV_FATAL) << ": " << "SCV_MESSAGE_LIMIT"
-            << " at time " << time << " in process " << process << endl 
+            << " at time " << time << " in process " << process << endl
             << "    You have reached the " << label << " message limit of "
             << limit << "." << endl
             << "    Simulation is now ending." << endl;
@@ -565,7 +588,11 @@ void scv_report_handler::report(
   actions |= hold;
 
   sc_time time = sc_time_stamp();
+#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
   const char *process = scv_get_process_name( sc_get_curr_process_handle() );
+#else
+  const char *process = scv_get_process_name( sc_get_current_process_handle() );
+#endif
 
   scv_report report(
     severity, msg_type, msg,

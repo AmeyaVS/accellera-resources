@@ -43,8 +43,8 @@
 #include "scv/scv_random.h"
 #include "scv/scv_report.h"
 
-#include <stdio.h>  
-#include <stdlib.h> 
+#include <stdio.h>
+#include <stdlib.h>
 
 
 #ifdef _MSC_VER
@@ -67,9 +67,9 @@ public:
     _scv_message::message(_scv_message::RANDOM_NULL_ALGORITHM,algorithm_name.c_str());
   }
 
-  static void out_of_order_seed(const string instance_name_p, 
-    const string fileNameP) 
-  { 
+  static void out_of_order_seed(const string instance_name_p,
+    const string fileNameP)
+  {
     if (instance_name_p =="") {
       _scv_message::message(_scv_message::RANDOM_OUT_OF_ORDER_SEED,
         "<anonymous>",fileNameP.c_str());
@@ -78,8 +78,8 @@ public:
         instance_name_p.c_str(),fileNameP.c_str());
     }
   }
-  static void cannot_match_seed(const string instance_name, 
-    const string fileName) 
+  static void cannot_match_seed(const string instance_name,
+    const string fileName)
   {
     if (instance_name == "") {
       _scv_message::message(_scv_message::RANDOM_CANNOT_MATCH_SEED,
@@ -89,8 +89,8 @@ public:
         instance_name.c_str(),fileName.c_str());
     }
   }
-  static void retrieving_with_same_name(const string instance_name, 
-    const string fileName) 
+  static void retrieving_with_same_name(const string instance_name,
+    const string fileName)
   {
     if (instance_name == "") {
       _scv_message::message(_scv_message::RANDOM_RETRIEVING_SEED_WITH_SAME_NAME,
@@ -100,8 +100,8 @@ public:
 			       instance_name.c_str(), fileName.c_str());
     }
   }
-  static void storing_with_same_name(const string instance_name, 
-    const string fileName) 
+  static void storing_with_same_name(const string instance_name,
+    const string fileName)
   {
     if (instance_name == "") {
       _scv_message::message(_scv_message::RANDOM_STORING_SEED_WITH_SAME_NAME,
@@ -111,7 +111,7 @@ public:
 			       instance_name.c_str(), fileName.c_str());
     }
   }
-  static void seed_monitor_not_off(const string fileName) 
+  static void seed_monitor_not_off(const string fileName)
   {
     _scv_message::message(_scv_message::RANDOM_SEED_MONITOR_NOT_OFF,
 			     fileName.c_str());
@@ -128,8 +128,8 @@ public:
 
 /////////////////////////////////////////////////////////////////////
 // Class : _scv_random_impl
-//   - class encapsulating implementation details of scv_random 
-//   - 
+//   - class encapsulating implementation details of scv_random
+//   -
 /////////////////////////////////////////////////////////////////////
 
 #ifdef OLD_SEED_GENERATION_SEMANTICS
@@ -137,17 +137,17 @@ static scv_random * s_seed_generator = NULL;
 #endif
 
 static bool s_retrieve = false;
-static void retrieve_seed(const string & name, unsigned long long * seed); 
+static void retrieve_seed(const string & name, unsigned long long * seed);
 static unsigned long long _scv_generate_seed(const string& name);
 static void _scv_update_current_thread_info(const string& name);
-static inline unsigned int _scv_jrand48(unsigned short next[3]); 
+static inline unsigned int _scv_jrand48(unsigned short next[3]);
 
 static string s_current_thread_name;
 static char s_current_inst_num[64];
 static int s_inst_num;
 
 static string _scv_get_unique_name(const string & name);
-static string _scv_extract_name(const char * str); 
+static string _scv_extract_name(const char * str);
 
 
 class _scv_random_impl {
@@ -168,7 +168,7 @@ public:
        scv_random::value_generation_algorithm alg_type) :
          _alg_type(alg_type) {
 
-    // generate a seed regardless of whether a seed is 
+    // generate a seed regardless of whether a seed is
     // to be retrieved or not,
     // for better predictability even when there is problem
     // in the seed file.
@@ -229,12 +229,12 @@ public:
 
   unsigned int testNext() {
     if (_algorithm) {
-      unsigned long long tmp = u._next; 
+      unsigned long long tmp = u._next;
       return _algorithm(tmp);
     } else if (_alg_type == scv_random::RAND48) {
       unsigned short tmp[3];
-      tmp[0] = u._next48[0]; 
-      tmp[1] = u._next48[1]; 
+      tmp[0] = u._next48[0];
+      tmp[1] = u._next48[1];
       tmp[2] = u._next48[2];
       return _scv_jrand48(tmp);
     } else if (_alg_type == scv_random::RAND) {
@@ -260,11 +260,11 @@ int _scv_random_impl::debug = scv_debug::INITIAL_DEBUG_LEVEL;
 // Class: scv_random
 //   - Implementation of scv_random interface
 //   - Generate multiple independent unsigned random streams
-//   - seed management for maintaining reproducibility 
+//   - seed management for maintaining reproducibility
 //     across various simulation runs and even kernel
-//     implementations. Thread ordering is one of the 
-//   - Explicit seed management with storage and retrieval 
-//     from seed registry 
+//     implementations. Thread ordering is one of the
+//   - Explicit seed management with storage and retrieval
+//     from seed registry
 ///////////////////////////////////////////////////////////////
 
 unsigned long long scv_random::global_seed = 1;
@@ -283,12 +283,12 @@ static void _scv_set_algorithm(scv_random::value_generation_algorithm alg,
   scv_random::alg_func custom_alg, scv_random::alg_func * scv_be_set,
   const string & algorithm_name) ;
 
-void scv_random::set_global_seed(unsigned long long seed) 
+void scv_random::set_global_seed(unsigned long long seed)
 {
 #ifdef OLD_SEED_GENERATION_SEMANTICS
   if (s_seed_generator) {
     delete s_seed_generator;
-    s_seed_generator = NULL;   
+    s_seed_generator = NULL;
   }
   if (seed==0) seed = _scv_default_global_init_seed();
 #endif
@@ -318,11 +318,11 @@ void scv_random::set_default_algorithm(value_generation_algorithm alg,
 
 static list<scv_random *>& s_list_of_generators();
 
-void scv_random::get_generators(list<scv_random *>& genList) 
+void scv_random::get_generators(list<scv_random *>& genList)
 {
   list<scv_random*>::iterator iter;
   for (iter = s_list_of_generators().begin();
-     !(iter == s_list_of_generators().end()); 
+     !(iter == s_list_of_generators().end());
        iter++ ) {
     genList.push_back(*iter);
   }
@@ -356,7 +356,7 @@ scv_random::scv_random(const char* name, unsigned long long seed)
   _name = _scv_get_unique_name(_name);
   addSelf(this);
 }
-  
+
 scv_random::scv_random(const scv_random& other,
 		     const char* name, unsigned long long seed)
   : _scv_data_structure(_scv_extract_name(name).c_str()),
@@ -366,50 +366,50 @@ scv_random::scv_random(const scv_random& other,
   addSelf(this);
 }
 
-scv_random::~scv_random() 
-{ 
+scv_random::~scv_random()
+{
   s_list_of_generators().remove(this);
   delete _coreP;
 }
 
 //---------------------------------------------
 // random value generation and configuration of
-// independent random streams 
+// independent random streams
 //---------------------------------------------
-unsigned int scv_random::next() 
+unsigned int scv_random::next()
 {
   return _coreP->next();
 }
 
 void scv_random::set_algorithm(value_generation_algorithm m,
-			 alg_func algorithm) 
+			 alg_func algorithm)
 {
   _coreP->_alg_type = m;
   ::_scv_set_algorithm(m,algorithm,&_coreP->_algorithm,get_name());
 }
 
-unsigned long long scv_random::get_initial_seed() const 
-{ 
-  return _coreP->_seed; 
+unsigned long long scv_random::get_initial_seed() const
+{
+  return _coreP->_seed;
 }
 
-unsigned long long scv_random::get_current_seed() const 
-{ 
+unsigned long long scv_random::get_current_seed() const
+{
   if (_coreP->_algorithm) {
     return _coreP->u._next;
   } else if (_coreP->_alg_type == scv_random::RAND48) {
     unsigned long long seed = 0;
     unsigned long long tmp = 0;
-  
-    tmp = _coreP->u._next48[2]; 
+
+    tmp = _coreP->u._next48[2];
     seed = tmp << 32;
-  
+
     tmp = _coreP->u._next48[1];
     seed = seed | tmp << 16;
-  
+
     tmp = _coreP->u._next48[0];
     seed = seed | tmp;
-  
+
     return seed;
   } else if (_coreP->_alg_type == scv_random::RAND ||
              _coreP->_alg_type == scv_random::RAND32) {
@@ -422,8 +422,8 @@ unsigned long long scv_random::get_current_seed() const
   return 0;
 }
 
-void scv_random::set_current_seed(unsigned long long seed) 
-{ 
+void scv_random::set_current_seed(unsigned long long seed)
+{
   if (_coreP->_algorithm) {
     _coreP->u._next = seed;
   } else if (_coreP->_alg_type == scv_random::RAND48) {
@@ -446,7 +446,7 @@ void scv_random::set_current_seed(unsigned long long seed)
 // -these methods print the seeds of all current scv_random objects
 //----------------------------------------------------------------------
 
-void scv_random::print_initial_seeds(const char* fileName) 
+void scv_random::print_initial_seeds(const char* fileName)
 {
   if (fileName != NULL) {
     FILE * filePtr = fopen(fileName,"wb");
@@ -469,7 +469,7 @@ void scv_random::print_initial_seeds(const char* fileName)
   }
 }
 
-void scv_random::print_initial_seeds(ostream& os) 
+void scv_random::print_initial_seeds(ostream& os)
 {
   list<scv_random*>::iterator iter;
   for (iter = s_list_of_generators().begin();
@@ -477,7 +477,7 @@ void scv_random::print_initial_seeds(ostream& os)
        ++iter) {
     string s = (*iter)->get_name();
     if (s!="") {
-      os << "\"" << s.c_str() << "\" :: " << 
+      os << "\"" << s.c_str() << "\" :: " <<
         (*iter)->get_initial_seed() << endl;
     } else {
       os << "\"<anonymous>\" :: " << (*iter)->get_initial_seed() << endl;
@@ -485,7 +485,7 @@ void scv_random::print_initial_seeds(ostream& os)
   }
 }
 
-void scv_random::print_current_seeds(const char* fileName) 
+void scv_random::print_current_seeds(const char* fileName)
 {
   if (fileName != NULL) {
     FILE * filePtr = fopen(fileName,"wb");
@@ -500,7 +500,7 @@ void scv_random::print_current_seeds(const char* fileName)
 	fprintf(filePtr,"\"%s\" :: %llu\n",s.c_str(),
           (*iter)->get_current_seed());
       } else {
-	fprintf(filePtr,"\"<anonymous>\" :: %llu\n", 
+	fprintf(filePtr,"\"<anonymous>\" :: %llu\n",
           (*iter)->get_current_seed());
       }
     }
@@ -509,7 +509,7 @@ void scv_random::print_current_seeds(const char* fileName)
   }
 }
 
-void scv_random::print_current_seeds(ostream& os) 
+void scv_random::print_current_seeds(ostream& os)
 {
   list<scv_random*>::iterator iter;
   for (iter = s_list_of_generators().begin();
@@ -517,7 +517,7 @@ void scv_random::print_current_seeds(ostream& os)
        ++iter) {
     string s = (*iter)->get_name();
     if (s!="") {
-      os << "\"" << s.c_str() << "\" :: " << 
+      os << "\"" << s.c_str() << "\" :: " <<
         (*iter)->get_current_seed() << endl;
     } else {
       os << "\"<anonymous>\" :: " << (*iter)->get_current_seed() << endl;
@@ -534,13 +534,13 @@ static bool s_warned_same_name = false;
 static bool s_warned_anonymous = false;
 static bool s_has_anonymous_generator = false;
 
-static string& s_seed_file_name(); 
-static _scv_associative_array<string,list<unsigned long long> >& s_outstanding_seeds(); 
-static _scv_associative_array<string,int>& s_names(); 
+static string& s_seed_file_name();
+static _scv_associative_array<string,list<unsigned long long> >& s_outstanding_seeds();
+static _scv_associative_array<string,int>& s_names();
 static bool readname_and_seed(string& nextName, unsigned long long& next_seed);
 static _scv_associative_array<string, int> unique_name_hash("unique_name_hash", 0);
 
-void scv_random::seed_monitor_on(bool retrieve, const char* fileName) 
+void scv_random::seed_monitor_on(bool retrieve, const char* fileName)
 {
   if (s_store || s_retrieve) {
     scv_random_error::seed_monitor_not_off(s_seed_file_name());
@@ -549,14 +549,14 @@ void scv_random::seed_monitor_on(bool retrieve, const char* fileName)
   if (fileName != NULL) {
     s_exclusive_seed_file = true;
     if (retrieve) {
-      s_store = false; 
+      s_store = false;
       s_retrieve = true;
       s_seed_file_name() = fileName;
       s_seed_file_ptr = fopen(fileName,"r");
 #ifdef OLD_SEED_GENERATION_SEMANTICS
       if (s_seed_generator) {
         delete s_seed_generator;
-        s_seed_generator = NULL;   
+        s_seed_generator = NULL;
       }
 #endif
     } else {
@@ -573,8 +573,8 @@ void scv_random::seed_monitor_on(bool retrieve, const char* fileName)
   }
 }
 
-void scv_random::seed_monitor_on(bool retrieve, const char* sectionName, 
-  FILE * file) 
+void scv_random::seed_monitor_on(bool retrieve, const char* sectionName,
+  FILE * file)
 {
   if (s_store || s_retrieve) {
     scv_random_error::seed_monitor_not_off(s_seed_file_name());
@@ -585,7 +585,7 @@ void scv_random::seed_monitor_on(bool retrieve, const char* sectionName,
     s_seed_file_name() = sectionName?sectionName:"";
     s_seed_file_ptr = file;
     if (retrieve) {
-      s_store = false; 
+      s_store = false;
       s_retrieve = true;
     } else {
       s_store = true;
@@ -594,13 +594,13 @@ void scv_random::seed_monitor_on(bool retrieve, const char* sectionName,
 #ifdef OLD_SEED_GENERATION_SEMANTICS
     if (s_seed_generator) {
       delete s_seed_generator;
-      s_seed_generator = NULL;   
+      s_seed_generator = NULL;
     }
 #endif
   }
 }
 
-void scv_random::seed_monitor_off() 
+void scv_random::seed_monitor_off()
 {
   if (s_store || s_retrieve) {
     s_names().clear();
@@ -661,7 +661,7 @@ void scv_random::print(ostream& o, int details, int indent) const {
     default:
       break;
   }
-  o << "\talgorithm: " << algorithm << endl; 
+  o << "\talgorithm: " << algorithm << endl;
   o << "\tseed: " << _coreP->_seed << endl;
   o << "\tnext: " << get_current_seed() << endl;
   o << "\tnext value: " << _coreP->testNext() << endl;
@@ -690,9 +690,11 @@ void scv_random::show(int details, int indent) const {
 //   * _scv_jrand48
 /////////////////////////////////////////////////////////////////
 
+#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
+
 extern const char *scv_get_process_name(sc_process_b*) ;
 
-static void _scv_update_current_thread_info(const string& name)  
+static void _scv_update_current_thread_info(const string& name)
 {
   sc_process_b * handle = sc_get_curr_process_handle();
   if (handle) {
@@ -710,11 +712,36 @@ static void _scv_update_current_thread_info(const string& name)
   unique_name_hash.insert(thread_based_name, (s_inst_num+1));
 }
 
+#else
+//SystemC 2.2
+extern const char *scv_get_process_name(sc_process_handle) ;
+
+static void _scv_update_current_thread_info(const string& name)
+{
+  sc_process_handle handle = sc_get_current_process_handle();
+  if (handle.valid() ) {
+	  s_current_thread_name = handle.name();
+  } else {
+    s_current_thread_name = "scv_main_thread";
+  }
+  string thread_based_name = s_current_thread_name + name;
+  s_inst_num = unique_name_hash.getValue(thread_based_name);
+  if (s_inst_num == 0) {
+    sprintf(s_current_inst_num, "<noappend>");
+  } else {
+    sprintf(s_current_inst_num, "%d", s_inst_num);
+  }
+  unique_name_hash.insert(thread_based_name, (s_inst_num+1));
+}
+
+#endif // !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
+
+
 static unsigned long long _scv_generate_seed(const string& name)
 {
 #ifdef OLD_SEED_GENERATION_SEMANTICS
   return s_seed_generator->next();
-#else 
+#else
   string thread_based_name = s_current_thread_name + name;
   return _scv_get_seed_from_name(thread_based_name.c_str(), s_inst_num);
 #endif
@@ -764,13 +791,13 @@ static list<scv_random *> *_list_of_generators = NULL;
 static list<scv_random *>& s_list_of_generators() {
   if (!_list_of_generators) {
     _list_of_generators = new list<scv_random*>;
-  } 
+  }
   return *(_list_of_generators);
 }
 
 static bool readname_and_seed(string& nextName, unsigned long long & next_seed) {
   char nextChar;
-  string name; 
+  string name;
   name.reserve(60);
 
   if (s_exclusive_seed_file) {
@@ -791,7 +818,7 @@ static bool readname_and_seed(string& nextName, unsigned long long & next_seed) 
 	if (nextChar == EOF) return false;
 	if (nextChar != '>') name = name.append(1,nextChar);
       } while (nextChar != '>');
-      if (name == s_seed_file_name())  
+      if (name == s_seed_file_name())
 	done = true;
       else
 	name = "";
@@ -834,7 +861,7 @@ static void retrieve_seed(const string & name, unsigned long long * seed) {
     bool done = false;
 
     while (!done && readname_and_seed(nextName,next_seed)) {
-      if (nextName == s || 
+      if (nextName == s ||
 	  (nextName == string("<anonymous>") && s == string("")) ) {
 	*seed = next_seed;
 	done = true;
@@ -852,7 +879,7 @@ static void retrieve_seed(const string & name, unsigned long long * seed) {
       scv_random_error::cannot_match_seed(s, s_seed_file_name());
       fclose(s_seed_file_ptr);
       s_seed_file_ptr = NULL;
-    } 
+    }
   } else {
       scv_random_error::cannot_match_seed(s, s_seed_file_name());
   }
@@ -907,7 +934,7 @@ static string _scv_get_unique_name(const string & name) {
 #ifndef DONT_UNIQUIFY_NAMES
   string hier_object_name;
   if (!strcmp(s_current_inst_num,"<noappend>")) {
-    hier_object_name = s_current_thread_name + "." + name; 
+    hier_object_name = s_current_thread_name + "." + name;
   } else {
     hier_object_name = s_current_thread_name + "." + name +
         "_" + s_current_inst_num;
@@ -928,8 +955,8 @@ static string _scv_extract_name(const char * str) {
 // Static methods for implementation of the jrand48 for LINUX
 //   - jrand48 on RH 7.0 is incompatible with RH 7.1 or other platforms
 //   - Following implementation is from RH7.1 jrand48 and is compatible
-//     with other platforms. 
-//   - This is important to obtain reproducible random streams across 
+//     with other platforms.
+//   - This is important to obtain reproducible random streams across
 //     various different platforms
 //////////////////////////////////////////////////////////////////////
 
@@ -946,7 +973,7 @@ struct _scv_linux_drand48_data
 
 static struct _scv_linux_drand48_data drand48_data_glbl;
 
-static int _scv_linux_drand48_iterate(unsigned short int xsubi[3], 
+static int _scv_linux_drand48_iterate(unsigned short int xsubi[3],
   struct _scv_linux_drand48_data *buffer)
 {
   unsigned long long X;

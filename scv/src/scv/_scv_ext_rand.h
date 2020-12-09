@@ -797,7 +797,6 @@ _SCV_EXT_RAND_FC_N_D(test_uint<N>);
 
 
 #ifdef SYSTEMC_H
-_SCV_EXT_RAND_FC_D(sc_string,sc_string);		
 _SCV_EXT_RAND_FC_1_D(sc_bit,sc_bit);		
 _SCV_EXT_RAND_FC_1_D(sc_logic,sc_logic);		
 _SCV_EXT_RAND_FC_N_D(sc_int<N>);		

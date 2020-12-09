@@ -330,7 +330,6 @@ _SCV_EXT_TYPE_N_FC_D(test_uint<N>,UNSIGNED);
 #endif
 
 #ifdef SYSTEMC_H
-_SCV_EXT_TYPE_FC_D(sc_string,sc_string);
 _SCV_EXT_TYPE_N_FC_D(sc_int<N>,INTEGER);
 _SCV_EXT_TYPE_N_FC_D(sc_bigint<N>,INTEGER);
 _SCV_EXT_TYPE_N_FC_D(sc_uint<N>,UNSIGNED);

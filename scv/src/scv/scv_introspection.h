@@ -175,7 +175,7 @@ public:
   //
   virtual bool has_valid_extensions() const = 0;
   virtual bool is_dynamic() const = 0;
-  virtual sc_string get_short_name() const = 0;
+  virtual std::string get_short_name() const = 0;
   virtual void set_name(const char *) = 0; // error if performed on fields/array-elts 
 };
 
@@ -202,7 +202,7 @@ public:
     RECORD,                        // struct/class
     POINTER,                       // T*
     ARRAY,                         // T[N]
-    STRING                         // string, sc_string
+    STRING                         // string, std::string
   };
   virtual data_type get_type() const = 0;
 
@@ -269,14 +269,13 @@ public:
   virtual void assign(float) = 0;
   virtual void assign(double) = 0;
   virtual void assign(const string&) = 0;
-  virtual void assign(const sc_string&) = 0;
   virtual void assign(const char *) = 0;
 
   virtual bool get_bool() const = 0;
   virtual long long get_integer() const = 0;
   virtual unsigned long long get_unsigned() const = 0;
   virtual double get_double() const = 0;
-  virtual sc_string get_string() const = 0;
+  virtual std::string get_string() const = 0;
 
 #ifdef SYSTEMC_H
   virtual void assign(const sc_bv_base& v) = 0;
@@ -662,11 +661,9 @@ public:
 public:
   scv_smart_ptr();
   scv_smart_ptr(const string& name);
-  scv_smart_ptr(const sc_string& name);
   scv_smart_ptr(const char *name);
   scv_smart_ptr(T *data);
   scv_smart_ptr(T *data, const string& name);
-  scv_smart_ptr(T *data, const sc_string& name);
   scv_smart_ptr(T *data, const char *name);
   scv_smart_ptr(const scv_smart_ptr<T>& rhs); 
   scv_smart_ptr(

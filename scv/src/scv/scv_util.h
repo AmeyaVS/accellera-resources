@@ -18,7 +18,7 @@
 
 /*****************************************************************************
 
-  scv_util.h -- 
+  scv_util.h --
   The public interface for various small facilities.
 
   Original Authors (Cadence Design Systems, Inc):
@@ -70,6 +70,7 @@ const string _scv_make_unique_name(const string& name, int id);
 // process name
 //
 
+#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
 
 typedef const char *(_scv_process_name_server_t)(sc_process_b *proc_p);
 extern _scv_process_name_server_t *_scv_process_name_server;
@@ -77,6 +78,17 @@ void _scv_set_process_name_server(_scv_process_name_server_t *);
 const char *_scv_get_process_name(const sc_process_b *proc_p);
 
 const char *scv_get_process_name(sc_process_b *proc_p);
+
+#else //SystemC 2.2
+
+typedef const char *(_scv_process_name_server_t)(sc_process_handle proc_p);
+extern _scv_process_name_server_t *_scv_process_name_server;
+void _scv_set_process_name_server(_scv_process_name_server_t *);
+const char *_scv_get_process_name(const sc_process_handle proc_p);
+
+const char *scv_get_process_name(sc_process_handle proc_p);
+
+#endif // !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
 
 
 //

@@ -42,6 +42,12 @@
 // final definition of the extension classes for builtin C/C++ types
 // ----------------------------------------
 
+#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
+namespace sc_dt {
+	typedef unsigned long sc_digit;  //defined as unsigned int in SystemC 2.2
+};
+#endif
+
 #if !( defined( __HP_aCC ) || defined(__linux__) )
 #define _SCV_OSTREAM(typename) \
  friend ostream& operator<<(ostream& os,                            \
@@ -190,36 +196,14 @@ public:
     *_get_instance() = *(i._get_instance()); trigger_value_change_cb(); return *this; \
   }                                                                 \
   scv_extensions<string>& operator=(const string& s) {
-    *_get_instance() = s; trigger_value_change_cb(); return *this; 
+    *_get_instance() = s; trigger_value_change_cb(); return *this;
   }
   scv_extensions<string>& operator=(const char * s) {
-    *_get_instance() = s; trigger_value_change_cb(); return *this; 
+    *_get_instance() = s; trigger_value_change_cb(); return *this;
   }
-#ifdef SYSTEMC_H
-  //  scv_extensions<string>& operator=(const sc_string& s) {
-  //    *_get_instance() = s; trigger_value_change_cb(); return *this; 
-  //  }
-#endif
   _SCV_OSTREAM(string);
 };
 
-#ifdef SYSTEMC_H
-template<>
-class scv_extensions<sc_string>
-  : public scv_extensions_base<sc_string> {
-public:
-  scv_extensions< sc_string >& operator=(const scv_extensions< sc_string >& i) { \
-    *_get_instance() = *(i._get_instance()); trigger_value_change_cb(); return *this; \
-  }                                                                 \
-  scv_extensions<sc_string>& operator=(const sc_string& s) {
-    *_get_instance() = s; trigger_value_change_cb(); return *this; 
-  }
-  scv_extensions<sc_string>& operator=(const char * s) {
-    *_get_instance() = s; trigger_value_change_cb(); return *this; 
-  }
-  _SCV_OSTREAM(sc_string);
-};
-#endif
 
 #undef _SCV_TAG_FINAL_COMPONENT
 
@@ -397,9 +381,9 @@ public: \
   _SCV_MAP(uint64,to_uint64) \
   _SCV_MAP(double,to_double) \
   _SCV_INT_DEPRECATED(typename) \
-  const sc_string to_string(sc_numrep numrep=SC_DEC) const \
+  const std::string to_string(sc_numrep numrep=SC_DEC) const \
     { this->initialize(); return this->_get_instance()->to_string(numrep); } \
-  const sc_string to_string(sc_numrep numrep, bool w_prefix) const \
+  const std::string to_string(sc_numrep numrep, bool w_prefix) const \
     { this->initialize(); return this->_get_instance()->to_string(numrep,w_prefix); } \
   void scan( istream& is = cin ) \
     { this->_get_instance()->scan(is); this->trigger_value_change_cb(); } \
@@ -420,9 +404,9 @@ public: \
     { this->initialize(); this->_get_instance()->invert(i); this->trigger_value_change_cb(); } \
   void reverse() \
     { this->initialize(); this->_get_instance()->reverse(); this->trigger_value_change_cb(); } \
-  void get_packed_rep(unsigned long *buf) const \
+  void get_packed_rep(sc_dt::sc_digit *buf) const \
     { this->initialize(); this->_get_instance()->get_packed_rep(buf); } \
-  void set_packed_rep(unsigned long *buf) \
+  void set_packed_rep(sc_dt::sc_digit *buf) \
     { this->initialize(); this->_get_instance()->set_packed_rep(buf); this->trigger_value_change_cb(); } \
   _SCV_SIGNED_SELFOPS(+=) \
   _SCV_SIGNED_SELFOPS(-=) \
@@ -531,9 +515,9 @@ public: \
   _SCV_MAP(int64,to_int64) \
   _SCV_MAP(uint64,to_uint64) \
   _SCV_MAP(double,to_double) \
-  const sc_string to_string(sc_numrep numrep=SC_DEC) const \
+  const std::string to_string(sc_numrep numrep=SC_DEC) const \
     { this->initialize(); return this->_get_instance()->to_string(numrep); } \
-  const sc_string to_string(sc_numrep numrep, bool w_prefix) const \
+  const std::string to_string(sc_numrep numrep, bool w_prefix) const \
     { this->initialize(); return this->_get_instance()->to_string(numrep,w_prefix); } \
   void scan( istream& is = cin ) \
     { this->_get_instance()->scan(is); this->trigger_value_change_cb(); } \
@@ -607,7 +591,7 @@ _SCV_TAG_FINAL_COMPONENT(sc_bv_base)
 #undef _SCV_TAG_FINAL_COMPONENT
 
 
-// sc_uint and sc_int are exactly the same as 
+// sc_uint and sc_int are exactly the same as
 template<int W>
 class scv_extensions< sc_uint<W> >
   : public scv_extensions_base< sc_uint<W> > {
@@ -641,12 +625,12 @@ public:
   return_type& operator = ( const sc_fxnum_fast&        v) _SCV_IMPL
 #endif
   return_type& operator = ( const sc_bv_base&           v) _SCV_IMPL
-  return_type& operator = ( const sc_lv_base&           v) _SCV_IMPL 
+  return_type& operator = ( const sc_lv_base&           v) _SCV_IMPL
 #ifndef _SCV_INTROSPECTION_ONLY
   return_type& operator += (uint_type v) _SCV_IMPL2(+=)
   return_type& operator -= (uint_type v) _SCV_IMPL2(-=)
   return_type& operator *= (uint_type v) _SCV_IMPL2(*=)
-  return_type& operator /= (uint_type v) _SCV_IMPL2(/=) 
+  return_type& operator /= (uint_type v) _SCV_IMPL2(/=)
   return_type& operator %= (uint_type v) _SCV_IMPL2(%=)
   return_type& operator &= (uint_type v) _SCV_IMPL2(&=)
   return_type& operator |= (uint_type v) _SCV_IMPL2(|=)
@@ -661,7 +645,7 @@ public:
   { this->initialize(); sc_uint<W> tmp = *this->_get_instance()++; this->trigger_value_change_cb(); return tmp; }
   return_type& operator -- () // prefix
   { this->initialize(); --*this->_get_instance(); this->trigger_value_change_cb(); return *this; }
-  const return_type operator -- (int) // postfix 
+  const return_type operator -- (int) // postfix
   { this->initialize(); sc_uint<W> tmp = *this->_get_instance()--; this->trigger_value_change_cb(); return tmp; }
 
   // from class sc_uint_base
@@ -684,7 +668,7 @@ public:
   void set(int i, bool v) { this->initialize(); this->_get_instance()->set(i,v); this->trigger_value_change_cb(); }
   // sc_uint_bitref operator [] (int i)
   bool operator [] (int i) const { this->initialize(); return this->_get_instance()->operator [](i); }
-  //  sc_uint_subref range(int left, int right); 
+  //  sc_uint_subref range(int left, int right);
 #ifndef _SCV_INTROSPECTION_ONLY
   uint_type range(int left, int right) const { this->initialize(); return this->_get_instance()->range(left,right); }
 #endif
@@ -728,12 +712,12 @@ public:
   return_type& operator = ( const sc_fxnum_fast&        v) _SCV_IMPL
 #endif
   return_type& operator = ( const sc_bv_base&           v) _SCV_IMPL
-  return_type& operator = ( const sc_lv_base&           v) _SCV_IMPL 
+  return_type& operator = ( const sc_lv_base&           v) _SCV_IMPL
 #ifndef _SCV_INTROSPECTION_ONLY
   return_type& operator += (int_type v) _SCV_IMPL2(+=)
   return_type& operator -= (int_type v) _SCV_IMPL2(-=)
   return_type& operator *= (int_type v) _SCV_IMPL2(*=)
-  return_type& operator /= (int_type v) _SCV_IMPL2(/=) 
+  return_type& operator /= (int_type v) _SCV_IMPL2(/=)
   return_type& operator %= (int_type v) _SCV_IMPL2(%=)
   return_type& operator &= (int_type v) _SCV_IMPL2(&=)
   return_type& operator |= (int_type v) _SCV_IMPL2(|=)
@@ -741,14 +725,14 @@ public:
   return_type& operator <<= (int_type v) _SCV_IMPL2(<<=)
   return_type& operator >>= (int_type v) _SCV_IMPL2(>>=)
 #endif
-  
+
   return_type& operator ++ () // prefix
   { this->initialize(); ++*this->_get_instance(); this->trigger_value_change_cb(); return *this; }
   const return_type operator ++ (int) // postfix
   { this->initialize(); sc_int<W> tmp = *this->_get_instance()++; this->trigger_value_change_cb(); return tmp; }
   return_type& operator -- () // prefix
   { this->initialize(); --*this->_get_instance(); this->trigger_value_change_cb(); return *this; }
-  const return_type operator -- (int) // postfix 
+  const return_type operator -- (int) // postfix
   { this->initialize(); sc_int<W> tmp = *this->_get_instance()--; this->trigger_value_change_cb(); return tmp; }
 
   // from class sc_int_base
@@ -771,7 +755,7 @@ public:
   void set(int i, bool v) { this->initialize(); this->_get_instance()->set(i,v); this->trigger_value_change_cb(); }
   // sc_int_bitref operator [] (int i)
   bool operator [] (int i) const { this->initialize(); return this->_get_instance()->operator [](i); }
-  //  sc_int_subref range(int left, int right); 
+  //  sc_int_subref range(int left, int right);
 #ifndef _SCV_INTROSPECTION_ONLY
   int_type range(int left, int right) const { this->initialize(); return this->_get_instance()->range(left,right); }
 #endif
@@ -802,13 +786,13 @@ public:
 #ifndef _SCV_INTROSPECTION_ONLY
   return_type& operator=(const sc_signed_subref&   v) _SCV_IMPL
 #endif
-  return_type& operator=(const char*               v) _SCV_IMPL 
+  return_type& operator=(const char*               v) _SCV_IMPL
   return_type& operator=(int64                     v) _SCV_IMPL
   return_type& operator=(uint64                    v) _SCV_IMPL
   return_type& operator=(long                      v) _SCV_IMPL
   return_type& operator=(unsigned long             v) _SCV_IMPL
-  return_type& operator=(int                       v) _SCV_IMPL 
-  return_type& operator=(unsigned int              v) _SCV_IMPL 
+  return_type& operator=(int                       v) _SCV_IMPL
+  return_type& operator=(unsigned int              v) _SCV_IMPL
   return_type& operator=(double                    v) _SCV_IMPL
   return_type& operator=( const sc_bv_base&        v) _SCV_IMPL
   return_type& operator=( const sc_lv_base&        v) _SCV_IMPL
@@ -820,113 +804,113 @@ public:
   return_type& operator = ( const sc_fxnum& v ) _SCV_IMPL
   return_type& operator = ( const sc_fxnum_fast& v ) _SCV_IMPL
 #endif
-  return_type& operator += (const sc_signed&    v) _SCV_IMPL2(+=) 
-  return_type& operator += (const sc_unsigned&  v) _SCV_IMPL2(+=) 
-  return_type& operator += (int64               v) _SCV_IMPL2(+=) 
-  return_type& operator += (uint64              v) _SCV_IMPL2(+=) 
-  return_type& operator += (long                v) _SCV_IMPL2(+=) 
-  return_type& operator += (unsigned long       v) _SCV_IMPL2(+=) 
-  return_type& operator += (int                 v) _SCV_IMPL2(+=) 
-  return_type& operator += (unsigned int        v) _SCV_IMPL2(+=) 
+  return_type& operator += (const sc_signed&    v) _SCV_IMPL2(+=)
+  return_type& operator += (const sc_unsigned&  v) _SCV_IMPL2(+=)
+  return_type& operator += (int64               v) _SCV_IMPL2(+=)
+  return_type& operator += (uint64              v) _SCV_IMPL2(+=)
+  return_type& operator += (long                v) _SCV_IMPL2(+=)
+  return_type& operator += (unsigned long       v) _SCV_IMPL2(+=)
+  return_type& operator += (int                 v) _SCV_IMPL2(+=)
+  return_type& operator += (unsigned int        v) _SCV_IMPL2(+=)
   return_type& operator += (const sc_int_base&  v) _SCV_IMPL2(+=)
   return_type& operator += (const sc_uint_base& v) _SCV_IMPL2(+=)
 
-  return_type& operator -= (const sc_signed&    v) _SCV_IMPL2(-=) 
-  return_type& operator -= (const sc_unsigned&  v) _SCV_IMPL2(-=) 
-  return_type& operator -= (int64               v) _SCV_IMPL2(-=) 
-  return_type& operator -= (uint64              v) _SCV_IMPL2(-=) 
-  return_type& operator -= (long                v) _SCV_IMPL2(-=) 
-  return_type& operator -= (unsigned long       v) _SCV_IMPL2(-=) 
-  return_type& operator -= (int                 v) _SCV_IMPL2(-=) 
-  return_type& operator -= (unsigned int        v) _SCV_IMPL2(-=) 
+  return_type& operator -= (const sc_signed&    v) _SCV_IMPL2(-=)
+  return_type& operator -= (const sc_unsigned&  v) _SCV_IMPL2(-=)
+  return_type& operator -= (int64               v) _SCV_IMPL2(-=)
+  return_type& operator -= (uint64              v) _SCV_IMPL2(-=)
+  return_type& operator -= (long                v) _SCV_IMPL2(-=)
+  return_type& operator -= (unsigned long       v) _SCV_IMPL2(-=)
+  return_type& operator -= (int                 v) _SCV_IMPL2(-=)
+  return_type& operator -= (unsigned int        v) _SCV_IMPL2(-=)
   return_type& operator -= (const sc_int_base&  v) _SCV_IMPL2(-=)
   return_type& operator -= (const sc_uint_base& v) _SCV_IMPL2(-=)
 
-  return_type& operator *= (const sc_signed&    v) _SCV_IMPL2(*=) 
-  return_type& operator *= (const sc_unsigned&  v) _SCV_IMPL2(*=) 
-  return_type& operator *= (int64               v) _SCV_IMPL2(*=) 
-  return_type& operator *= (uint64              v) _SCV_IMPL2(*=) 
-  return_type& operator *= (long                v) _SCV_IMPL2(*=) 
-  return_type& operator *= (unsigned long       v) _SCV_IMPL2(*=) 
-  return_type& operator *= (int                 v) _SCV_IMPL2(*=) 
-  return_type& operator *= (unsigned int        v) _SCV_IMPL2(*=) 
+  return_type& operator *= (const sc_signed&    v) _SCV_IMPL2(*=)
+  return_type& operator *= (const sc_unsigned&  v) _SCV_IMPL2(*=)
+  return_type& operator *= (int64               v) _SCV_IMPL2(*=)
+  return_type& operator *= (uint64              v) _SCV_IMPL2(*=)
+  return_type& operator *= (long                v) _SCV_IMPL2(*=)
+  return_type& operator *= (unsigned long       v) _SCV_IMPL2(*=)
+  return_type& operator *= (int                 v) _SCV_IMPL2(*=)
+  return_type& operator *= (unsigned int        v) _SCV_IMPL2(*=)
   return_type& operator *= (const sc_int_base&  v) _SCV_IMPL2(*=)
   return_type& operator *= (const sc_uint_base& v) _SCV_IMPL2(*=)
 
-  return_type& operator /= (const sc_signed&    v) _SCV_IMPL2(/=) 
-  return_type& operator /= (const sc_unsigned&  v) _SCV_IMPL2(/=) 
-  return_type& operator /= (int64               v) _SCV_IMPL2(/=) 
-  return_type& operator /= (uint64              v) _SCV_IMPL2(/=) 
-  return_type& operator /= (long                v) _SCV_IMPL2(/=) 
-  return_type& operator /= (unsigned long       v) _SCV_IMPL2(/=) 
-  return_type& operator /= (int                 v) _SCV_IMPL2(/=) 
-  return_type& operator /= (unsigned int        v) _SCV_IMPL2(/=) 
+  return_type& operator /= (const sc_signed&    v) _SCV_IMPL2(/=)
+  return_type& operator /= (const sc_unsigned&  v) _SCV_IMPL2(/=)
+  return_type& operator /= (int64               v) _SCV_IMPL2(/=)
+  return_type& operator /= (uint64              v) _SCV_IMPL2(/=)
+  return_type& operator /= (long                v) _SCV_IMPL2(/=)
+  return_type& operator /= (unsigned long       v) _SCV_IMPL2(/=)
+  return_type& operator /= (int                 v) _SCV_IMPL2(/=)
+  return_type& operator /= (unsigned int        v) _SCV_IMPL2(/=)
   return_type& operator /= (const sc_int_base&  v) _SCV_IMPL2(/=)
   return_type& operator /= (const sc_uint_base& v) _SCV_IMPL2(/=)
 
-  return_type& operator %= (const sc_signed&    v) _SCV_IMPL2(%=) 
-  return_type& operator %= (const sc_unsigned&  v) _SCV_IMPL2(%=) 
-  return_type& operator %= (int64               v) _SCV_IMPL2(%=) 
-  return_type& operator %= (uint64              v) _SCV_IMPL2(%=) 
-  return_type& operator %= (long                v) _SCV_IMPL2(%=) 
-  return_type& operator %= (unsigned long       v) _SCV_IMPL2(%=) 
-  return_type& operator %= (int                 v) _SCV_IMPL2(%=) 
-  return_type& operator %= (unsigned int        v) _SCV_IMPL2(%=) 
+  return_type& operator %= (const sc_signed&    v) _SCV_IMPL2(%=)
+  return_type& operator %= (const sc_unsigned&  v) _SCV_IMPL2(%=)
+  return_type& operator %= (int64               v) _SCV_IMPL2(%=)
+  return_type& operator %= (uint64              v) _SCV_IMPL2(%=)
+  return_type& operator %= (long                v) _SCV_IMPL2(%=)
+  return_type& operator %= (unsigned long       v) _SCV_IMPL2(%=)
+  return_type& operator %= (int                 v) _SCV_IMPL2(%=)
+  return_type& operator %= (unsigned int        v) _SCV_IMPL2(%=)
   return_type& operator %= (const sc_int_base&  v) _SCV_IMPL2(%=)
   return_type& operator %= (const sc_uint_base& v) _SCV_IMPL2(%=)
 
-  return_type& operator &= (const sc_signed&    v) _SCV_IMPL2(&=) 
-  return_type& operator &= (const sc_unsigned&  v) _SCV_IMPL2(&=) 
-  return_type& operator &= (int64               v) _SCV_IMPL2(&=) 
-  return_type& operator &= (uint64              v) _SCV_IMPL2(&=) 
-  return_type& operator &= (long                v) _SCV_IMPL2(&=) 
-  return_type& operator &= (unsigned long       v) _SCV_IMPL2(&=) 
-  return_type& operator &= (int                 v) _SCV_IMPL2(&=) 
-  return_type& operator &= (unsigned int        v) _SCV_IMPL2(&=) 
+  return_type& operator &= (const sc_signed&    v) _SCV_IMPL2(&=)
+  return_type& operator &= (const sc_unsigned&  v) _SCV_IMPL2(&=)
+  return_type& operator &= (int64               v) _SCV_IMPL2(&=)
+  return_type& operator &= (uint64              v) _SCV_IMPL2(&=)
+  return_type& operator &= (long                v) _SCV_IMPL2(&=)
+  return_type& operator &= (unsigned long       v) _SCV_IMPL2(&=)
+  return_type& operator &= (int                 v) _SCV_IMPL2(&=)
+  return_type& operator &= (unsigned int        v) _SCV_IMPL2(&=)
   return_type& operator &= (const sc_int_base&  v) _SCV_IMPL2(&=)
   return_type& operator &= (const sc_uint_base& v) _SCV_IMPL2(&=)
 
-  return_type& operator |= (const sc_signed&    v) _SCV_IMPL2(|=) 
-  return_type& operator |= (const sc_unsigned&  v) _SCV_IMPL2(|=) 
-  return_type& operator |= (int64               v) _SCV_IMPL2(|=) 
-  return_type& operator |= (uint64              v) _SCV_IMPL2(|=) 
-  return_type& operator |= (long                v) _SCV_IMPL2(|=) 
-  return_type& operator |= (unsigned long       v) _SCV_IMPL2(|=) 
-  return_type& operator |= (int                 v) _SCV_IMPL2(|=) 
-  return_type& operator |= (unsigned int        v) _SCV_IMPL2(|=) 
+  return_type& operator |= (const sc_signed&    v) _SCV_IMPL2(|=)
+  return_type& operator |= (const sc_unsigned&  v) _SCV_IMPL2(|=)
+  return_type& operator |= (int64               v) _SCV_IMPL2(|=)
+  return_type& operator |= (uint64              v) _SCV_IMPL2(|=)
+  return_type& operator |= (long                v) _SCV_IMPL2(|=)
+  return_type& operator |= (unsigned long       v) _SCV_IMPL2(|=)
+  return_type& operator |= (int                 v) _SCV_IMPL2(|=)
+  return_type& operator |= (unsigned int        v) _SCV_IMPL2(|=)
   return_type& operator |= (const sc_int_base&  v) _SCV_IMPL2(|=)
   return_type& operator |= (const sc_uint_base& v) _SCV_IMPL2(|=)
 
-  return_type& operator ^= (const sc_signed&    v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (const sc_unsigned&  v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (int64               v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (uint64              v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (long                v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (unsigned long       v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (int                 v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (unsigned int        v) _SCV_IMPL2(^=) 
+  return_type& operator ^= (const sc_signed&    v) _SCV_IMPL2(^=)
+  return_type& operator ^= (const sc_unsigned&  v) _SCV_IMPL2(^=)
+  return_type& operator ^= (int64               v) _SCV_IMPL2(^=)
+  return_type& operator ^= (uint64              v) _SCV_IMPL2(^=)
+  return_type& operator ^= (long                v) _SCV_IMPL2(^=)
+  return_type& operator ^= (unsigned long       v) _SCV_IMPL2(^=)
+  return_type& operator ^= (int                 v) _SCV_IMPL2(^=)
+  return_type& operator ^= (unsigned int        v) _SCV_IMPL2(^=)
   return_type& operator ^= (const sc_int_base&  v) _SCV_IMPL2(^=)
   return_type& operator ^= (const sc_uint_base& v) _SCV_IMPL2(^=)
 
-  return_type& operator <<= (const sc_signed&    v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (const sc_unsigned&  v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (int64               v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (uint64              v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (long                v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (unsigned long       v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (int                 v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (unsigned int        v) _SCV_IMPL2(<<=) 
+  return_type& operator <<= (const sc_signed&    v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (const sc_unsigned&  v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (int64               v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (uint64              v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (long                v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (unsigned long       v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (int                 v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (unsigned int        v) _SCV_IMPL2(<<=)
   return_type& operator <<= (const sc_int_base&  v) _SCV_IMPL2(<<=)
   return_type& operator <<= (const sc_uint_base& v) _SCV_IMPL2(<<=)
 
-  return_type& operator >>= (const sc_signed&    v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (const sc_unsigned&  v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (int64               v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (uint64              v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (long                v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (unsigned long       v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (int                 v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (unsigned int        v) _SCV_IMPL2(>>=) 
+  return_type& operator >>= (const sc_signed&    v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (const sc_unsigned&  v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (int64               v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (uint64              v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (long                v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (unsigned long       v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (int                 v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (unsigned int        v) _SCV_IMPL2(>>=)
   return_type& operator >>= (const sc_int_base&  v) _SCV_IMPL2(>>=)
   return_type& operator >>= (const sc_uint_base& v) _SCV_IMPL2(>>=)
 
@@ -943,18 +927,18 @@ public:
   { this->initialize(); return this->_get_instance()->operator [](i); }
   const sc_unsigned range(int i, int j) const
   { this->initialize(); return this->_get_instance()->range(i,j); }
-  //  sc_unsigned_subref operator () (int i, int j) 
+  //  sc_unsigned_subref operator () (int i, int j)
   const sc_unsigned operator () (int i, int j) const
   { this->initialize(); return this->_get_instance()->operator ()(i,j); }
 
-  sc_string to_string(sc_numrep base = SC_DEC, bool formatted = false) const
+  std::string to_string(sc_numrep base = SC_DEC, bool formatted = false) const
   { this->initialize(); return this->_get_instance()->to_string(base,formatted); }
-  sc_string to_string(int base, bool formatted = false) const
+  std::string to_string(int base, bool formatted = false) const
   { this->initialize(); return this->_get_instance()->to_string(base,formatted); }
 
-  _SCV_MAP(int64,to_int64);  
-  _SCV_MAP(uint64,to_uint64);  
-  _SCV_MAP(long,to_long);  
+  _SCV_MAP(int64,to_int64);
+  _SCV_MAP(uint64,to_uint64);
+  _SCV_MAP(long,to_long);
   _SCV_MAP(unsigned long,to_ulong);
   _SCV_MAP(unsigned long,to_unsigned_long);
   _SCV_MAP(int,to_int);
@@ -976,8 +960,8 @@ public:
   void set(int i, bool v) { this->initialize(); this->_get_instance()->set(i,v); this->trigger_value_change_cb(); }
   void invert(int i) { this->initialize(); this->_get_instance()->invert(i); this->trigger_value_change_cb(); }
   void reverse() { this->initialize(); this->_get_instance()->reverse(); this->trigger_value_change_cb(); }
-  void get_packed_rep(unsigned long *buf) const { this->initialize(); this->_get_instance()->get_packet_ref(buf); }
-  void set_packed_rep(unsigned long *buf) { this->_get_instance()->get_packet_ref(buf); this->trigger_value_change_cb(); }
+  void get_packed_rep(sc_dt::sc_digit *buf) const { this->initialize(); this->_get_instance()->get_packet_ref(buf); }
+  void set_packed_rep(sc_dt::sc_digit *buf) { this->_get_instance()->get_packet_ref(buf); this->trigger_value_change_cb(); }
 
   operator const sc_unsigned&() const { this->initialize(); return *this->_get_instance(); }
 };
@@ -1000,13 +984,13 @@ public:
 #ifndef _SCV_INTROSPECTION_ONLY
   return_type& operator=(const sc_signed_subref&   v) _SCV_IMPL
 #endif
-  return_type& operator=(const char*               v) _SCV_IMPL 
+  return_type& operator=(const char*               v) _SCV_IMPL
   return_type& operator=(int64                     v) _SCV_IMPL
   return_type& operator=(uint64                    v) _SCV_IMPL
   return_type& operator=(long                      v) _SCV_IMPL
   return_type& operator=(unsigned long             v) _SCV_IMPL
-  return_type& operator=(int                       v) _SCV_IMPL 
-  return_type& operator=(unsigned int              v) _SCV_IMPL 
+  return_type& operator=(int                       v) _SCV_IMPL
+  return_type& operator=(unsigned int              v) _SCV_IMPL
   return_type& operator=(double                    v) _SCV_IMPL
   return_type& operator=( const sc_bv_base&        v) _SCV_IMPL
   return_type& operator=( const sc_lv_base&        v) _SCV_IMPL
@@ -1019,113 +1003,113 @@ public:
   return_type& operator = ( const sc_fxnum_fast& v ) _SCV_IMPL
 #endif
 
-  return_type& operator += (const sc_signed&    v) _SCV_IMPL2(+=) 
-  return_type& operator += (const sc_unsigned&  v) _SCV_IMPL2(+=) 
-  return_type& operator += (int64               v) _SCV_IMPL2(+=) 
-  return_type& operator += (uint64              v) _SCV_IMPL2(+=) 
-  return_type& operator += (long                v) _SCV_IMPL2(+=) 
-  return_type& operator += (unsigned long       v) _SCV_IMPL2(+=) 
-  return_type& operator += (int                 v) _SCV_IMPL2(+=) 
-  return_type& operator += (unsigned int        v) _SCV_IMPL2(+=) 
+  return_type& operator += (const sc_signed&    v) _SCV_IMPL2(+=)
+  return_type& operator += (const sc_unsigned&  v) _SCV_IMPL2(+=)
+  return_type& operator += (int64               v) _SCV_IMPL2(+=)
+  return_type& operator += (uint64              v) _SCV_IMPL2(+=)
+  return_type& operator += (long                v) _SCV_IMPL2(+=)
+  return_type& operator += (unsigned long       v) _SCV_IMPL2(+=)
+  return_type& operator += (int                 v) _SCV_IMPL2(+=)
+  return_type& operator += (unsigned int        v) _SCV_IMPL2(+=)
   return_type& operator += (const sc_int_base&  v) _SCV_IMPL2(+=)
   return_type& operator += (const sc_uint_base& v) _SCV_IMPL2(+=)
 
-  return_type& operator -= (const sc_signed&    v) _SCV_IMPL2(-=) 
-  return_type& operator -= (const sc_unsigned&  v) _SCV_IMPL2(-=) 
-  return_type& operator -= (int64               v) _SCV_IMPL2(-=) 
-  return_type& operator -= (uint64              v) _SCV_IMPL2(-=) 
-  return_type& operator -= (long                v) _SCV_IMPL2(-=) 
-  return_type& operator -= (unsigned long       v) _SCV_IMPL2(-=) 
-  return_type& operator -= (int                 v) _SCV_IMPL2(-=) 
-  return_type& operator -= (unsigned int        v) _SCV_IMPL2(-=) 
+  return_type& operator -= (const sc_signed&    v) _SCV_IMPL2(-=)
+  return_type& operator -= (const sc_unsigned&  v) _SCV_IMPL2(-=)
+  return_type& operator -= (int64               v) _SCV_IMPL2(-=)
+  return_type& operator -= (uint64              v) _SCV_IMPL2(-=)
+  return_type& operator -= (long                v) _SCV_IMPL2(-=)
+  return_type& operator -= (unsigned long       v) _SCV_IMPL2(-=)
+  return_type& operator -= (int                 v) _SCV_IMPL2(-=)
+  return_type& operator -= (unsigned int        v) _SCV_IMPL2(-=)
   return_type& operator -= (const sc_int_base&  v) _SCV_IMPL2(-=)
   return_type& operator -= (const sc_uint_base& v) _SCV_IMPL2(-=)
 
-  return_type& operator *= (const sc_signed&    v) _SCV_IMPL2(*=) 
-  return_type& operator *= (const sc_unsigned&  v) _SCV_IMPL2(*=) 
-  return_type& operator *= (int64               v) _SCV_IMPL2(*=) 
-  return_type& operator *= (uint64              v) _SCV_IMPL2(*=) 
-  return_type& operator *= (long                v) _SCV_IMPL2(*=) 
-  return_type& operator *= (unsigned long       v) _SCV_IMPL2(*=) 
-  return_type& operator *= (int                 v) _SCV_IMPL2(*=) 
-  return_type& operator *= (unsigned int        v) _SCV_IMPL2(*=) 
+  return_type& operator *= (const sc_signed&    v) _SCV_IMPL2(*=)
+  return_type& operator *= (const sc_unsigned&  v) _SCV_IMPL2(*=)
+  return_type& operator *= (int64               v) _SCV_IMPL2(*=)
+  return_type& operator *= (uint64              v) _SCV_IMPL2(*=)
+  return_type& operator *= (long                v) _SCV_IMPL2(*=)
+  return_type& operator *= (unsigned long       v) _SCV_IMPL2(*=)
+  return_type& operator *= (int                 v) _SCV_IMPL2(*=)
+  return_type& operator *= (unsigned int        v) _SCV_IMPL2(*=)
   return_type& operator *= (const sc_int_base&  v) _SCV_IMPL2(*=)
   return_type& operator *= (const sc_uint_base& v) _SCV_IMPL2(*=)
 
-  return_type& operator /= (const sc_signed&    v) _SCV_IMPL2(/=) 
-  return_type& operator /= (const sc_unsigned&  v) _SCV_IMPL2(/=) 
-  return_type& operator /= (int64               v) _SCV_IMPL2(/=) 
-  return_type& operator /= (uint64              v) _SCV_IMPL2(/=) 
-  return_type& operator /= (long                v) _SCV_IMPL2(/=) 
-  return_type& operator /= (unsigned long       v) _SCV_IMPL2(/=) 
-  return_type& operator /= (int                 v) _SCV_IMPL2(/=) 
-  return_type& operator /= (unsigned int        v) _SCV_IMPL2(/=) 
+  return_type& operator /= (const sc_signed&    v) _SCV_IMPL2(/=)
+  return_type& operator /= (const sc_unsigned&  v) _SCV_IMPL2(/=)
+  return_type& operator /= (int64               v) _SCV_IMPL2(/=)
+  return_type& operator /= (uint64              v) _SCV_IMPL2(/=)
+  return_type& operator /= (long                v) _SCV_IMPL2(/=)
+  return_type& operator /= (unsigned long       v) _SCV_IMPL2(/=)
+  return_type& operator /= (int                 v) _SCV_IMPL2(/=)
+  return_type& operator /= (unsigned int        v) _SCV_IMPL2(/=)
   return_type& operator /= (const sc_int_base&  v) _SCV_IMPL2(/=)
   return_type& operator /= (const sc_uint_base& v) _SCV_IMPL2(/=)
 
-  return_type& operator %= (const sc_signed&    v) _SCV_IMPL2(%=) 
-  return_type& operator %= (const sc_unsigned&  v) _SCV_IMPL2(%=) 
-  return_type& operator %= (int64               v) _SCV_IMPL2(%=) 
-  return_type& operator %= (uint64              v) _SCV_IMPL2(%=) 
-  return_type& operator %= (long                v) _SCV_IMPL2(%=) 
-  return_type& operator %= (unsigned long       v) _SCV_IMPL2(%=) 
-  return_type& operator %= (int                 v) _SCV_IMPL2(%=) 
-  return_type& operator %= (unsigned int        v) _SCV_IMPL2(%=) 
+  return_type& operator %= (const sc_signed&    v) _SCV_IMPL2(%=)
+  return_type& operator %= (const sc_unsigned&  v) _SCV_IMPL2(%=)
+  return_type& operator %= (int64               v) _SCV_IMPL2(%=)
+  return_type& operator %= (uint64              v) _SCV_IMPL2(%=)
+  return_type& operator %= (long                v) _SCV_IMPL2(%=)
+  return_type& operator %= (unsigned long       v) _SCV_IMPL2(%=)
+  return_type& operator %= (int                 v) _SCV_IMPL2(%=)
+  return_type& operator %= (unsigned int        v) _SCV_IMPL2(%=)
   return_type& operator %= (const sc_int_base&  v) _SCV_IMPL2(%=)
   return_type& operator %= (const sc_uint_base& v) _SCV_IMPL2(%=)
 
-  return_type& operator &= (const sc_signed&    v) _SCV_IMPL2(&=) 
-  return_type& operator &= (const sc_unsigned&  v) _SCV_IMPL2(&=) 
-  return_type& operator &= (int64               v) _SCV_IMPL2(&=) 
-  return_type& operator &= (uint64              v) _SCV_IMPL2(&=) 
-  return_type& operator &= (long                v) _SCV_IMPL2(&=) 
-  return_type& operator &= (unsigned long       v) _SCV_IMPL2(&=) 
-  return_type& operator &= (int                 v) _SCV_IMPL2(&=) 
-  return_type& operator &= (unsigned int        v) _SCV_IMPL2(&=) 
+  return_type& operator &= (const sc_signed&    v) _SCV_IMPL2(&=)
+  return_type& operator &= (const sc_unsigned&  v) _SCV_IMPL2(&=)
+  return_type& operator &= (int64               v) _SCV_IMPL2(&=)
+  return_type& operator &= (uint64              v) _SCV_IMPL2(&=)
+  return_type& operator &= (long                v) _SCV_IMPL2(&=)
+  return_type& operator &= (unsigned long       v) _SCV_IMPL2(&=)
+  return_type& operator &= (int                 v) _SCV_IMPL2(&=)
+  return_type& operator &= (unsigned int        v) _SCV_IMPL2(&=)
   return_type& operator &= (const sc_int_base&  v) _SCV_IMPL2(&=)
   return_type& operator &= (const sc_uint_base& v) _SCV_IMPL2(&=)
 
-  return_type& operator |= (const sc_signed&    v) _SCV_IMPL2(|=) 
-  return_type& operator |= (const sc_unsigned&  v) _SCV_IMPL2(|=) 
-  return_type& operator |= (int64               v) _SCV_IMPL2(|=) 
-  return_type& operator |= (uint64              v) _SCV_IMPL2(|=) 
-  return_type& operator |= (long                v) _SCV_IMPL2(|=) 
-  return_type& operator |= (unsigned long       v) _SCV_IMPL2(|=) 
-  return_type& operator |= (int                 v) _SCV_IMPL2(|=) 
-  return_type& operator |= (unsigned int        v) _SCV_IMPL2(|=) 
+  return_type& operator |= (const sc_signed&    v) _SCV_IMPL2(|=)
+  return_type& operator |= (const sc_unsigned&  v) _SCV_IMPL2(|=)
+  return_type& operator |= (int64               v) _SCV_IMPL2(|=)
+  return_type& operator |= (uint64              v) _SCV_IMPL2(|=)
+  return_type& operator |= (long                v) _SCV_IMPL2(|=)
+  return_type& operator |= (unsigned long       v) _SCV_IMPL2(|=)
+  return_type& operator |= (int                 v) _SCV_IMPL2(|=)
+  return_type& operator |= (unsigned int        v) _SCV_IMPL2(|=)
   return_type& operator |= (const sc_int_base&  v) _SCV_IMPL2(|=)
   return_type& operator |= (const sc_uint_base& v) _SCV_IMPL2(|=)
 
-  return_type& operator ^= (const sc_signed&    v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (const sc_unsigned&  v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (int64               v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (uint64              v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (long                v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (unsigned long       v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (int                 v) _SCV_IMPL2(^=) 
-  return_type& operator ^= (unsigned int        v) _SCV_IMPL2(^=) 
+  return_type& operator ^= (const sc_signed&    v) _SCV_IMPL2(^=)
+  return_type& operator ^= (const sc_unsigned&  v) _SCV_IMPL2(^=)
+  return_type& operator ^= (int64               v) _SCV_IMPL2(^=)
+  return_type& operator ^= (uint64              v) _SCV_IMPL2(^=)
+  return_type& operator ^= (long                v) _SCV_IMPL2(^=)
+  return_type& operator ^= (unsigned long       v) _SCV_IMPL2(^=)
+  return_type& operator ^= (int                 v) _SCV_IMPL2(^=)
+  return_type& operator ^= (unsigned int        v) _SCV_IMPL2(^=)
   return_type& operator ^= (const sc_int_base&  v) _SCV_IMPL2(^=)
   return_type& operator ^= (const sc_uint_base& v) _SCV_IMPL2(^=)
 
-  return_type& operator <<= (const sc_signed&    v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (const sc_unsigned&  v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (int64               v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (uint64              v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (long                v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (unsigned long       v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (int                 v) _SCV_IMPL2(<<=) 
-  return_type& operator <<= (unsigned int        v) _SCV_IMPL2(<<=) 
+  return_type& operator <<= (const sc_signed&    v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (const sc_unsigned&  v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (int64               v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (uint64              v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (long                v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (unsigned long       v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (int                 v) _SCV_IMPL2(<<=)
+  return_type& operator <<= (unsigned int        v) _SCV_IMPL2(<<=)
   return_type& operator <<= (const sc_int_base&  v) _SCV_IMPL2(<<=)
   return_type& operator <<= (const sc_uint_base& v) _SCV_IMPL2(<<=)
 
-  return_type& operator >>= (const sc_signed&    v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (const sc_unsigned&  v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (int64               v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (uint64              v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (long                v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (unsigned long       v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (int                 v) _SCV_IMPL2(>>=) 
-  return_type& operator >>= (unsigned int        v) _SCV_IMPL2(>>=) 
+  return_type& operator >>= (const sc_signed&    v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (const sc_unsigned&  v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (int64               v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (uint64              v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (long                v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (unsigned long       v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (int                 v) _SCV_IMPL2(>>=)
+  return_type& operator >>= (unsigned int        v) _SCV_IMPL2(>>=)
   return_type& operator >>= (const sc_int_base&  v) _SCV_IMPL2(>>=)
   return_type& operator >>= (const sc_uint_base& v) _SCV_IMPL2(>>=)
 
@@ -1142,18 +1126,18 @@ public:
   { this->initialize(); return this->_get_instance()->operator [](i); }
   const sc_unsigned range(int i, int j) const
   { this->initialize(); return this->_get_instance()->range(i,j); }
-  //  sc_unsigned_subref operator () (int i, int j) 
+  //  sc_unsigned_subref operator () (int i, int j)
   const sc_unsigned operator () (int i, int j) const
   { this->initialize(); return this->_get_instance()->operator ()(i,j); }
 
-  sc_string to_string(sc_numrep base = SC_DEC, bool formatted = false) const
+  std::string to_string(sc_numrep base = SC_DEC, bool formatted = false) const
   { this->initialize(); return this->_get_instance()->to_string(base,formatted); }
-  sc_string to_string(int base, bool formatted = false) const
+  std::string to_string(int base, bool formatted = false) const
   { this->initialize(); return this->_get_instance()->to_string(base,formatted); }
 
-  _SCV_MAP(int64,to_int64);  
-  _SCV_MAP(uint64,to_uint64);  
-  _SCV_MAP(long,to_long);  
+  _SCV_MAP(int64,to_int64);
+  _SCV_MAP(uint64,to_uint64);
+  _SCV_MAP(long,to_long);
   _SCV_MAP(unsigned long,to_ulong);
   _SCV_MAP(unsigned long,to_unsigned_long);
   _SCV_MAP(int,to_int);
@@ -1175,8 +1159,8 @@ public:
   void set(int i, bool v) { this->initialize(); this->_get_instance()->set(i,v); this->trigger_value_change_cb(); }
   void invert(int i) { this->initialize(); this->_get_instance()->invert(i); this->trigger_value_change_cb(); }
   void reverse() { this->initialize(); this->_get_instance()->reverse(); this->trigger_value_change_cb(); }
-  void get_packed_rep(unsigned long *buf) const { this->initialize(); this->_get_instance()->get_packet_ref(buf); }
-  void set_packed_rep(unsigned long *buf) { this->_get_instance()->get_packet_ref(buf); this->trigger_value_change_cb(); }
+  void get_packed_rep(sc_dt::sc_digit *buf) const { this->initialize(); this->_get_instance()->get_packet_ref(buf); }
+  void set_packed_rep(sc_dt::sc_digit *buf) { this->_get_instance()->get_packet_ref(buf); this->trigger_value_change_cb(); }
 
   operator const sc_signed&() const { this->initialize(); return *this->_get_instance(); }
 };
@@ -1189,7 +1173,7 @@ public:
 public:
   typedef scv_extensions< sc_bit > return_type;
 
-  return_type& operator=(const return_type& v) _SCV_IMPL1 
+  return_type& operator=(const return_type& v) _SCV_IMPL1
   return_type& operator = ( const sc_bit& v ) _SCV_IMPL
   return_type& operator = ( int v ) _SCV_IMPL
   return_type& operator = ( bool v ) _SCV_IMPL
@@ -1300,12 +1284,12 @@ public:
   return_type& operator=( const sc_int<W>& v) _SCV_IMPL
   return_type& operator=( const sc_uint<W>& v) _SCV_IMPL
 
-  void resize(unsigned long new_size) 
+  void resize(unsigned long new_size)
   { this->initialize(); this->_get_instance()->resize(new_size); this->trigger_value_change_cb(); }
 
   // from sc_bv_base
   long get_bit(unsigned n) const { this->initialize(); return this->_get_instance()->get_bit(n); }
-  void set_bit(unsigned bit_number, long value) 
+  void set_bit(unsigned bit_number, long value)
   { this->initialize(); this->_get_instance()->set_bit(bit_number,value); this->trigger_value_change_cb(); }
   unsigned long get_word(unsigned i) const { this->initialize(); return this->_get_instance()->get_word(i); }
   void set_word(unsigned i, unsigned long w)
@@ -1335,7 +1319,7 @@ public:
   return_type& operator |= ( unsigned long v ) _SCV_IMPL2(|=)
   return_type& operator ^= ( unsigned long v ) _SCV_IMPL2(^=)
 
-  return_type& operator &= ( long v ) _SCV_IMPL2(&=) 
+  return_type& operator &= ( long v ) _SCV_IMPL2(&=)
   return_type& operator |= ( long v ) _SCV_IMPL2(|=)
   return_type& operator ^= ( long v ) _SCV_IMPL2(^=)
 
@@ -1343,7 +1327,7 @@ public:
   return_type& operator |= ( const char* v ) _SCV_IMPL2(|=)
   return_type& operator ^= ( const char* v ) _SCV_IMPL2(^=)
 
-  sc_bv_base operator & ( const char* s ) const 
+  sc_bv_base operator & ( const char* s ) const
   { this->initialize(); return *this->_get_instance() & s; }
   sc_bv_base operator | ( const char* s ) const
   { this->initialize(); return *this->_get_instance() | s; }
@@ -1371,7 +1355,7 @@ public:
   typedef scv_extensions< sc_lv<W> > return_type;
 
   sc_bv_base* clone() { return this->_get_instance()->clone(); /* don't clone randomization status */ }
-  return_type& operator=(const return_type& v) _SCV_IMPL1 
+  return_type& operator=(const return_type& v) _SCV_IMPL1
   //  template<class T> return_type& operator=(const sc_proxy<T>& v) _SCV_IMPL
   return_type& operator=(const sc_lv<W>& v) _SCV_IMPL
   return_type& operator=( const char* v) _SCV_IMPL
@@ -1392,12 +1376,12 @@ public:
   return_type& operator=( const sc_int<W>& v) _SCV_IMPL
   return_type& operator=( const sc_uint<W>& v) _SCV_IMPL
 
-  void resize(unsigned long new_size) 
+  void resize(unsigned long new_size)
   { this->initialize(); this->_get_instance()->resize(new_size); this->trigger_value_change_cb(); }
 
   // from sc_bv_base
   long get_bit(unsigned n) const { this->initialize(); return this->_get_instance()->get_bit(n); }
-  void set_bit(unsigned bit_number, long value) 
+  void set_bit(unsigned bit_number, long value)
   { this->initialize(); this->_get_instance()->set_bit(bit_number,value); this->trigger_value_change_cb(); }
   unsigned long get_word(unsigned i) const { this->initialize(); return this->_get_instance()->get_word(i); }
   void set_word(unsigned i, unsigned long w)
@@ -1427,7 +1411,7 @@ public:
   return_type& operator |= ( unsigned long v ) _SCV_IMPL2(|=)
   return_type& operator ^= ( unsigned long v ) _SCV_IMPL2(^=)
 
-  return_type& operator &= ( long v ) _SCV_IMPL2(&=) 
+  return_type& operator &= ( long v ) _SCV_IMPL2(&=)
   return_type& operator |= ( long v ) _SCV_IMPL2(|=)
   return_type& operator ^= ( long v ) _SCV_IMPL2(^=)
 
@@ -1435,7 +1419,7 @@ public:
   return_type& operator |= ( const char* v ) _SCV_IMPL2(|=)
   return_type& operator ^= ( const char* v ) _SCV_IMPL2(^=)
 
-  sc_bv_base operator & ( const char* s ) const 
+  sc_bv_base operator & ( const char* s ) const
   { this->initialize(); return *this->_get_instance() & s; }
   sc_bv_base operator | ( const char* s ) const
   { this->initialize(); return *this->_get_instance() | s; }
@@ -1477,10 +1461,10 @@ public:
 
   virtual void _set_instance(T *i) {
     scv_extensions<T>::_set_instance(i);
-  }  
+  }
   virtual void _set_instance(scv_extensions<T> *i) {
     scv_extensions<T>::_set_instance(i->_get_instance());
-  }  
+  }
 };
 
 // ----------------------------------------
@@ -1517,7 +1501,7 @@ private:
 // ----------------------------------------
 // specialization for pointers
 // ----------------------------------------
-template<typename T> class scv_smart_ptr; 
+template<typename T> class scv_smart_ptr;
 
 template<typename T>
 class scv_extensions<T*> : public _SCV_INTROSPECTION_BASE1 {
@@ -1563,7 +1547,7 @@ template<typename T, int N>
 scv_extensions<T[N]>::scv_extensions() {
   string tmp;
   _scv_extension_util ** a = new _scv_extension_util*[N];
-  for (int i=0; i<(int)N; ++i) { 
+  for (int i=0; i<(int)N; ++i) {
     a[i] = &_array[i];
     tmp = "[" + _scv_ext_util_get_string(i) + "]";
     _array[i]._set_parent(this,tmp);
@@ -1609,15 +1593,16 @@ template<typename T, int N>
 scv_extensions<T[N]>& scv_extensions<T[N]>::operator=(const T * rhs) {
   for (int i=0; i<(int)N; ++i) { _array[i] = rhs[i]; }
   this->trigger_value_change_cb();
+  return *this;
 }
 
 // ----------------------------------------
 // implementation of the specialization for pointers
 // ----------------------------------------
-template<typename T> const scv_extensions<T> * 
+template<typename T> const scv_extensions<T> *
 scv_extensions<T*>::_get_ptr() const {
   if (*(this->_instance)) {
-    if (!this->_ptr) { 
+    if (!this->_ptr) {
       this->_own_typed_ptr = true;
       this->_typed_ptr = new scv_extensions<T>();
       this->_ptr = this->_typed_ptr;
@@ -1633,7 +1618,7 @@ scv_extensions<T*>::_get_ptr() const {
   return this->_typed_ptr;
 }
 
-template<typename T> const scv_extensions<T> * 
+template<typename T> const scv_extensions<T> *
 scv_extensions<T*>::_set_ptr() const {
   if (*this->_get_instance()) {
     if (!this->_ptr) {
@@ -1652,8 +1637,8 @@ scv_extensions<T*>::_set_ptr() const {
   return this->_typed_ptr;
 }
 
-template<typename T> scv_extensions<T>& 
-scv_extensions<T*>::operator*() { 
+template<typename T> scv_extensions<T>&
+scv_extensions<T*>::operator*() {
   const scv_extensions<T> * ptr = _get_ptr();
   if (!ptr) {
     static scv_extensions<T> e;
@@ -1663,7 +1648,7 @@ scv_extensions<T*>::operator*() {
   return *(scv_extensions<T>*)ptr;
 }
 
-template<typename T> const scv_extensions<T>& 
+template<typename T> const scv_extensions<T>&
 scv_extensions<T*>::operator*() const {
   const scv_extensions<T> * ptr = _get_ptr();
   if (!ptr) {
@@ -1674,17 +1659,17 @@ scv_extensions<T*>::operator*() const {
   return *ptr;
 }
 
-template<typename T> scv_extensions<T> * 
-scv_extensions<T*>::operator->() { 
+template<typename T> scv_extensions<T> *
+scv_extensions<T*>::operator->() {
   return (scv_extensions<T>*)_get_ptr();
 }
 
-template<typename T> const scv_extensions<T> * 
-scv_extensions<T*>::operator->()  const { 
+template<typename T> const scv_extensions<T> *
+scv_extensions<T*>::operator->()  const {
   return (scv_extensions<T>*)_get_ptr();
 }
 
-template<typename T> scv_extensions<T*>& 
+template<typename T> scv_extensions<T*>&
 scv_extensions<T*>::operator=(const scv_extensions<T*>& rhs) {
   *this->_get_instance() = *rhs._instance;
   if (rhs._ptr->is_dynamic()) {
@@ -1700,7 +1685,7 @@ scv_extensions<T*>::operator=(const scv_extensions<T*>& rhs) {
   return *this;
 }
 
-template<typename T> scv_extensions<T*>& 
+template<typename T> scv_extensions<T*>&
 scv_extensions<T*>::operator=(scv_extensions<T> * rhs) {
   *this->_get_instance() = rhs->_instance;
   if (rhs->is_dynamic()) {
@@ -1717,11 +1702,11 @@ scv_extensions<T*>::operator=(scv_extensions<T> * rhs) {
 }
 
 /* this is in _scv_smart_ptr.h
-template<typename T> scv_extensions<T*>& 
+template<typename T> scv_extensions<T*>&
 scv_extensions<T*>::operator=(const scv_smart_ptr<T>& rhs) { ... }
 */
 
-template<typename T> scv_extensions<T*>&  
+template<typename T> scv_extensions<T*>&
 scv_extensions<T*>::operator=(T * rhs) {
   *this->_get_instance() = rhs;
   _set_ptr();
@@ -1729,7 +1714,7 @@ scv_extensions<T*>::operator=(T * rhs) {
   return *this;
 }
 
-template<typename T> scv_extensions<T*>&  
+template<typename T> scv_extensions<T*>&
 scv_extensions<T*>::operator=(int rhs) {
   *this->_get_instance() = (T*) rhs;
   _set_ptr();

@@ -1,26 +1,29 @@
-		SystemC Verification Library (Rel. 1.0p1)
-		=========================================
-
-This is the first production release of the SystemC 2.0.1 Verification Library 
-(SCV), version 1.0.
+                SystemC Verification Library (Rel. 1.0p2-sysc2.2)
+                =================================================
 
 -------------------------------------------------------------------------------
-				IMPORTANT
+                                IMPORTANT
 
 1. This is the production release of SCV 1.0. This release contains an 
-   implementation of the verfication extensions for SystemC 2.0.1.  Examples 
-   are provided in the examples directory.
+   implementation of the verfication extensions for SystemC 2.1 and SystemC 2.2
+   and is compliant with IEEE 1666(tm).
+   Examples are provided in the examples directory.
 
 2. This release is supported on the following platforms for which it has
    been well tested:
 
    o Sun Solaris 2.7 and 2.8 with GNU C++ compiler version gcc-2.95.2 
-     Sun Solaris 2.7 and 2.8 with GNU C++ compiler version gcc-3.2
-     Sun Solaris 2.7 and 2.8 with Forte 7 compiler version 5.4
+   o Sun Solaris 2.7 and 2.8 with GNU C++ compiler version gcc-3.2
+   o Sun Solaris 2.7 and 2.8 with Forte 7 compiler version 5.4
    o Linux Redhat 7.1 with GNU C++ compiler version gcc-2.96-85 or gcc-2.95.3
-     Linux Redhat 7.2 with GNU C++ compiler version gcc-2.96-98 or gcc-2.95.3
+   o Linux Redhat 7.2 with GNU C++ compiler version gcc-2.96-98 or gcc-2.95.3
+   o Linux Redhat 8.0 with GNU C++ compiler version gcc-3.2
+   o Linux Redhat EE 2.1 with GNU C++ compiler version gcc-3.2.3
+   o Linux (2.6.9-34.EL kernel) with GNU C++ compiler versions gcc-3.4.5
+     and gcc-4.1.0   
    o HP-UX 11.00 with HP C++ compiler version A.03.39
-     HP-UX 11.00 with GNU C++ compiler version gcc-3.2
+   o HP-UX 11.00 with GNU C++ compiler version gcc-3.2
+   o Windows NT 4.0 (SP6a) and Windows XP with Microsoft Visual C++ 7.1 
 
 -------------------------------------------------------------------------------
 

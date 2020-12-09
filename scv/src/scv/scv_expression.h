@@ -54,8 +54,12 @@
 #include "scv/scv_shared_ptr.h"
 #include <list>
 
+namespace sc_core {
+
 class sc_interface;
 template <class T> class sc_signal_in_if;
+
+} // namespace sc_core
 
 class scv_expression_core_base;
 
@@ -97,7 +101,6 @@ public: // constructing an expression from a constant or a variable
   scv_expression(unsigned long long i);
   scv_expression(double d);
   scv_expression(string);
-  scv_expression(sc_string);
   template <int W>
   static scv_expression create_constant(const sc_int<W>& v) {
     return _scv_create_expression(v);
@@ -119,7 +122,7 @@ public: // constructing an expression from a constant or a variable
     return _scv_create_expression(v);
   }
   template <class T>
-  static scv_expression create_reference(sc_signal_in_if<T>& s){
+  static scv_expression create_reference(sc_core::sc_signal_in_if<T>& s){
     return _scv_create_expression(s);
   }
 
@@ -161,9 +164,9 @@ public: // expression tree traversal
   double get_double_value(void) const;
   int get_bit_width(void) const;
   scv_extensions_if* get_extension(void) const;
-  sc_interface* get_signal(void) const;
+  sc_core::sc_interface* get_signal(void) const;
   void get_extension_list(list<scv_extensions_if*>& ext_list);
-  void get_signal_list(list<sc_interface*>& sig_list);
+  void get_signal_list(list<sc_core::sc_interface*>& sig_list);
 public: // get_value methods to access value of constants
   void get_value(bool&) const;
   void get_value(char&) const;
@@ -178,7 +181,6 @@ public: // get_value methods to access value of constants
   void get_value(float&) const;
   void get_value(double&) const;
   void get_value(string&) const;
-  void get_value(sc_string&) const;
   void get_value(sc_bv_base&) const;
   void get_value(sc_lv_base&) const;
 public:
@@ -225,7 +227,7 @@ public:
   virtual double get_double_value(void) const = 0;
   virtual int get_bit_width(void) const = 0; 
   virtual scv_extensions_if * get_extension(void) const = 0;
-  virtual sc_interface * get_signal(void) const = 0;
+  virtual sc_core::sc_interface * get_signal(void) const = 0;
   virtual scv_expression::operatorT get_operator(void) const = 0;
   virtual void update_signal_value(void) const = 0;
   virtual void get_value(bool&) const = 0;
@@ -241,7 +243,6 @@ public:
   virtual void get_value(float&) const = 0;
   virtual void get_value(double&) const = 0;
   virtual void get_value(string&) const = 0;
-  virtual void get_value(sc_string&) const = 0;
   virtual void get_value(sc_bv_base&) const = 0;
   virtual void get_value(sc_lv_base&) const = 0;
 };
@@ -263,7 +264,7 @@ protected:
     unsigned long long _unsignedValue;
     double _doubleValue;
     string* _str;
-    sc_string* _sc_str;
+    std::string* _sc_str;
   }_value;
   sc_bv_base *_data;
   int _bit_width;
@@ -279,7 +280,6 @@ public:
   scv_expression_core(unsigned long long u);
   scv_expression_core(double d);
   scv_expression_core(string s);
-  scv_expression_core(sc_string s);
   template <int W>
   scv_expression_core(sc_int<W> v) : core_(NULL), _data(NULL) {
     _value._intValue = v;
@@ -325,7 +325,7 @@ public:
     return _bit_width;
   }
   scv_extensions_if * get_extension(void) const;
-  virtual sc_interface * get_signal(void) const;
+  virtual sc_core::sc_interface * get_signal(void) const;
   const scv_expression& get_left(void) const {
     return _left;
   }
@@ -352,7 +352,6 @@ public: // definition of get_value method
   void get_value(float&) const;
   void get_value(double&) const;
   void get_value(string&) const;
-  void get_value(sc_string&) const;
   void get_value(sc_bv_base&) const;
   void get_value(sc_lv_base&) const;
 protected:
@@ -376,7 +375,7 @@ public:
     *((scv_extensions<T>*) core_) = e;
   }
 
-  virtual sc_interface * get_signal(void) const {
+  virtual sc_core::sc_interface * get_signal(void) const {
       return sig_;
   }
 };

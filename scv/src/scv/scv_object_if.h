@@ -18,10 +18,10 @@
 
 /*****************************************************************************
 
-  scv_object_if.h -- 
+  scv_object_if.h --
   Common base class for SCV objects.  All SCV API classes
   should inherit from this class, directly or indirectly.
- 
+
   Until set_level() is called, get_level() should return -1.
 
   Original Authors (Cadence Design Systems, Inc):
@@ -73,6 +73,9 @@ public:
 
   // control debug messages by class (write for each class)
   // static void set_debug(int) { ... }
+
+  //destructor (does nothing)
+  virtual ~scv_object_if() {};
 
 };
 

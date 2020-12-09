@@ -629,52 +629,6 @@ if test "$DLNOTFOUND" = "t" && test "$DLDNOTFOUND" = "t"; then
 AC_MSG_ERROR(Could not find either dlopen or shl_load)
 fi
 
-case "$target_cpu" in
-  sparc) 
-    if test "$GXX" != "yes"; then
-      dnl
-      dnl For the SunWorks Forte C++ compiler use /usr/lib/libdemangle.so to get cplus_demangle
-      dnl since this compiler mangles differently from g++ and aCC.
-      dnl	
-      LIBIBERTY=-ldemangle
-      AC_CHECK_LIB(demangle, cplus_demangle, , LIBIBERTY=)
-    else
-      dnl
-      dnl The variable LIBIBERTY is left set if the library if found.  If not, the
-      dnl variable is cleared.  libiberty.a is provided by the GNU binutils package.
-      dnl -liberty must come after -lbfd on the link command line
-      dnl
-      LIBIBERTY=-liberty
-      AC_CHECK_LIB(iberty, cplus_demangle, , LIBIBERTY=)
-    fi
-    ;;
-  hppa*)
-    dnl
-    dnl HP can't use libiberty.a since it's not PIC.  There's a workaround for
-    dnl aCC, but for gcc we just report mangled names.
-    dnl
-    ;;
-  *)
-    dnl
-    dnl The variable LIBIBERTY is left set if the library if found.  If not, the
-    dnl variable is cleared.  libiberty.a is provided by the GNU binutils package.
-    dnl -liberty must come after -lbfd on the link command line
-    dnl
-    LIBIBERTY=-liberty
-    AC_CHECK_LIB(iberty, cplus_demangle, , LIBIBERTY=)
-    ;;
-esac
-if test -n "$LIBIBERTY"; then IBERTY=iberty; else IBERTY=""; fi
-
-LIBELF=-lelf
-AC_CHECK_LIB(elf, elf_begin, , LIBELF=)
-
-LIBBFD=-lbfd
-AC_CHECK_LIB(bfd, bfd_init, , LIBBFD=)
-
-if test -n "$LIBELF"; then ELF="elf"; fi
-if test -n "$LIBBFD"; then if test -n "$ELF"; then ELF="$ELF:bfd"; fi; fi
-
 if test "$scv_enable_v2" = "yes"; then
   AA_OPT="-AA"
 else
@@ -830,7 +784,6 @@ i[[3456]]86*)
         yes) echo 'setting compiler flags for g++'
 	     AC_DEFINE(_USE_FRIEND_FOR_EQUAL,)
 	     AC_DEFINE(ARCH_IS_X86,)
-	     AC_CHECK_HEADERS(bfd.h)
 	     CXXFLAGS="$LINUX_GNU_CXXFLAGS $GNU_OPT $GNU_DBG"
 	     CXXFLAGS_DEBUG="$LINUX_GNU_CXXFLAGS $DEF_GNU_DBG"
 	     CXXFLAGS_OPT="$LINUX_GNU_CXXFLAGS $DEF_GNU_OPT"

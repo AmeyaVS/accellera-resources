@@ -78,16 +78,6 @@ scv_smart_ptr<T>::scv_smart_ptr(const string& name)
 }
 
 template <typename T>
-scv_smart_ptr<T>::scv_smart_ptr(const sc_string& name)
-  : data_(new T()),
-    ext_(new scv_extensions<T>()),
-    tmp_(&*ext_) {
-  ext_->_set_instance(&*data_);
-  ext_->set_name(name.c_str());
-  init();  
-}
-
-template <typename T>
 scv_smart_ptr<T>::scv_smart_ptr(const char * name)
   : data_(new T()),
     ext_(new scv_extensions<T>()),
@@ -106,15 +96,6 @@ template <typename T> scv_smart_ptr<T>::scv_smart_ptr(T * data)
 }
 
 template <typename T> scv_smart_ptr<T>::scv_smart_ptr(T * data, const string& name)
-  : data_(data),
-    ext_(new scv_extensions<T>()),
-    tmp_(&*ext_) {
-  ext_->_set_instance(data);
-  ext_->set_name(name.c_str());
-  init();  
-}
-
-template <typename T> scv_smart_ptr<T>::scv_smart_ptr(T * data, const sc_string& name)
   : data_(data),
     ext_(new scv_extensions<T>()),
     tmp_(&*ext_) {

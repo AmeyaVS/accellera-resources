@@ -1,5 +1,5 @@
-		Release Notes for SCV 1.0p1
-                ===========================
+                Release Notes for SCV 1.0p2-sysc2.2
+                ===================================
 
 CONTENTS
 ========
@@ -20,33 +20,23 @@ CONTENTS
 1) What's new in this release?
 ==============================
 
-This is the first production release for the SystemC verification library.
-Aside from the new version number and an updated randomization whitepaper
-in docs/scv, it is the same as the 1.0b4 release.  The remainder of these
-comments describe the 1.0b4 release.
+This is an update of the SCV 1.0p1 release of the SystemC verification
+library. The primary purpose of this update is to support the SystemC 2.1v1
+and SystemC 2.2 versions that have been developed since the original release.
 
-It includes support for HP-UX gcc 3.2 and Sun Solaris Forte 5.4. 
+It also includes support for versions of gcc that require greater complience
+with the ANSI C++ standard. The latest version of gcc that has been tested
+with this release is gcc 4.1.0.
 
-You can now build using Microsoft VC++ 7.1 (VC++ .NET 2003).  We have
-not yet run our full regression suite on this new platform, so we are
-not ready to declare it supported.
 
-Special thanks to Robert A. Clark of Parama Networks Inc., who
-performed the VC++ port.
 
 2) Bug fixes and enhancements
 =============================
 
-In the previous release, installing did not copy user documentation
-into the install tree.  This has been fixed.
-
-A bug has been fixed which had caused coredumps in randomization.
 
 3) Other changes
 ================
 
-In the previous release, installing did not copy user documentation
-into the install tree.  This has been fixed.
 
 4) Known limitations
 ====================
@@ -54,10 +44,6 @@ into the install tree.  This has been fixed.
 o There are still differences between the SCV installation process and
   the one for the SystemC core library.  See the file INSTALL for
   details.
-
-o Compile times can be excessively slow (especially on g++ on Solaris).
-  We have made some improvements since beta 1, and will continue to
-  work to speed up compiles.
 
 o Introspection is not supported for fixed point data types
   (scv_fixed<>, etc). This means that randomization can not be
@@ -110,9 +96,7 @@ o We do not implement scv_connect().  This function creates a
   that supports connections with specific HDL simulators.
 
 o We have not run our full regression suite using VC++, and are not
-  prepared to claim full support under Windows.  Also, there are a
-  number of warnings when compiling under VC++ which we intend to
-  investigate and eliminate.
+  prepared to claim full support under Windows.  
 
 5) Beta features
 ================
@@ -129,3 +113,9 @@ o Messaging
 
 6) Deprecated features
 ======================
+
+The SCV_REPORT_INFO, SCV_REPORT_WARNING, SCV_REPORT_ERROR and SCV_REPORT_FATAL
+macros are now typedefs for the corresponding SC_REPORT_* macros. New applications
+should use SC_REPORT_* (as specified in the IEEE 1666(tm) standard) rather than
+SCV_REPORT_*.
+
