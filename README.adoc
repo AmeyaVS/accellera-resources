@@ -11,3 +11,4 @@ Directories resources:
 * link:resources[resources]:
 ** Directory containing the link:resources/link.txt[list] of resources captured from the Accellera site.
 ** Utility link:parse_resource.py[script] to extract json data(*Note:* Run the script from top-level directory).
+** Utility link:fetch_resource.py[script] to extract urls from json data to compatible with wget/aria2c download utility.
