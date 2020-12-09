@@ -1763,7 +1763,7 @@ cuddInsertSubtables(
     int oldsize,newsize;
     int i,j,index,reorderSave;
     int numSlots = unique->initSlots;
-    int *newperm, *newinvperm, *newmap;
+    int *newperm, *newinvperm, *newmap = NULL; /* SCV: ensure initialization of newmap */
     DdNode *one, *zero;
 
 #ifdef DD_DEBUG
@@ -1848,8 +1848,7 @@ cuddInsertSubtables(
 		return(0);
 	    }
 	    unique->memused += (newsize - unique->maxSize) * sizeof(int);
-	} else
-	    newmap = NULL; /* To shut up GCC warnings */
+	}
 	unique->memused += (newsize - unique->maxSize) * ((numSlots+1) *
 	    sizeof(DdNode *) + 2 * sizeof(int) + sizeof(DdSubtable));
 	for (i = 0; i < level; i++) {
@@ -2256,7 +2255,7 @@ cuddSlowTableGrowth(
     int i;
 
     unique->maxCacheHard = unique->cacheSlots - 1;
-    unique->cacheSlack = -(unique->cacheSlots + 1);
+    unique->cacheSlack = - (int) (unique->cacheSlots + 1);
     for (i = 0; i < unique->size; i++) {
 	unique->subtables[i].maxKeys <<= 2;
     }
@@ -2400,7 +2399,7 @@ ddResizeTable(
     int oldsize,newsize;
     int i,j,reorderSave;
     int numSlots = unique->initSlots;
-    int *newperm, *newinvperm, *newmap;
+    int *newperm, *newinvperm, *newmap = NULL; /* SCV: ensure initialization of newmap */
     DdNode *one, *zero;
 
     oldsize = unique->size;
@@ -2468,8 +2467,7 @@ ddResizeTable(
 		return(0);
 	    }
 	    unique->memused += (newsize - unique->maxSize) * sizeof(int);
-	} else
-	    newmap = NULL; /* To shut up GCC warnings */
+	}
 	unique->memused += (newsize - unique->maxSize) * ((numSlots+1) *
 	    sizeof(DdNode *) + 2 * sizeof(int) + sizeof(DdSubtable));
 	if (newsize > unique->maxSizeZ) {
@@ -2833,6 +2831,8 @@ cuddDoRebalance(
 	parent = *parentP;
 	if (DD_IS_BLACK(parent)) break;
 	/* Since the root is black, here a non-null grandparent exists. */
+	/* Make this explicit for static code analysis. */
+	assert(stackN > 0);
 	grandpaP = stack[stackN-1];
 	grandpa = *grandpaP;
 	if (parent == DD_LEFT(grandpa)) {

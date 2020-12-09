@@ -1,14 +1,14 @@
 //  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
 /*****************************************************************************
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -31,8 +31,12 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Torsten Maehne,
+                               Universite Pierre et Marie Curie, 2013-04-20
+  Description of Modification: Fix the for loop condition in
+                               _scv_find_extensions() and _scv_copy_values()
+                               to ensure that the i and j iterators are always
+                               valid for dereferencing in the loop body.
 
  *****************************************************************************/
 #include "scv/scv_util.h"
@@ -43,7 +47,7 @@
 #include "cuddInt.h"
 #include "util.h"
 
-#include <float.h>
+#include <cfloat>
 
 /////////////////////////////////////////////////////////////////
 // Class : scv_constraint_base
@@ -81,7 +85,7 @@ void scv_constraint_base::set_mode(scv_extensions_if::mode_t m)
     } else {
       mode_ = m;
     }
-    list<scv_smart_ptr_if*>::iterator i;
+    std::list<scv_smart_ptr_if*>::iterator i;
     for (i= get_members().begin(); i != get_members().end(); ++i) {
       scv_extensions_if* e = (*i)->get_extensions_ptr();
       e->get_constraint_data()->set_ext_mode(m, 0, 0);
@@ -97,7 +101,7 @@ scv_extensions_if::mode_t scv_constraint_base::get_mode(void) const
 void scv_constraint_base::set_random(scv_shared_ptr<scv_random> g) 
 {
   gen_ = g;
-  list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>::iterator i;
   for (i= get_members().begin(); i != get_members().end(); ++i) {
     scv_extensions_if* e = (*i)->get_extensions_ptr();
     e->set_random(g);
@@ -114,15 +118,15 @@ scv_shared_ptr<scv_random> scv_constraint_base::get_random(void)
   return gen_;
 }
 
-void scv_constraint_base::get_members(list<scv_smart_ptr_if*>& vlist) 
+void scv_constraint_base::get_members(std::list<scv_smart_ptr_if*>& vlist) 
 {
-  list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>::iterator i;
   for (i = pointers_.begin(); i != pointers_.end(); i++) {
     vlist.push_back(*i);
   }
 }
 
-list<scv_smart_ptr_if*>& scv_constraint_base::get_members(void) 
+std::list<scv_smart_ptr_if*>& scv_constraint_base::get_members(void) 
 {
   return pointers_;
 }
@@ -139,7 +143,7 @@ const char *scv_constraint_base::get_name() const
   return name_.c_str();
 }
 
-const string& scv_constraint_base::get_name_string() const
+const std::string& scv_constraint_base::get_name_string() const
 {
   return name_;
 }
@@ -153,7 +157,7 @@ const char *scv_constraint_base::kind() const
 void scv_constraint_base::print(ostream& o, int details, int indent) const
 {
   int local_indent = indent;
-  string spaces="";
+  std::string spaces="";
 
   for (int i=0; i < indent; i++) spaces += " ";
 
@@ -166,7 +170,7 @@ void scv_constraint_base::print(ostream& o, int details, int indent) const
   if (details == 0 || details == 2) {
     o << spaces << "  Number of elements: " << pointers_.size() << endl;
     o << spaces << "  Current value of elements: " << endl;
-    list<scv_smart_ptr_if*>::const_iterator i;
+    std::list<scv_smart_ptr_if*>::const_iterator i;
     for (i= pointers_.begin(); i != pointers_.end(); ++i) {
       o << spaces << "    " << (*i)->get_name() << ":  " ;
       if ((*i)->get_extensions_ptr()->is_record() || 
@@ -211,7 +215,7 @@ scv_constraint_base* scv_constraint_base::get_copy(scv_constraint_base * from)
 
 void scv_constraint_base::uninitialize() 
 {
-  list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>::iterator i;
   for (i= pointers_.begin(); i != pointers_.end(); ++i)
     (*i)->get_extensions_ptr()->uninitialize();
 }
@@ -264,11 +268,11 @@ scv_expression& scv_constraint_base::ebs() const
   return e; 
 }
 
-void scv_constraint_base::set_up_members(list<scv_smart_ptr_if*>& members) 
+void scv_constraint_base::set_up_members(std::list<scv_smart_ptr_if*>& members) 
 {
   pointers_ = members;
   scv_constraint_manager::reset();
-  list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>::iterator i;
   for (i= pointers_.begin(); i != pointers_.end(); ++i) {
     (*i)->get_extensions_ptr()->set_constraint(this);
     //scv_constraint_manager::add_extension((*i)->get_extensions_ptr());
@@ -584,21 +588,17 @@ int _scv_expr::getSigLsb(void) const
 //  scv_constraint_manager provides external interface.
 ///////////////////////////////////////////////////////////////
 
-_scv_constraint_manager::_scv_constraint_manager():maxTime(300),
-  maxMemory(0), verboseLevel(0) 
+_scv_constraint_manager::_scv_constraint_manager()
 {
   _mgr = new Cudd();
+  verboseLevel = 0;
   nthvar = 0;
-  multiple = 0;
-  iteration = 1;
   maxvar = 1;
   numBddVar = 0;
   maxNumBits = 0;
   eProb = new int;
   mode = scv_extensions_if::RANDOM;
-  numBitsUnsigned = 8 * sizeof(unsigned);
   numBitsSigned = 8 * sizeof(int);
-  valueIndex = new unsigned[CUDD_MAXINDEX];
   oneNode = _mgr->bddOne().getNode();
   zeroNode = _mgr->bddZero().getNode();
   exprRepOne = new _scv_expr;
@@ -616,13 +616,12 @@ _scv_constraint_manager::_scv_constraint_manager():maxTime(300),
     ("nodeWeightHash", 0);
   wasVisited = new _scv_associative_array<ddNodeT*, int> 
     ("wasVisited", 0);
-  enumVarList = new list<scv_extensions_if*>;
+  enumVarList = new std::list<scv_extensions_if*>;
 }
 
- _scv_constraint_manager::~ _scv_constraint_manager()
+_scv_constraint_manager::~_scv_constraint_manager()
 {
   delete eProb;
-  delete[] valueIndex;
   delete extHash;
   delete countExtHash;
   delete avoidDuplicateHash;
@@ -701,8 +700,8 @@ void _scv_constraint_manager::add_sparse_var(scv_extensions_if* e, bddNodeT* b)
 
 void _scv_constraint_manager::check_sparse_var(scv_constraint_base * c, bddNodeT* b) 
 {
-  list<scv_smart_ptr_if*>::iterator i;
-  list<scv_smart_ptr_if*>& pointers_ = c->get_members();
+  std::list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>& pointers_ = c->get_members();
   scv_extensions_if* e = NULL;
 
   for (i= pointers_.begin(); i != pointers_.end(); ++i) {
@@ -774,7 +773,7 @@ bddNodeT* _scv_constraint_manager::simplifyConstraint(scv_constraint_base* c, bo
     t1.setBddNodeP(&(c->get_bdd()));
   }
   t1.setType(_scv_expr::BDD);
-  list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>::iterator i;
   for (i= c->get_members().begin(); i != c->get_members().end(); ++i) {
     scv_extensions_if* e = (*i)->get_extensions_ptr();
     t1 = simplifyMember(e, t1, c, remove_, over_constraint);
@@ -861,6 +860,10 @@ void _scv_constraint_manager::assignRandomValue(scv_extensions_if* s, bddNodeT *
     }
   } else {
     int msize = getSizeOfBddVec(s);
+    ValueIndexSizeType valueIndexMaxIndex = msize > 0 ? (msize-1)*sDataP->numvar + sDataP->startIndex : 0;
+    if (valueIndexMaxIndex >= valueIndex.size()) {
+      valueIndex.resize(valueIndexMaxIndex + 1);
+    }
     for (int i=0; i<msize; i++) {
       valueIndex[i*sDataP->numvar+sDataP->startIndex] = 2;
     }
@@ -908,6 +911,10 @@ void _scv_constraint_manager::assignRandomValue(scv_extensions_if* s, bddNodeT *
       mode = scv_extensions_if::RANDOM;
     }
    
+    ValueIndexSizeType valueIndexMaxIndex = msize > 0 ? (msize-1)*sDataP->numvar + sDataP->startIndex : 0;
+    if (valueIndexMaxIndex >= valueIndex.size()) {
+      valueIndex.resize(valueIndexMaxIndex + 1);
+    }
     for (int i=0; i<msize; i++) {
       valueIndex[i*sDataP->numvar+sDataP->startIndex] = 2;
     }
@@ -972,6 +979,10 @@ void _scv_constraint_manager::initMember(scv_extensions_if* e)
            (gen_mode == _scv_constraint_data::DISTRIBUTION_RANGE) ||
            (gen_mode == _scv_constraint_data::RANGE_CONSTRAINT)) {
         int msize = getSizeOfBddVec(e);
+        ValueIndexSizeType valueIndexMaxIndex = msize > 0 ? (msize-1)*sDataP->numvar + sDataP->startIndex : 0;
+        if (valueIndexMaxIndex >= valueIndex.size()) {
+          valueIndex.resize(valueIndexMaxIndex + 1);
+        }
         for (int k=0; k<msize; k++) {
           valueIndex[k*sDataP->numvar+sDataP->startIndex] = 2;
         }
@@ -1045,9 +1056,9 @@ _scv_expr _scv_constraint_manager::assignValueMember(scv_extensions_if* e, bool 
 
 void _scv_constraint_manager::assignRandomValue(scv_constraint_base* c, bool simplify)
 {
-  list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>::iterator i;
 
-  list<scv_smart_ptr_if*>& pointers_ = c->get_members();
+  std::list<scv_smart_ptr_if*>& pointers_ = c->get_members();
 
   setRandomGen(c->get_random());
 
@@ -2286,14 +2297,14 @@ _scv_expr _scv_constraint_manager::getBasicEnumConstraint(void)
     _scv_expr tmp_expr;
     _scv_expr var_expr;
     _scv_expr tmp;
-    list<scv_extensions_if*>::iterator i;   
+    std::list<scv_extensions_if*>::iterator i;   
     for (i = enumVarList->begin(); i != enumVarList->end(); i++) {
       scv_extensions_if* enum_var = (*i);
       int bitwidth = enum_var->get_bitwidth();
      
-      list<int> ilist;
-      list<const char *> slist; 
-      list<int>::iterator iter;
+      std::list<int> ilist;
+      std::list<const char *> slist; 
+      std::list<int>::iterator iter;
 
       enum_var->get_enum_details(slist, ilist);
       var_expr = getExprRepZero(); 
@@ -2524,8 +2535,7 @@ int _scv_constraint_manager::getVecSize(scv_extensions_if* s) const
 
 unsigned _scv_constraint_manager::getStartIndex(scv_extensions_if* s) const
 {
-  _smartDataRecordT * sDataP;
-  sDataP = NULL; /* To shut up GCC warnings */
+  _smartDataRecordT * sDataP = NULL;
   extHash->get(s, sDataP);
   return sDataP->startIndex;
 }
@@ -2565,15 +2575,19 @@ void _scv_constraint_manager::getVectorFromBdd(ddNodeT *N)
   }
   while (node != oneNode && node != zeroNode) { 
     Nt = Cudd_T(node); Ne = Cudd_E(node);
+    ValueIndexSizeType nodeIndex = Cudd_Regular(node)->index;
+    if (nodeIndex >= valueIndex.size()) {
+      valueIndex.resize(nodeIndex + 1);
+    }
     if (Cudd_IsComplement(node)) { 
       Nt = Cudd_Not(Nt);
       Ne = Cudd_Not(Ne);
     }
     if (Ne == zeroNode) {
-      valueIndex[Cudd_Regular(node)->index] = 1;
+      valueIndex[nodeIndex] = 1;
       node = Nt;
     } else if (Nt == zeroNode) {
-      valueIndex[Cudd_Regular(node)->index] = 0;
+      valueIndex[nodeIndex] = 0;
       node = Ne;
     } else {
       int branchElse;
@@ -2592,10 +2606,10 @@ void _scv_constraint_manager::getVectorFromBdd(ddNodeT *N)
         branchElse = ((randomnext % 2) == 1); 
       }
       if (branchElse) {
-        valueIndex[Cudd_Regular(node)->index] = 0;
+        valueIndex[nodeIndex] = 0;
         node = Ne;
       } else {
-        valueIndex[Cudd_Regular(node)->index] = 1;
+        valueIndex[nodeIndex] = 1;
         node = Nt;
       }
     }
@@ -2680,11 +2694,14 @@ void _scv_constraint_manager::_setValue(T value, scv_extensions_if* s, int start
 
   randomnext = getRandomGenP()->next();
   unsigned checkvalue = 0;
-  unsigned* vvalue = valueIndex;
 
+  ValueIndexSizeType valueIndexMaxIndex = (msize > 0) ? (msize-1) * numvar + starti : 0;
+  if (valueIndexMaxIndex >= valueIndex.size()) {
+    valueIndex.resize(valueIndexMaxIndex + 1);
+  }
   for (int i=0; i < msize; i++) {
     tmp = 0x1;
-    checkvalue = vvalue[(i*numvar)+starti];
+    checkvalue = valueIndex[(i*numvar)+starti];
     switch(checkvalue) {
     case 0:
       break;
@@ -2700,23 +2717,26 @@ void _scv_constraint_manager::_setValue(T value, scv_extensions_if* s, int start
       }
       break;
     }
-  } 
+  }
   s->assign(uvalue);
 }
 
 void _scv_constraint_manager::_setBigValue(scv_extensions_if* s, int starti, int msize, int numvar) {
   unsigned checkvalue = 0;
-  unsigned* vvalue = valueIndex;
 
   randomnext = getRandomGenP()->next();
   sc_bv_base base_value(msize);
-
+  assert(msize>0);
+  ValueIndexSizeType valueIndexMaxIndex = (((msize-1)/32)*32 + 31) * numvar + starti;
+  if (valueIndexMaxIndex >= valueIndex.size()) {
+    valueIndex.resize(valueIndexMaxIndex + 1);
+  }
   for (int j=0; j <= (msize-1) / 32; j++) {
     unsigned uvalue = 0;
     unsigned tmp = 1; 
-  
+
     for (int i=0; i < 32; i++) {
-      checkvalue = vvalue[(j*32+i)*numvar+starti];
+      checkvalue = valueIndex[(j*32+i)*numvar+starti];
       switch(checkvalue) {
       case 0:
         break;
@@ -2727,7 +2747,7 @@ void _scv_constraint_manager::_setBigValue(scv_extensions_if* s, int starti, int
       case 2:
         updateRandomNext();
         if (randomnext%2) { 
-          tmp = 0x1 << i; 
+          tmp = 0x1 << i;
           uvalue = (uvalue | tmp);
         }
         break;
@@ -2827,16 +2847,16 @@ double _scv_constraint_manager::getWeightNode(ddNodeT* node)
   e = getWeightNode(Ne);
 
   if (Nt != oneNode && Nt != zeroNode)  {
-    pthenBranch = pow(2.0,(int)(Cudd_Regular(Nt)->index - Cudd_Regular(node)->index - 1)) * t;
+    pthenBranch = pow(2.0, static_cast<int>(Cudd_Regular(Nt)->index - Cudd_Regular(node)->index - 1)) * t;
   } else if (Nt == oneNode) {
-    pthenBranch = pow(2.0,(int)(numBddVar - Cudd_Regular(node)->index - 1)) * t;
+    pthenBranch = pow(2.0, static_cast<int>(numBddVar - Cudd_Regular(node)->index - 1)) * t;
   } else {
     pthenBranch = t ;
   }
   if (Ne != oneNode && Ne != zeroNode) {
-    pelseBranch =  pow(2.0,(int)(Cudd_Regular(Ne)->index - Cudd_Regular(node)->index - 1)) * e  ;
+    pelseBranch =  pow(2.0, static_cast<int>(Cudd_Regular(Ne)->index - Cudd_Regular(node)->index - 1)) * e  ;
   } else if (Ne == oneNode) {
-    pelseBranch = pow(2.0,(int)(numBddVar - Cudd_Regular(node)->index - 1)) * e;
+    pelseBranch = pow(2.0, static_cast<int>(numBddVar - Cudd_Regular(node)->index - 1)) * e;
   } else {
     pelseBranch = e ;
   }
@@ -2844,7 +2864,7 @@ double _scv_constraint_manager::getWeightNode(ddNodeT* node)
   nodeWeight = pthenBranch + pelseBranch;
 
   nodeWeightHash->insert(node, nodeWeight);
-  nodeHashP->update(node, (int)floor((pelseBranch/nodeWeight)*ROUNDTO));
+  nodeHashP->update(node, static_cast<int>(std::floor((pelseBranch/nodeWeight)*ROUNDTO)));
 
   if (verboseLevel > 3) {
     scv_out << "Branching : " << node << "(" << Cudd_Regular(node)->index << ")" ;
@@ -2853,7 +2873,7 @@ double _scv_constraint_manager::getWeightNode(ddNodeT* node)
     scv_out << " t : " << t << " " << " e : " << e << " " << pthenBranch << " " << pelseBranch << endl;
     scv_out << Cudd_Regular(node) << " : " << pelseBranch  ;
     scv_out << " /  " << nodeWeight  ;
-    scv_out << " : " << (int)floor((pelseBranch/nodeWeight)*ROUNDTO) << endl;
+    scv_out << " : " << static_cast<int>(std::floor((pelseBranch/nodeWeight)*ROUNDTO)) << endl;
   }
 
   return nodeWeight;
@@ -2898,13 +2918,13 @@ bool _scv_constraint_manager::isOverConstrained(const _scv_expr& e)
 
 struct registry_record {
   scv_constraint_base * c;
-  list<scv_smart_ptr_if*> m;
+  std::list<scv_smart_ptr_if*> m;
   registry_record(scv_constraint_base *c) : c(c) {}
   registry_record(const registry_record& rhs) : c(rhs.c), m(rhs.m) {}
 };
 
-static list<registry_record> in_progress;
-static list<registry_record> registry;
+static std::list<registry_record> in_progress;
+static std::list<registry_record> registry;
 
 void _scv_insert_smart_ptr(scv_smart_ptr_if * new_ptr) {
   if (!in_progress.empty()) { 
@@ -2925,7 +2945,7 @@ void _scv_pop_constraint() {
 }
 
 void _scv_print_registry() {
-  list<registry_record>::iterator i = registry.begin();
+  std::list<registry_record>::iterator i = registry.begin();
   scv_out << "The registry has "
        << registry.size() << " scv_constraint_base." << endl;
   for (; i != registry.end(); ++i) {
@@ -2992,7 +3012,7 @@ static void _scv_copy_values(scv_extensions_if* to, scv_extensions_if* from)
       break;
     case scv_extensions_if::FIXED_POINT_INTEGER :
     case scv_extensions_if::UNSIGNED_FIXED_POINT_INTEGER : {
-      const string msg = "type " + string(to->get_type_name());
+      const std::string msg = "type " + std::string(to->get_type_name());
       _scv_constraint_error::notImplementedYet(msg.c_str());
       break;
     }
@@ -3108,14 +3128,14 @@ bddNodeT& _scv_bdd_and(bddNodeT& bh, bddNodeT& bs, const scv_constraint_base* c)
 
 scv_extensions_if * _scv_find_extension(scv_constraint_base * c, scv_extensions_if* e)
 {
-  list<scv_smart_ptr_if*>& frommembers = e->get_constraint_data()->
+  std::list<scv_smart_ptr_if*>& frommembers = e->get_constraint_data()->
                                          get_constraint()->get_members();
-  list<scv_smart_ptr_if*>& inmembers = c->get_members();
+  std::list<scv_smart_ptr_if*>& inmembers = c->get_members();
 
-  list<scv_smart_ptr_if*>::iterator i;
-  list<scv_smart_ptr_if*>::iterator j;
-  for (i= frommembers.begin(), j = inmembers.begin();
-       i != frommembers.end(), j != inmembers.end();
+  std::list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>::iterator j;
+  for (i = frommembers.begin(), j = inmembers.begin();
+       (i != frommembers.end()) && (j != inmembers.end());
        ++i, ++j) {
     if ((*i)->get_extensions_ptr() == e) {
       return (*j)->get_extensions_ptr();
@@ -3127,13 +3147,13 @@ scv_extensions_if * _scv_find_extension(scv_constraint_base * c, scv_extensions_
 
 void _scv_copy_values(scv_constraint_base* to, scv_constraint_base* from)
 {
-  list<scv_smart_ptr_if*>& to_pointers_ = to->get_members();
-  list<scv_smart_ptr_if*>& from_pointers_ = from->get_members();
+  std::list<scv_smart_ptr_if*>& to_pointers_ = to->get_members();
+  std::list<scv_smart_ptr_if*>& from_pointers_ = from->get_members();
 
-  list<scv_smart_ptr_if*>::iterator i;
-  list<scv_smart_ptr_if*>::iterator j;
-  for (i= to_pointers_.begin(), j = from_pointers_.begin();
-       i != to_pointers_.end(), j != from_pointers_.end();
+  std::list<scv_smart_ptr_if*>::iterator i;
+  std::list<scv_smart_ptr_if*>::iterator j;
+  for (i = to_pointers_.begin(), j = from_pointers_.begin();
+       (i != to_pointers_.end()) && (j != from_pointers_.end());
        ++i, ++j) {
     _scv_copy_values((*i)->get_extensions_ptr(), (*j)->get_extensions_ptr());
   }
@@ -3162,11 +3182,11 @@ void _scv_delete_constraint(scv_constraint_base * c)
 
 void _scv_assign_enum_value(scv_extensions_if* e, _scv_constraint_data* cdata_, int e1_val, int e2_val)
 {
-  list<int> ilist;
-  list<const char *> slist;
-  list<int>::iterator iter;
-  list<int>::iterator belem;
-  list<int>::iterator eelem;
+  std::list<int> ilist;
+  std::list<const char *> slist;
+  std::list<int>::iterator iter;
+  std::list<int>::iterator belem;
+  std::list<int>::iterator eelem;
  
   unsigned count = 0; 
   unsigned nth = 0;
@@ -3211,7 +3231,7 @@ void _scv_assign_enum_value(scv_extensions_if* e, _scv_constraint_data* cdata_, 
   }
 }
 
-const string& _scv_get_name(scv_constraint_base* c)
+const std::string& _scv_get_name(scv_constraint_base* c)
 {
   return c->get_name_string();
 }
@@ -3296,9 +3316,9 @@ void generate_value_range_constraint(scv_extensions_if* data,
         default: 
           break;
       }
-      list<int> ilist;
-      list<const char *> slist;
-      list<int>::iterator iter;
+      std::list<int> ilist;
+      std::list<const char *> slist;
+      std::list<int>::iterator iter;
       unsigned count = 0;
 
       data->get_enum_details(slist, ilist);
@@ -3363,8 +3383,8 @@ void generate_value_extension(scv_extensions_if* data,
   } else if (data->is_floating_point_number()) {
     data->assign(e->get_double());
   } else {
-    const string msg = "use_constraint for type " + 
-                       string(e->get_type_name()) +   
+    const std::string msg = "use_constraint for type " + 
+                       std::string(e->get_type_name()) +   
                        "This message will be printed only once." ;
     static bool flag = false;
     if (!flag) {

@@ -1,3 +1,20 @@
+//  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
+/*****************************************************************************
+
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
+
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
+
+ *****************************************************************************/
 #include "scv.h"
 
 // nbcode "def" start
@@ -8,9 +25,9 @@ struct addr_constraint : public scv_constraint_base {
   scv_smart_ptr<int> col;
 
   SCV_CONSTRAINT_CTOR(addr_constraint) {
-    string tmp = string(get_name()) + ".row";
+    std::string tmp = std::string(get_name()) + ".row";
     row->set_name(tmp.c_str());
-    tmp = string(get_name()) + ".col";
+    tmp = std::string(get_name()) + ".col";
     col->set_name(tmp.c_str());
 
     //soft constraint on row to be between 10 and 50 exclusive or

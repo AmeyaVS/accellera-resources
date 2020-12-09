@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -51,19 +51,21 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Torsten Maehne,
+                               Universite Pierre et Marie Curie, 2013-04-20
+  Description of Modification: Fix Clang compiler warnings due to declaration
+                               of inline functions isPrime() and nextPrime()
+                               as static and not static inline.
 
  *****************************************************************************/
 
 #ifndef SCV_CONSTRAINT_H
 #define SCV_CONSTRAINT_H
 
-
 #include "scv/scv_introspection.h"
 
 #include "scv/scv_report.h"
-#include <string.h>
+#include <vector>
 
 // This file defines classes used to solve complex constraints 
 // using BDD's (Binary Decision Diagrams).
@@ -126,7 +128,7 @@ public:
 //************************************************************* 
 //  Utilities (local to this file) 
 //*************************************************************
-static bool isPrime(unsigned long n) {
+static inline bool isPrime(unsigned long n) {
   unsigned long i = 3;
   if ( n < 3 ) return true;
   if ( n % 2 == 0 ) return false;
@@ -137,7 +139,7 @@ static bool isPrime(unsigned long n) {
   return true;
 }
 
-static unsigned long nextPrime(unsigned long n) {
+static inline unsigned long nextPrime(unsigned long n) {
   while( !isPrime(n) ) n++;
   return n;
 }
@@ -467,7 +469,7 @@ public:
 // * Public interface to this class is provided via bddRandomize
 //   and wrapup routines which generate random numbers and
 //   do appropriate data structure cleanup based on the usage 
-//   of a data object
+//   of a data object.
 //******************************************************************
 
 #define ROUNDTO 65536
@@ -487,34 +489,27 @@ private:
   _scv_associative_array<scv_extensions_if*, int> *countExtHash;       
   _scv_associative_array<scv_constraint_base*, bddNodeT*> *avoidDuplicateHash;       
   _scv_associative_array<scv_extensions_if*, bddNodeT*> *avoidDuplicateExtHash;       
-  list<scv_extensions_if*>* enumVarList;
+  std::list<scv_extensions_if*>* enumVarList;
 
   _scv_expr* exprRepZero; // internal representation for Zero 
   _scv_expr* exprRepOne;  // internal representation for One
-  int maxTime;      // maximum time allowed to generate a random number satisfying 
-                    // valid constraints
-  int maxMemory;    // maximum memory allowed to generate random number satisfying
-                    // valid constraints
   int verboseLevel; // internal variable used to define level of verbosity for
                     // debugging 
   int nthvar;       // used to obtain bdd variable index for interleaved variable ordering
   int maxvar;       // used fo obtain bdd variable index for interleaved variable ordering
   int numBddVar;
   int maxNumBits;
-  int multiple; 
-  int iteration;
-  int numBitsUnsigned;
   int numBitsSigned;
-  int numBitsUInt64T;
   int *eProb;
-  unsigned* valueIndex;
+  std::vector<unsigned> valueIndex;
+  typedef std::vector<unsigned>::size_type ValueIndexSizeType;
   scv_extensions_if::mode_t mode;
   unsigned randomnext;
   DdNode* oneNode;
   DdNode* zeroNode;
 public:
-   _scv_constraint_manager();
-  ~ _scv_constraint_manager();
+  _scv_constraint_manager();
+  ~_scv_constraint_manager();
 public:
   friend void _scv_set_value(scv_extensions_if* e, scv_constraint_base* c, scv_shared_ptr<scv_random> g);
   friend void _scv_set_value(scv_extensions_if* e, _scv_constraint_data* cdata_);
@@ -670,11 +665,11 @@ public: // randomization value generation and configuration
   scv_shared_ptr<scv_random> get_random(void);
 
   // provide external list
-  void get_members(list<scv_smart_ptr_if*>& vlist); 
+  void get_members(std::list<scv_smart_ptr_if*>& vlist); 
 
 public: // debugging interface
   const char *get_name() const;
-  const string& get_name_string() const;
+  const std::string& get_name_string() const;
   virtual const char *kind() const;
   void print(ostream& o=scv_out, int details=0, int indent=0) const;
   virtual void show(int details=0, int indent=0) const;
@@ -700,7 +695,7 @@ private: // implementation specific interface
   void initialize();
 
   // setup data structures when object is created
-  void set_up_members(list<scv_smart_ptr_if*>& members); 
+  void set_up_members(std::list<scv_smart_ptr_if*>& members); 
 
   // get a copy of the constraint object and initialize members to
   // same value as of the parent constraint object
@@ -737,7 +732,7 @@ private: // implementation specific interface
   void set_expression_string(const char * e, bool hard_constraint);
 
   // list of scv_smart_ptr members in the constraint object
-  list<scv_smart_ptr_if*>& get_members(void); 
+  std::list<scv_smart_ptr_if*>& get_members(void); 
 
 
 private: // friend methods and classes for solving constraints
@@ -751,16 +746,16 @@ private: // friend methods and classes for solving constraints
     scv_constraint_base * from);
 
 private:
-  list<scv_smart_ptr_if*> pointers_;
+  std::list<scv_smart_ptr_if*> pointers_;
   scv_shared_ptr<scv_random> gen_;
   scv_extensions_if::mode_t mode_;
   static int debug_;
   int scan_counter_;
 protected:
   bool ignore_; 
-  string name_;
-  string _hard_constraints;
-  string _soft_constraints;
+  std::string name_;
+  std::string _hard_constraints;
+  std::string _soft_constraints;
 };
 
 // define macro to avoid warning on linux
@@ -845,11 +840,11 @@ public:
     _scv_message::message(_scv_message::CONSTRAINT_ERROR_INTERNAL,
                               messageP);
   }
-  static void cannotMeetConstraint(const string name) {
+  static void cannotMeetConstraint(const std::string name) {
     _scv_message::message(_scv_message::CONSTRAINT_ERROR_OVER_CONSTRAINED,
                             name.c_str());
   }
-  static void ignoredLevel(const string name) {
+  static void ignoredLevel(const std::string name) {
     _scv_message::message(_scv_message::CONSTRAINT_WARNING_IGNORE_SOFT_CONSTRAINT,
                               name.c_str());
   }
@@ -866,6 +861,3 @@ public:
 extern void scv_constraint_startup();
 
 #endif
-
-
-

@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -37,15 +37,15 @@
 
  *****************************************************************************/
 
+/*
+ * Fixes ambiguous operator error in SystemC 2.2.0 when building SCV with 
+ * SC_INCLUDE_FX defined
+ */
+#if defined(SC_INCLUDE_FX) && !defined(SC_FX_EXCLUDE_OTHER)
+#define SC_FX_EXCLUDE_OTHER
+#endif
+
 #include "scv/scv_util.h"
-
-#ifndef _SCV_INTROSPECTION_ONLY
-#include "scv/scv_config.h"
-#endif
-
-#ifndef _SCV_INTROSPECTION_NO_SYSTEMC
-#include <systemc.h>
-#endif
 
 #include "scv/scv_introspection.h"
 
@@ -74,7 +74,6 @@ void _scv_constraint_wrapup(scv_extensions_if* e);
 // ----------------------------------------
 #ifdef _SCV_INTROSPECTION_ONLY
 
-#include <stdarg.h>
 struct scv_error_data
 {
   const char* error_name;
@@ -98,8 +97,8 @@ void scv_extensions_if::set_debug(int i)
 // ----------------------------------------
 _scv_dynamic_data::~_scv_dynamic_data() {
   /*
-  list<_scv_dynamic_data::callback_base*>::iterator i;
-  list<_scv_dynamic_data::callback_base*>::iterator e = _callbacks.end();
+  std::list<_scv_dynamic_data::callback_base*>::iterator i;
+  std::list<_scv_dynamic_data::callback_base*>::iterator e = _callbacks.end();
   for (i = _callbacks.begin(); i != e; ++i) {
     delete *i;
   }
@@ -107,8 +106,8 @@ _scv_dynamic_data::~_scv_dynamic_data() {
 }
 
 void _scv_dynamic_data::execute_callbacks(scv_extensions_if * obj, scv_extensions_if::callback_reason r) {
-  list<_scv_dynamic_data::callback_base*>::iterator i;
-  list<_scv_dynamic_data::callback_base*>::iterator e = _callbacks.end();
+  std::list<_scv_dynamic_data::callback_base*>::iterator i;
+  std::list<_scv_dynamic_data::callback_base*>::iterator e = _callbacks.end();
   for (i = _callbacks.begin(); i != e; ++i) {
     (*i)->execute(obj,r);
   }
@@ -119,9 +118,9 @@ void _scv_dynamic_data::execute_callbacks(scv_extensions_if * obj, scv_extension
 // ----------------------------------------
 
 const char *_scv_extension_util::get_name() const { return _name.c_str(); }
-const char *_scv_extension_util::kind() const { static const string s = "scv_extensions_if"; return s.c_str(); }
+const char *_scv_extension_util::kind() const { static const std::string s = "scv_extensions_if"; return s.c_str(); }
 void _scv_extension_util::print(ostream& o, int details, int indent) const { 
-  string space = "";
+  std::string space = "";
   for (int i=0; i<indent; ++i) space += " ";
 
   switch (get_type()) {
@@ -145,7 +144,7 @@ void _scv_extension_util::print(ostream& o, int details, int indent) const {
       o << space << get_short_name() << ":" << get_enum_string((int)get_integer()) << endl;
     break;
   case INTEGER:
-#ifdef SYSTEMC_H    
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)    
     if (get_bitwidth()>64) {
       sc_bv_base v(get_bitwidth());
       get_value(v);
@@ -162,7 +161,7 @@ void _scv_extension_util::print(ostream& o, int details, int indent) const {
       o << space << get_short_name() << ":" << get_integer() << endl;
     break;
   case UNSIGNED:
-#ifdef SYSTEMC_H    
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)    
     if (get_bitwidth()>64) {
       sc_bv_base v(get_bitwidth());
       get_value(v);
@@ -185,7 +184,7 @@ void _scv_extension_util::print(ostream& o, int details, int indent) const {
       o << space << get_short_name() << ":" << get_double() << endl;
     break;
   case BIT_VECTOR:
-#ifdef SYSTEMC_H    
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)    
     {
       sc_bv_base v(get_bitwidth());
       get_value(v);
@@ -197,7 +196,7 @@ void _scv_extension_util::print(ostream& o, int details, int indent) const {
 #endif
     break;
   case LOGIC_VECTOR:
-#ifdef SYSTEMC_H    
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)    
     {
       sc_lv_base v(get_bitwidth());
       get_value(v);
@@ -266,7 +265,7 @@ bool _scv_extension_util::is_dynamic() const { return _is_dynamic(); }
 
 std::string _scv_extension_util::get_short_name() const { return std::string(_short_name.c_str()); }
 void _scv_extension_util::set_name(const char * s) { _name = s; }
-void _scv_extension_util::_set_name(const string& s) { _name = s; }
+void _scv_extension_util::_set_name(const std::string& s) { _name = s; }
 
 _scv_dynamic_data * _scv_extension_util::_get_dynamic_data() {
   if (!_is_dynamic())return 0;
@@ -281,7 +280,7 @@ const _scv_dynamic_data * _scv_extension_util::_get_dynamic_data() const {
   if (_data == (_scv_dynamic_data*) 1) _data = new _scv_dynamic_data();
   return _data;
 }
-void _scv_extension_util::_set_parent(_scv_extension_util * p, const string& name) {
+void _scv_extension_util::_set_parent(_scv_extension_util * p, const std::string& name) {
   if ( ! _parent ) {
     _parent = p;
     _short_name = name;
@@ -296,15 +295,15 @@ void _scv_extension_util::_set_dynamic() {
 // _scv_extension_util_enum
 // ----------------------------------------
 
-void _scv_extension_util_enum::_get_enum_details(list<const char *>& names, list<int>& values) const {
+void _scv_extension_util_enum::_get_enum_details(std::list<const char *>& names, std::list<int>& values) const {
   names = _get_names();
   values = _get_values();
 }
 const char * _scv_extension_util_enum::_get_enum_string(int e) const {
-  list<const char *>& names = _get_names();
-  list<int>& values = _get_values();
-  list<const char *>::iterator i;
-  list<int>::iterator j;
+  std::list<const char *>& names = _get_names();
+  std::list<int>& values = _get_values();
+  std::list<const char *>::iterator i;
+  std::list<int>::iterator j;
   for (i = names.begin(), j = values.begin();
        i != names.end();
        ++i, ++j) {
@@ -325,7 +324,7 @@ scv_extensions_if::data_type _scv_extension_type_enum::get_type() const {
 int _scv_extension_type_enum::get_enum_size() const {
   return _get_enum_size();
 }
-void _scv_extension_type_enum::get_enum_details(list<const char *>& names, list<int>& values) const {
+void _scv_extension_type_enum::get_enum_details(std::list<const char *>& names, std::list<int>& values) const {
   _get_enum_details(names,values);
 }
 const char * _scv_extension_type_enum::get_enum_string(int e) const { 
@@ -347,7 +346,7 @@ const scv_extensions_if * _scv_extension_type_enum::get_array_elt(int) const { r
 // _scv_extension_rw_enum
 // ----------------------------------------
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 #define _SCV_DEFAULT_RW_SYSC(class_name,obj) \
   void class_name::assign(const sc_bv_base& v) { _SCV_RW_ERROR(assign,sc_bv_base,obj); } \
   void class_name::get_value(sc_bv_base& v) const { _SCV_RW_ERROR(get_value,sc_bv_base,obj); } \
@@ -370,12 +369,12 @@ void _scv_extension_rw_enum::assign(long long v) { *_get_instance() = (int) v; t
 void _scv_extension_rw_enum::assign(unsigned long long v) { *_get_instance() = (int) v; trigger_value_change_cb(); }
 void _scv_extension_rw_enum::assign(float) { _SCV_RW_ERROR(assign,float,enum); }
 void _scv_extension_rw_enum::assign(double) { _SCV_RW_ERROR(assign,double,enum); }
-void _scv_extension_rw_enum::assign(const string& s) { assert(s.c_str()); }
+void _scv_extension_rw_enum::assign(const std::string& s) { assert(s.c_str()); }
 void _scv_extension_rw_enum::assign(const char * s) {
-  list<int>& values = _get_values();
-  list<const char *>& names = _get_names();
-  list<int>::iterator i = values.begin();
-  list<const char *>::iterator j = names.begin();
+  std::list<int>& values = _get_values();
+  std::list<const char *>& names = _get_names();
+  std::list<int>::iterator i = values.begin();
+  std::list<const char *>::iterator j = names.begin();
   while (j != names.end() && 0!=strcmp(*j,s)) {
     ++i; ++j;
   }
@@ -515,7 +514,7 @@ void _scv_extension_rand_enum::set_value_mode(_scv_constraint_data::gen_mode m) 
 }
 template <typename T>
 bool check_mode(scv_extensions_if::mode_t t,
-  scv_extensions_if* e, const string& name,
+  scv_extensions_if* e, const std::string& name,
    _scv_distribution<T> * dist);
 #endif
 
@@ -534,7 +533,7 @@ void _scv_extension_callbacks_enum::remove_cb(callback_h id) {
 
 #define _SCV_EXT_TYPE_FC_COMMON_I(type_id)	\
   int _scv_extension_type_ ## type_id::get_enum_size() const { return 0; } \
-  void _scv_extension_type_ ## type_id::get_enum_details(list<const char *>&, list<int>&) const {} \
+  void _scv_extension_type_ ## type_id::get_enum_details(std::list<const char *>&, std::list<int>&) const {} \
   const char *_scv_extension_type_ ## type_id::get_enum_string(int) const { return "_error"; } \
   \
   int _scv_extension_type_ ## type_id::get_num_fields() const { return 0; } \
@@ -604,9 +603,9 @@ _SCV_EXT_TYPE_FC_I(unsigned long,unsigned_long,UNSIGNED);
 _SCV_EXT_TYPE_FC_I(unsigned long long,unsigned_long_long,UNSIGNED);
 _SCV_EXT_TYPE_FC_I(float,float,FLOATING_POINT_NUMBER);
 _SCV_EXT_TYPE_FC_I(double,double,FLOATING_POINT_NUMBER);
-_SCV_EXT_TYPE_FC_I(string,string,STRING);
+_SCV_EXT_TYPE_FC_I(std::string,string,STRING);
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 _SCV_EXT_TYPE_1_FC_I(sc_bit,sc_bit,BIT_VECTOR);
 _SCV_EXT_TYPE_1_FC_I(sc_logic,sc_logic,LOGIC_VECTOR);
 _SCV_EXT_TYPE_D_FC_I(sc_signed,sc_signed,INTEGER);
@@ -639,7 +638,7 @@ _SCV_EXT_TYPE_D_FC_I(sc_bv_base,sc_bv_base,BIT_VECTOR);
   void _scv_extension_rw_ ## type_id::_set_instance(T* p) { _instance = p; _set_instance_core_wrap(p); } \
   void _scv_extension_rw_ ## type_id::_set_instance_core_wrap(void*) {} \
   void _scv_extension_rw_ ## type_id::_set_as_field(_scv_extension_util_record * parent, T* p, \
-		    const string& name) { \
+		    const std::string& name) { \
     if (p) _set_instance(p); \
     else if ( ! this->_get_parent() ) { this->_set_parent(parent,name); parent->_add_field(this); } \
   } \
@@ -679,7 +678,7 @@ _SCV_EXT_TYPE_D_FC_I(sc_bv_base,sc_bv_base,BIT_VECTOR);
   _SCV_EXT_RW_FC_ASSIGNS_I(basic_type,type_id,bitwidth); \
 
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 #define _SCV_EXT_RW_FC_BAD_ASSIGNS_SYSC_I(type_name,type_id) \
   void _scv_extension_rw_ ## type_id::assign(const sc_bv_base& v) { \
     _SCV_RW_ERROR(assign,sc_bv_base,type_name); \
@@ -747,7 +746,7 @@ _SCV_EXT_TYPE_D_FC_I(sc_bv_base,sc_bv_base,BIT_VECTOR);
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,unsigned long long); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
+  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const std::string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const { \
     return *(this->_get_instance()) != 0; \
@@ -799,7 +798,7 @@ _SCV_EXT_RW_FC_I(unsigned long long,unsigned_long_long,64);
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,unsigned long long); \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,double); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
+  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const std::string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const { \
     _SCV_RW_ERROR(get_bool,bool,type_name); \
@@ -843,7 +842,7 @@ _SCV_EXT_RW_FC_I(double,double,dummy);
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,unsigned long long); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
-  _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const string&); \
+  _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const std::string&); \
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const { \
     return *(this->_get_instance()) != ""; \
@@ -862,7 +861,7 @@ _SCV_EXT_RW_FC_I(double,double,dummy);
   }	                                                      \
   _SCV_EXT_RW_FC_BAD_ASSIGNS_SYSC_I(type_name,type_id) \
 
-_SCV_EXT_RW_FC_I(string,string,dummy);
+_SCV_EXT_RW_FC_I(std::string,string,dummy);
 
 #undef _SCV_EXT_RW_FC_ASSIGNS_I
 
@@ -872,7 +871,7 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
 
 #undef _SCV_EXT_RW_FC_I
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 #undef _SCV_EXT_RW_FC_ASSIGNS_SYSC_I
 #undef _SCV_EXT_RW_FC_BAD_ASSIGNS_SYSC_I
 #endif
@@ -881,7 +880,7 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
 // SystemC Types
 // ------------------------------------------------------------
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 
 // --------------
 // sc_bit and sc_logic (begin)
@@ -911,7 +910,7 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
   _SCV_EXT_RW_FC_BOOL_ASSIGN_I(type_name,type_id,unsigned long long); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
+  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const std::string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const { \
     return this->_get_instance()->to_bool(); \
@@ -1012,7 +1011,7 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
     { _instance = p; _set_instance_core_wrap(p); _bitwidth = p ? p->length() : 0; } \
   void _scv_extension_rw_ ## type_id::_set_instance_core_wrap(void*) {} \
   void _scv_extension_rw_ ## type_id::_set_as_field(_scv_extension_util_record * parent, T* p, \
-		    const string& name) { \
+		    const std::string& name) { \
     if (p) _set_instance(p); \
     else if ( ! this->_get_parent() ) { this->_set_parent(parent,name); parent->_add_field(this); } \
   } \
@@ -1039,7 +1038,7 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,unsigned long long); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
+  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const std::string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const \
     { return *(this->_get_instance()) != 0; } \
@@ -1071,7 +1070,7 @@ _SCV_EXT_RW_FC_I(string,string,dummy);
   _SCV_EXT_RW_FC_ASSIGN_I(type_name,type_id,unsigned long long); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,float); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,double); \
-  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const string&); \
+  _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const std::string&); \
   _SCV_EXT_RW_FC_BAD_ASSIGN_I(type_name,type_id,const char *); \
   bool _scv_extension_rw_ ## type_id::get_bool() const \
     { return *(this->_get_instance()) != 0; } \
@@ -1187,7 +1186,7 @@ _SCV_EXT_RW_FC_ASSIGNS_V(sc_bv_base,sc_bv_base)
     _reset_bag_distribution(); \
     _scv_keep_range(this, lb, ub, false); \
   } \
-  void _scv_extension_rand_ ## type_id::keep_only(const list<T>& vlist) { \
+  void _scv_extension_rand_ ## type_id::keep_only(const std::list<T>& vlist) { \
     _reset_bag_distribution(); \
     _scv_keep_range(this, vlist); \
   } \
@@ -1199,9 +1198,9 @@ _SCV_EXT_RW_FC_ASSIGNS_V(sc_bv_base,sc_bv_base)
     _reset_bag_distribution(); \
     _scv_keep_range(this, lb, ub, true); \
   } \
-  void _scv_extension_rand_ ## type_id::keep_out(const list<T>& vlist) { \
+  void _scv_extension_rand_ ## type_id::keep_out(const std::list<T>& vlist) { \
     _reset_bag_distribution(); \
-    list<T>::const_iterator i; \
+    std::list<T>::const_iterator i; \
     for (i = vlist.begin(); i != vlist.end(); i++) { \
       _scv_keep_range(this, *i, *i, true); \
     } \
@@ -1246,7 +1245,7 @@ _SCV_EXT_RW_FC_ASSIGNS_V(sc_bv_base,sc_bv_base)
     else   \
       this->get_constraint_data()->set_ext_mode(t, lb, ub); \
   } \
-  void _scv_extension_rand_ ## type_id::set_mode(scv_bag<pair<T, T> >& d) { \
+  void _scv_extension_rand_ ## type_id::set_mode(scv_bag<std::pair<T, T> >& d) { \
     _reset_keep_only_distribution(); \
     if (!_get_distribution()) { this->_get_dynamic_data()->dist_ = new _scv_distribution<T>; } \
     _get_distribution()->set_mode(d,this->get_constraint_data(),this); \
@@ -1381,10 +1380,10 @@ _SCV_EXT_RAND_FC_I(long long,long_long);
 _SCV_EXT_RAND_FC_I(unsigned long long,unsigned_long_long);
 _SCV_EXT_RAND_FC_I(float,float);
 _SCV_EXT_RAND_FC_I(double,double);
-_SCV_EXT_RAND_FC_I(string,string);
+_SCV_EXT_RAND_FC_I(std::string,string);
 
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 _SCV_EXT_RAND_FC_1_I(sc_bit,sc_bit);
 _SCV_EXT_RAND_FC_1_I(sc_logic,sc_logic);
 _SCV_EXT_RAND_FC_D_I(sc_signed,sc_signed);
@@ -1440,10 +1439,10 @@ _SCV_EXT_CALLBACKS_FC_I(long long,long_long);
 _SCV_EXT_CALLBACKS_FC_I(unsigned long long,unsigned_long_long);
 _SCV_EXT_CALLBACKS_FC_I(float,float);
 _SCV_EXT_CALLBACKS_FC_I(double,double);
-_SCV_EXT_CALLBACKS_FC_I(string,string);
+_SCV_EXT_CALLBACKS_FC_I(std::string,string);
 
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 _SCV_EXT_CALLBACKS_FC_1_I(sc_bit,sc_bit);
 _SCV_EXT_CALLBACKS_FC_1_I(sc_logic,sc_logic);
 _SCV_EXT_CALLBACKS_FC_D_I(sc_signed,sc_signed);

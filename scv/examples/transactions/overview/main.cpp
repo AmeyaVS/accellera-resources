@@ -1,4 +1,20 @@
+//  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
+/*****************************************************************************
 
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
+
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
+
+ *****************************************************************************/
 // this code compiles and runs with our latest prototype for this specification
 
 #include "scv.h"
@@ -167,8 +183,8 @@ inline void test::main() {
 }
 
 class design : public pipelined_bus_ports {
-   list< sc_uint<8> > outstandingAddresses;
-   list< bool > outstandingType;
+   std::list< sc_uint<8> > outstandingAddresses;
+   std::list< bool > outstandingType;
    sc_uint<8>  memory[ram_size];
 
 public:
@@ -217,8 +233,8 @@ inline void design::data_phase() {
      }
      if (outstandingType.front() == 0) {
        cout << "reading memory address " << outstandingAddresses.front()
-            << " with value " << memory[outstandingAddresses.front()] << endl;
-       bus_data = memory[outstandingAddresses.front()];
+            << " with value " << memory[outstandingAddresses.front().to_ulong()] << endl;
+       bus_data = memory[outstandingAddresses.front().to_ulong()];
        data_rdy = 1;
        wait(clk->posedge_event());
        data_rdy = 0;
@@ -272,11 +288,9 @@ int sc_main (int argc , char *argv[])
    duv.data_rdy(data_rdy);
    duv.bus_data(bus_data);
 
-#if SCV_SC_VERSION >= 2002000
-   // SystemC >=2.2 got picky about multiple drivers.
+   // Accellera SystemC >=2.2 got picky about multiple drivers.
    // Disable check for bus simulation.
    sc_report_handler::set_actions(SC_ID_MORE_THAN_ONE_SIGNAL_DRIVER_, SC_DO_NOTHING);
-#endif
    // run the simulation
    sc_start(1.0, SC_MS);
 

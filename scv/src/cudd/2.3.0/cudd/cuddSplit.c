@@ -180,6 +180,10 @@ Cudd_SplitSet(
 	}
     } while (manager->reordered == 1);
 
+    /* The CUDD implementation assumes that result is not NULL at this
+    ** point. Make this explicit for static code analysis.
+    */
+    assert(result);
     cuddDeref(result);
     return(result);
 
@@ -275,7 +279,7 @@ cuddSplitSetRecur(
   
     /* Lookup the # of minterms in the onset of the node from the table. */
     if (!Cudd_IsConstant(Nv)) {
-	st_lookup(mtable,(char *)Nv, (char **)(void *)&dummy);
+	st_lookup(mtable,(char *)Nv, (char **)&dummy);
 	numT = *dummy/(2*(1<<index));
     } else if (Nv == one) {
 	numT = max/(2*(1<<index));
@@ -284,7 +288,7 @@ cuddSplitSetRecur(
     }
   
     if (!Cudd_IsConstant(Nnv)) {
-	st_lookup(mtable,(char *)Nnv, (char **)(void *)&dummy);
+	st_lookup(mtable,(char *)Nnv, (char **)&dummy);
 	numE = *dummy/(2*(1<<index));
     } else if (Nnv == one) {
 	numE = max/(2*(1<<index));
@@ -621,7 +625,7 @@ bddAnnotateMintermCount(
 	}
     }
 
-    if (st_lookup(table,(char *)node,(char **)(void *)&dummy)) {
+    if (st_lookup(table,(char *)node,(char **)&dummy)) {
 	return(*dummy);
     }	
   

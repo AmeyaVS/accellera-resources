@@ -1437,10 +1437,10 @@ ddSymmGroupMove(
   Move ** moves)
 {
     Move *move;
-    int	 size;
+    int	 size = 0;
     int  i,j;
     int  xtop,xbot,xsize,ytop,ybot,ysize,newxtop;
-    int  swapx,swapy;
+    int  swapx = x, swapy = y;
 
 #if DD_DEBUG
     assert(x < y);	/* we assume that x < y */
@@ -1454,7 +1454,6 @@ ddSymmGroupMove(
 	ybot = table->subtables[ybot].next;
     ytop = y;
     ysize = ybot - ytop + 1;
-    size = swapx = swapy = 0; /* To shut up GCC warnings */
 
     /* Sift the variables of the second group up through the first group. */
     for (i = 1; i <= ysize; i++) {
@@ -1517,7 +1516,7 @@ ddSymmGroupMoveBackward(
   int  x,
   int  y)
 {
-    int	size;
+    int	size = 0;
     int i,j;
     int	xtop,xbot,xsize,ytop,ybot,ysize,newxtop;
 
@@ -1534,7 +1533,6 @@ ddSymmGroupMoveBackward(
 	ybot = table->subtables[ybot].next;
     ytop = y;
     ysize = ybot - ytop + 1;
-    size = 0; /* To shut up GCC warnings */
 
     /* Sift the variables of the second group up through the first group. */
     for (i = 1; i <= ysize; i++) {

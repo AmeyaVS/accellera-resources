@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -37,7 +37,7 @@
 
  *****************************************************************************/
 
-const string& _scv_get_name(scv_constraint_base*);
+const std::string& _scv_get_name(scv_constraint_base*);
 
 #ifndef _SCV_INTROSPECTION_ONLY
 #include "scv/_scv_randomization.h"
@@ -450,16 +450,16 @@ public:
   void set_value_mode(_scv_constraint_data::gen_mode m); \
   void keep_only(const T& value); \
   void keep_only(const T& lb, const T& ub); \
-  void keep_only(const list<T>& vlist); \
+  void keep_only(const std::list<T>& vlist); \
   \
   void keep_out(const T& value); \
   void keep_out(const T& lb, const T& ub); \
-  void keep_out(const list<T>& vlist); \
+  void keep_out(const std::list<T>& vlist); \
   _scv_distribution<T> * _get_distribution(); \
   void _set_distribution(_scv_distribution<T>*); \
   virtual ~_scv_extension_rand_ ## type_id(); \
   void set_mode(scv_extensions_if::mode_t t); \
-  void set_mode(scv_bag<pair<T, T> >& d); \
+  void set_mode(scv_bag<std::pair<T, T> >& d); \
   void set_mode(scv_bag<T>& d); \
   void reset_distribution(); \
   scv_extensions_if::mode_t get_mode(void); \
@@ -664,7 +664,7 @@ public:
     _reset_bag_distribution();
     _scv_keep_range(this, lb, ub, false);
   }
-  void keep_only(const list<T>& vlist) {
+  void keep_only(const std::list<T>& vlist) {
     _reset_bag_distribution();
     _scv_keep_range(this, vlist);
   }
@@ -677,9 +677,9 @@ public:
     _reset_bag_distribution();
     _scv_keep_range(this, lb, ub, true);
   }
-  void keep_out(const list<T>& vlist) {
+  void keep_out(const std::list<T>& vlist) {
     _reset_bag_distribution();
-    typename list<T>::const_iterator i;
+    typename std::list<T>::const_iterator i;
     for (i = vlist.begin(); i != vlist.end(); i++) {
       _scv_keep_range(this, *i, *i, true);
     }
@@ -738,7 +738,7 @@ public:
     else 
       this->get_constraint_data()->set_ext_mode(t, lb, ub);
   }
-  void set_mode(scv_bag<pair<T, T> >& d) {
+  void set_mode(scv_bag<std::pair<T, T> >& d) {
     _reset_keep_only_distribution();
     if (!_get_distribution()) { this->_get_dynamic_data()->dist_ = new _scv_distribution<T>; }
     _get_distribution()->set_mode(d,this->get_constraint_data(),this);
@@ -792,11 +792,11 @@ _SCV_EXT_RAND_FC_D(long long,long_long);
 _SCV_EXT_RAND_FC_D(unsigned long long,unsigned_long_long);	
 _SCV_EXT_RAND_FC_D(float,float);			
 _SCV_EXT_RAND_FC_D(double,double);			
-_SCV_EXT_RAND_FC_D(string,string);			
+_SCV_EXT_RAND_FC_D(std::string,string);			
 _SCV_EXT_RAND_FC_N_D(test_uint<N>);		
 
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 _SCV_EXT_RAND_FC_1_D(sc_bit,sc_bit);		
 _SCV_EXT_RAND_FC_1_D(sc_logic,sc_logic);		
 _SCV_EXT_RAND_FC_N_D(sc_int<N>);		

@@ -35,6 +35,7 @@
 
 #include "util.h"
 #include "cuddInt.h"
+#include <assert.h>
 
 /*---------------------------------------------------------------------------*/
 /* Constant declarations                                                     */
@@ -420,7 +421,7 @@ cuddAddIteRecur(
     DdNode *one,*zero;
     DdNode *r,*Fv,*Fnv,*Gv,*Gnv,*Hv,*Hnv,*t,*e;
     unsigned int topf,topg,toph,v;
-    int index;
+    int index = -1; /* SCV: enable check for legal index value (0 < index < CUDD_MAXINDEX) */
 
     statLine(dd);
     /* Trivial cases. */
@@ -473,7 +474,6 @@ cuddAddIteRecur(
         Fv = cuddT(f); Fnv = cuddE(f);
     } else {
         Fv = Fnv = f;
-	index = 0; /* To shut up GCC warnings */
     }
     if (topg == v) {
 	index = g->index;
@@ -500,6 +500,8 @@ cuddAddIteRecur(
     }
     cuddRef(e);
 
+    /* SCV: assert that index got initialized before its usage. */
+    assert((t == e) || ((index >= 0) && (index <= CUDD_MAXINDEX)));
     r = (t == e) ? t : cuddUniqueInter(dd,index,t,e);
     if (r == NULL) {
 	Cudd_RecursiveDeref(dd,t);

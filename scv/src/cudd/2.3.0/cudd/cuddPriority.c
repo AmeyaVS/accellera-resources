@@ -38,6 +38,7 @@
 
 #include "util.h"
 #include "cuddInt.h"
+#include <assert.h>
 
 
 /*---------------------------------------------------------------------------*/
@@ -863,7 +864,8 @@ cuddCProjectionRecur(
 {
     DdNode *res, *res1, *res2, *resA;
     DdNode *r, *y, *RT, *RE, *YT, *YE, *Yrest, *Ra, *Ran, *Gamma, *Alpha;
-    unsigned int topR, topY, top, index;
+    unsigned int topR, topY, top;
+    unsigned int index = ~0; /* SCV: enable check for legal index value (0 < index < CUDD_MAXINDEX) */
     DdNode *one = DD_ONE(dd);
 
     statLine(dd);
@@ -895,7 +897,6 @@ cuddCProjectionRecur(
 	}
     } else {
 	RT = RE = R;
-	index = 0; /* To shut up GCC warnings */
     }
 
     if (topY > top) {
@@ -912,6 +913,8 @@ cuddCProjectionRecur(
 	    return(NULL);
 	}
 	cuddRef(res2);
+        /* SCV: assert that index got initialized before its usage. */
+        assert(index <= CUDD_MAXINDEX);
 	res = cuddBddIteRecur(dd, dd->vars[index], res1, res2);
 	if (res == NULL) {
 	    Cudd_RecursiveDeref(dd,res1);

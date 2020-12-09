@@ -310,7 +310,7 @@ Cudd_zddDumpDot(
     refAddr = (long) f[0];
     diff = 0;
     gen = st_init_gen(visited);
-    while (st_gen(gen, (char **)(void *) &scan, NULL)) {
+    while (st_gen(gen, (char **) &scan, NULL)) {
 	diff |= refAddr ^ (long) scan;
     }
     st_free_gen(gen);

@@ -329,7 +329,7 @@ cuddSubsetHeavyBranch(
 	return(0);
     }
 
-    if (st_lookup(visitedTable, (char *)f, (char **)(void *)&currNodeQual)) {
+    if (st_lookup(visitedTable, (char *)f, (char **)&currNodeQual)) {
 	minN = *(((NodeData_t *)currNodeQual)->mintermPointer);
     } else {
 	fprintf(dd->err,
@@ -680,7 +680,7 @@ SubsetCountMintermAux(
     } else {
 
 	/* check if entry for this node exists */
-	if (st_lookup(table,(char *)node, (char **)(void *)&dummy)) {
+	if (st_lookup(table,(char *)node, (char **)&dummy)) {
 	    min = *(dummy->mintermPointer);
 	    return(min);
 	}
@@ -861,7 +861,7 @@ SubsetCountNodesAux(
 	return(0);
 
     /* if this node has been processed do nothing */
-    if (st_lookup(table, (char *)node, (char **)(void *)&dummyN) == 1) {
+    if (st_lookup(table, (char *)node, (char **)&dummyN) == 1) {
 	val = dummyN->nodesPointer;
 	if (val != NULL)
 	    return(0);
@@ -884,7 +884,7 @@ SubsetCountNodesAux(
 	    minNv = max;
 	}
     } else {
-	if (st_lookup(table, (char *)Nv, (char **)(void *)&dummyNv) == 1)
+	if (st_lookup(table, (char *)Nv, (char **)&dummyNv) == 1)
 	    minNv = *(dummyNv->mintermPointer);
 	else {
 	    return(0);
@@ -897,7 +897,7 @@ SubsetCountNodesAux(
 	    minNnv = max;
 	}
     } else {
-	if (st_lookup(table, (char *)Nnv, (char **)(void *)&dummyNnv) == 1) {
+	if (st_lookup(table, (char *)Nnv, (char **)&dummyNnv) == 1) {
 	    minNnv = *(dummyNnv->mintermPointer);
 	}
 	else {
@@ -960,8 +960,7 @@ SubsetCountNodesAux(
        branch. Its complement will be reached later on a lighter branch.
        Hence the complement has zero node count. */
 
-    if (st_lookup(table, (char *)Cudd_Not(node),
-                  (char **)(void *)&dummyNBar) == 1)  {
+    if (st_lookup(table, (char *)Cudd_Not(node), (char **)&dummyNBar) == 1)  {
 	if (pageIndex == pageSize) ResizeCountNodePages();
 	if (memOut) {
 	    for (i = 0; i < page; i++) FREE(mintermPages[i]);
@@ -1168,8 +1167,7 @@ BuildSubsetBdd(
 	return(node);
 
     /* Look up minterm count for this node. */
-    if (!st_lookup(visitedTable, (char *)node,
-                   (char **)(void *)&currNodeQual)) {
+    if (!st_lookup(visitedTable, (char *)node, (char **)&currNodeQual)) {
 	fprintf(dd->err,
 		"Something is wrong, ought to be in node quality table\n");
     }
@@ -1186,7 +1184,7 @@ BuildSubsetBdd(
     if (!Cudd_IsConstant(Nv)) {
         /* find out minterms and nodes contributed by then child */
         if (!st_lookup(visitedTable, (char *)Nv,
-		       (char **)(void *)&currNodeQualT)) {
+		       (char **)&currNodeQualT)) {
 		fprintf(dd->out,"Something wrong, couldnt find nodes in node quality table\n");
 		dd->errorCode = CUDD_INTERNAL_ERROR;
 		return(NULL);
@@ -1203,8 +1201,7 @@ BuildSubsetBdd(
     }
     if (!Cudd_IsConstant(Nnv)) {
         /* find out minterms and nodes contributed by else child */
-	if (!st_lookup(visitedTable, (char *)Nnv,
-                       (char **)(void *)&currNodeQualE)) {
+	if (!st_lookup(visitedTable, (char *)Nnv, (char **)&currNodeQualE)) {
 	    fprintf(dd->out,"Something wrong, couldnt find nodes in node quality table\n");
 	    dd->errorCode = CUDD_INTERNAL_ERROR;
 	    return(NULL);

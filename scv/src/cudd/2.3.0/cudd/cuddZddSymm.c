@@ -942,7 +942,7 @@ cuddZddSymmSiftingConvAux(
             if (move_down != NULL)
 		x = move_down->y;
 	    else {
-		while ((unsigned) x < table->subtableZ[x].next);
+		while ((unsigned) x < table->subtableZ[x].next)
 		    x = table->subtableZ[x].next;
 		x = table->subtableZ[x].next;
 	    }
@@ -1448,10 +1448,10 @@ zdd_group_move(
   int  y,
   Move ** moves)
 {
-    Move	*move;
-    int		size;
-    int		i, temp, gxtop, gxbot, gytop, gybot, yprev;
-    int		swapx, swapy;
+    Move *move;
+    int  size;
+    int  i, temp, gxtop, gxbot, gytop, gybot, yprev;
+    int  swapx = x, swapy = y;
 
 #ifdef DD_DEBUG
     assert(x < y);	/* we assume that x < y */
@@ -1465,7 +1465,6 @@ zdd_group_move(
 	gybot = table->subtableZ[gybot].next;
     yprev = gybot;
 
-    swapx = swapy = 0; /* To shut up GCC warnings */
     while (x <= y) {
 	while (y > gxtop) {
 	    /* Set correct symmetries. */
@@ -1556,7 +1555,7 @@ zdd_group_move_backward(
   int  x,
   int  y)
 {
-    int	       size;
+    int	       size = 0;
     int        i, temp, gxtop, gxbot, gytop, gybot, yprev;
 
 #ifdef DD_DEBUG
@@ -1570,7 +1569,6 @@ zdd_group_move_backward(
     while (table->subtableZ[gybot].next != (unsigned) y)
 	gybot = table->subtableZ[gybot].next;
     yprev = gybot;
-    size = 0; /* To shut up GCC warnings */
 
     while (x <= y) {
 	while (y > gxtop) {

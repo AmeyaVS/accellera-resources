@@ -1,14 +1,14 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2012 by all Contributors.
+##  source code Copyright (c) 1996-2014 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
-##  set forth in the SystemC Open Source License Version 2.3 (the "License");
+##  set forth in the SystemC Open Source License (the "License");
 ##  You may not use this file except in compliance with such restrictions and
 ##  limitations. You may obtain instructions on how to receive a copy of the
-##  License at http://www.systemc.org/. Software distributed by Contributors
+##  License at http://www.accellera.org/. Software distributed by Contributors
 ##  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
 ##  ANY KIND, either express or implied. See the License for the specific
 ##  language governing rights and limitations under the License.
@@ -47,19 +47,28 @@ EXTRA_DIST = \
 	README \
 	introspection1.vcproj
 
+
+if SCV_INSTALL_BUILDDIR
+examplesdir=$(prefix)/examples
+else
+examplesdir=$(prefix)/examples/scv
+endif
+my_datadir = $(examplesdir)/extensions/introspection1
+
+if !SCV_INSTALL_SOURCEDIR # do not duplicate examples in source tree
+
 my_data_DATA = \
 	$(EXTRA_DIST) \
 	$(introspection1_SOURCES)
 
-my_datadir = $(prefix)/examples/scv/extensions/introspection1
+endif # !SCV_INSTALL_SOURCEDIR
 
 introspection1_CPPFLAGS = \
 	-I$(SYSC_INC_PREFIX) \
-	-I$(top_srcdir)/src \
-	-I$(buildInc)
+	-I$(top_srcdir)/src
 
 introspection1_LDADD = \
-	$(top_builddir)/src/scv/libscv.la
+	$(top_builddir)/src/scv/libscv.la -lsystemc
 
 introspection1_LDFLAGS = \
 	-R$(SYSC_LIB_PREFIX)

@@ -1,14 +1,14 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2002 by all Contributors.
+##  source code Copyright (c) 1996-2014 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
-##  set forth in the SystemC Open Source License Version 2.3 (the "License");
+##  set forth in the SystemC Open Source License (the "License");
 ##  You may not use this file except in compliance with such restrictions and
 ##  limitations. You may obtain instructions on how to receive a copy of the
-##  License at http://www.systemc.org/. Software distributed by Contributors
+##  License at http://www.accellera.org/. Software distributed by Contributors
 ##  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
 ##  ANY KIND, either express or implied. See the License for the specific
 ##  language governing rights and limitations under the License.
@@ -35,43 +35,24 @@
 ##
 ## ****************************************************************************
 
-SUBDIRS = scvref
+# FIXME: handle $docdir and/or $docdatadir
+scvdocsdir=$(prefix)/docs/scv
 
-CLEANFILES = ChangeLog README LICENSE
+SCVDOCS_TOPLEVEL = \
+	${top_srcdir}/ChangeLog \
+	${top_srcdir}/README \
+	${top_srcdir}/LICENSE
 
-DISTCLEANFILES = ${CLEANFILES}
+SCVDOCS = \
+	date03a2.pdf \
+	intro_slides.pdf \
+	scv_random_white_paper4.pdf \
+	scvref/vwg_1_0e.pdf
 
-copyFiles = ${top_builddir}/scripts/copyFiles.sh
+if !SCV_INSTALL_SOURCEDIR # install docs outside of source tree
+scvdocs_DATA        = ${SCVDOCS_TOPLEVEL}
+nobase_scvdocs_DATA = ${SCVDOCS}
+endif
 
-all : all-recursive
-	${copyFiles} -s ${top_srcdir} . ChangeLog README LICENSE
-
-@dummy_install@ :
-	@echo "Build directory and install directory are the same."
-	@echo "No install is necessary."
-
-@actual_install@ :
-	${copyFiles} ${top_srcdir} ${prefix}/docs/scv ChangeLog README LICENSE
-	${copyFiles} ${srcdir} ${prefix}/docs/scv \
-		date03a2.pdf intro_slides.pdf scv_random_white_paper4.pdf
-
-dist-hook :
-	mkdir -p ${distdir}
-	-if test -f ${pdfDocSrcDir}/date03a2.pdf; then \
-	  cp ${pdfDocSrcDir}/date03a2.pdf ${distdir}; \
-	fi
-	-if test -f ${pdfDocSrcDir}/intro_slides.pdf; then \
-	  cp ${pdfDocSrcDir}/intro_slides.pdf ${distdir}; \
-	fi
-	-if test -f ${pdfDocSrcDir}/scv_random_white_paper4.pdf; then \
-	  cp ${pdfDocSrcDir}/scv_random_white_paper4.pdf ${distdir}; \
-	fi
-	-if test -f ${srcdir}/date03a2.pdf; then \
-	  cp ${srcdir}/date03a2.pdf ${distdir}; \
-	fi
-	-if test -f ${srcdir}/intro_slides.pdf; then \
-	  cp ${srcdir}/intro_slides.pdf ${distdir}; \
-	fi
-	-if test -f ${srcdir}/scv_random_white_paper4.pdf; then \
-	  cp ${srcdir}/scv_random_white_paper4.pdf ${distdir}; \
-	fi
+EXTRA_DIST = \
+	${SCVDOCS}

@@ -36,10 +36,10 @@ class packetT1 {
 
     // Define ostream method to print the packet
     friend ostream& operator<< (ostream& os, const packetT1& p) {
-      os << "  src: "       << setw(5) << p.src
-         << "  dest: "      << setw(5) << p.dest
-         << "  priority: "  << setw(3) << p.priority 
-         << "  payload: "   << setw(5) << p.payload;
+      os << "  src: "       << std::setw(5) << p.src
+         << "  dest: "      << std::setw(5) << p.dest
+         << "  priority: "  << std::setw(3) << p.priority 
+         << "  payload: "   << std::setw(5) << p.payload;
       return os;
     }
 };
@@ -68,10 +68,10 @@ class packetT2 {
 
     // Define ostream method to print the packet
     friend ostream& operator<< (ostream& os, const packetT2& p) {
-      os << "  src: "       << setw(5) << p.src
-         << "  dest: "      << setw(5) << p.dest
-         << "  priority: "  << setw(3) << p.priority 
-         << "  payload: "   << setw(5) << p.payload;
+      os << "  src: "       << std::setw(5) << p.src
+         << "  dest: "      << std::setw(5) << p.dest
+         << "  priority: "  << std::setw(3) << p.priority 
+         << "  payload: "   << std::setw(5) << p.payload;
       return os;
     }
 };

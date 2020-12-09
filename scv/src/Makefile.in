@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__make_dryrun = \
   { \
@@ -53,15 +54,20 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(include_HEADERS)
+	$(srcdir)/scv.pc.in $(include_HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/configure.in
+am__aclocal_m4_deps = $(top_srcdir)/config/acinclude.m4 \
+	$(top_srcdir)/config/ax_pthread.m4 \
+	$(top_srcdir)/config/libtool.m4 \
+	$(top_srcdir)/config/ltoptions.m4 \
+	$(top_srcdir)/config/ltsugar.m4 \
+	$(top_srcdir)/config/ltversion.m4 \
+	$(top_srcdir)/config/lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_HEADER = $(top_builddir)/config/config.h
+CONFIG_CLEAN_FILES = scv.pc
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -117,8 +123,10 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(includedir)"
-HEADERS = $(include_HEADERS)
+am__installdirs = "$(DESTDIR)$(pkgconfigdir)" \
+	"$(DESTDIR)$(includedir)"
+DATA = $(pkgconfig_DATA)
+HEADERS = $(include_HEADERS) $(nodist_noinst_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -216,10 +224,8 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-KIT = @KIT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBIBERTY = @LIBIBERTY@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -228,10 +234,8 @@ LIBTOOL_LDFLAGS_RELEASE = @LIBTOOL_LDFLAGS_RELEASE@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
-MAJ = @MAJ@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
-MIN = @MIN@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -248,13 +252,16 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PTHREAD_CC = @PTHREAD_CC@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
 SCV_INC_PREFIX = @SCV_INC_PREFIX@
 SCV_LIB_PREFIX = @SCV_LIB_PREFIX@
+SCV_REQUIRES_SC_VERSION = @SCV_REQUIRES_SC_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
-SHLIB_EXT = @SHLIB_EXT@
 STRIP = @STRIP@
 SYSC_INC_PREFIX = @SYSC_INC_PREFIX@
 SYSC_LIB_PREFIX = @SYSC_LIB_PREFIX@
@@ -269,18 +276,14 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
-actual_install = @actual_install@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_pthread_config = @ax_pthread_config@
 bindir = @bindir@
 build = @build@
-buildBin = @buildBin@
-buildData = @buildData@
-buildInc = @buildInc@
-buildLib = @buildLib@
 build_alias = @build_alias@
 build_cpu = @build_cpu@
 build_os = @build_os@
@@ -290,7 +293,6 @@ cxxDepFlags = @cxxDepFlags@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
-dummy_install = @dummy_install@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 extraExamples = @extraExamples@
@@ -310,7 +312,6 @@ localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
-overwrite_files = @overwrite_files@
 pdfDocSrcDir = @pdfDocSrcDir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -333,10 +334,18 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = \
-	cudd scv
+	. cudd scv
 
 include_HEADERS = scv.h
-copyFiles = ${top_builddir}/scripts/copyFiles.sh
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = scv.pc
+SCV_CONFIG = scv/scv_config.h
+nodist_noinst_HEADERS = \
+	$(SCV_CONFIG)
+
+CLEANFILES = \
+	$(SCV_CONFIG)
+
 all: all-recursive
 
 .SUFFIXES:
@@ -370,12 +379,35 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+scv.pc: $(top_builddir)/config.status $(srcdir)/scv.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-pkgconfigDATA: $(pkgconfig_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(pkgconfigdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(pkgconfigdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(pkgconfigdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(pkgconfigdir)" || exit $$?; \
+	done
+
+uninstall-pkgconfigDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(pkgconfigdir)'; $(am__uninstall_files_from_dir)
 install-includeHEADERS: $(include_HEADERS)
 	@$(NORMAL_INSTALL)
 	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
@@ -555,10 +587,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(HEADERS)
+all-am: Makefile $(DATA) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(includedir)"; do \
+	for dir in "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -583,6 +615,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -611,7 +644,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-includeHEADERS
+install-data-am: install-includeHEADERS install-pkgconfigDATA
 
 install-dvi: install-dvi-recursive
 
@@ -655,7 +688,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-includeHEADERS
+uninstall-am: uninstall-includeHEADERS uninstall-pkgconfigDATA
 
 .MAKE: $(am__recursive_targets) install-am install-strip
 
@@ -667,19 +700,19 @@ uninstall-am: uninstall-includeHEADERS
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-includeHEADERS install-info \
 	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-includeHEADERS
+	install-pkgconfigDATA install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-includeHEADERS \
+	uninstall-pkgconfigDATA
 
 
-all: all-recursive
-	${copyFiles} -s ${srcdir} ${buildInc} scv.h
-
-@dummy_install@ :
-	@echo "Build directory and install directory are the same."
-	@echo "No install is necessary."
+$(SCV_CONFIG): $(top_builddir)/config/config.h
+	rm -f $@ $@.tmp
+	cp $< $@.tmp
+	echo "#undef PACKAGE" >>$@.tmp
+	mv $@.tmp $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

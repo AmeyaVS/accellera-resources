@@ -271,7 +271,7 @@ addWalshInt(
   int  n)
 {
     DdNode *one, *minusone;
-    DdNode *t, *u, *t1, *u1, *v, *w;
+    DdNode *t = NULL, *u, *t1, *u1, *v, *w;
     int     i;
 
     one = DD_ONE(dd);
@@ -312,8 +312,7 @@ addWalshInt(
 	}
 	cuddRef(t);
 	Cudd_RecursiveDeref(dd, w);
-    } else
-	t = 0; /* To shut up GCC warnings */
+    }
     cuddDeref(minusone); /* minusone is in the result; it won't die */
 
     /* Loop to build the rest of the ADD */

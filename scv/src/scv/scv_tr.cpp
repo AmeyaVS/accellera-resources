@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -33,8 +33,17 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Torsten Maehne,
+                               Universite Pierre et Marie Curie, 2013-04-30
+  Description of Modification: Fix memory leak caused by not free()-ing
+                               C-strings duplicated using strdup() in the
+                               internal classes _scv_tr_db_core,
+                               _scv_tr_stream_core, and _scv_tr_generator_core
+                               by changing the type of the concerned
+                               member variables from char* to string.
+                               Remove the now unused internal
+                               static scv_tr_strdup() function, which is anyway
+                               not exported by the linker.
 
  *****************************************************************************/
 
@@ -43,7 +52,6 @@
 #include <string>
 
 #include "scv.h"
-#include "scv/scv_config.h"
 #include "scv/scv_debug.h"
 #include "scv/scv_introspection.h"
 #include "scv/scv_tr.h"
@@ -78,7 +86,7 @@ class _scv_tr_callback_item_t {
   {
     id_counter++;
     this->id = id_counter;
-  };
+  }
 
   static int id_counter;
   int id;
@@ -88,15 +96,7 @@ class _scv_tr_callback_item_t {
 
 int _scv_tr_callback_item_t::id_counter = 0;
 
-typedef list<_scv_tr_callback_item_t*> _scv_tr_callback_list;
-
-// ----------------------------------------------------------------------------
-
-static char* scv_tr_strdup(const char* src_str)
-{
-  if (src_str) return strdup(src_str);
-  else return NULL;
-}
+typedef std::list<_scv_tr_callback_item_t*> _scv_tr_callback_list;
 
 // ----------------------------------------------------------------------------
 
@@ -107,12 +107,12 @@ class _scv_tr_db_core {
 	const char* recording_file_name,
 	const sc_time_unit& _time_unit);
 
-  ~_scv_tr_db_core() {};
+  ~_scv_tr_db_core() {}
 
   static scv_tr_db* default_scv_tr_db_p;
   scv_tr_db* my_scv_tr_db_p;
   sc_time_unit my_sc_time_unit;
-  string my_name;
+  std::string my_name;
   bool state;
   static int debug;
 
@@ -126,8 +126,8 @@ class _scv_tr_db_core {
   // A map of relation string names, by handle:
   //
   scv_tr_relation_handle_t relation_handle_counter;
-  map<scv_tr_relation_handle_t, string> relation_by_handle_map;
-  map<string, scv_tr_relation_handle_t> relation_by_name_map;
+  std::map<scv_tr_relation_handle_t, std::string> relation_by_handle_map;
+  std::map<std::string, scv_tr_relation_handle_t> relation_by_name_map;
 };
 
 int _scv_tr_db_core::debug = -1;
@@ -140,13 +140,15 @@ _scv_tr_db_core::_scv_tr_db_core(
         const char* recording_file_name,
         const sc_time_unit& _time_unit)
 {
-  this->my_name = scv_tr_strdup(recording_file_name);
+  if (recording_file_name) {
+    this->my_name = recording_file_name;
+  }
   this->state = true;
   this->my_sc_time_unit = _time_unit;
   this->global_id = 1;
   this->global_transaction_id = 1;
   this->relation_handle_counter = 0;
-};
+}
 
 // ----------------------------------------------------------------------------
 
@@ -154,8 +156,8 @@ class _scv_tr_stream_core {
   friend class scv_tr_stream;
  public:
   scv_tr_stream* my_scv_tr_stream_p;
-  char* my_name;
-  char* my_stream_kind_name;
+  std::string my_name;
+  std::string my_stream_kind_name;
   _scv_tr_db_core* my_scv_tr_db_core_p;
   static int debug;
 
@@ -171,10 +173,14 @@ class _scv_tr_stream_core {
   {
     this->my_scv_tr_db_core_p = _scv_tr_db_core_p;
     this->my_scv_tr_stream_p = scv_tr_stream_p;
-    this->my_name = scv_tr_strdup(name);
-    this->my_stream_kind_name = scv_tr_strdup(_stream_kind_name);
+    if (name) {
+      this->my_name = name;
+    }
+    if (_stream_kind_name) {
+      this->my_stream_kind_name = _stream_kind_name;
+    }
     this->my_id = this->my_scv_tr_db_core_p->global_id++;
-  };
+  }
 
 };
 
@@ -187,15 +193,15 @@ class _scv_tr_generator_core {
   friend class scv_tr_stream;
  public:
   uint64 my_id;
-  char* my_name;
+  std::string my_name;
   _scv_tr_stream_core* my_scv_tr_stream_core_p;
   scv_tr_generator_base* my_scv_tr_generator_base_p;
   static _scv_tr_callback_list* callback_list_p;
   const scv_extensions_if* begin_exts_p;
   const scv_extensions_if* end_exts_p;
   static int debug;
-  char* my_begin_attribute_name; 
-  char* my_end_attribute_name;
+  std::string my_begin_attribute_name; 
+  std::string my_end_attribute_name;
 
   _scv_tr_generator_core(
 		_scv_tr_stream_core* scv_tr_stream_core_p,
@@ -237,13 +243,17 @@ _scv_tr_generator_core::_scv_tr_generator_core(
 
   this->my_scv_tr_stream_core_p = scv_tr_stream_core_p;
   this->my_scv_tr_generator_base_p = scv_tr_generator_base_p;
-  this->my_name = scv_tr_strdup(name);
+  if (name) { this->my_name = name; }
   this->begin_exts_p = NULL;
   this->end_exts_p = NULL;
   this->my_id = scv_tr_stream_core_p->my_scv_tr_db_core_p->global_id++;
 
-  this->my_begin_attribute_name = scv_tr_strdup(begin_attribute_name);
-  this->my_end_attribute_name = scv_tr_strdup(end_attribute_name);
+  if (begin_attribute_name) {
+    this->my_begin_attribute_name = begin_attribute_name; 
+  }
+  if (end_attribute_name) {
+    this->my_end_attribute_name = end_attribute_name;
+  }
 
 #ifdef scv_tr_TRACE
   cout << "Leaving _scv_tr_generator_core ctor\n";
@@ -267,7 +277,7 @@ class _scv_tr_handle_core {
   const scv_extensions_if* begin_exts_p;
   const scv_extensions_if* end_exts_p;
 
-  string my_name;
+  std::string my_name;
 
   int ref_count;
 
@@ -301,7 +311,7 @@ _scv_tr_handle_core::_scv_tr_handle_core() :
   this->my_scv_tr_generator_core_p = NULL;
   this->my_id = 0;
   this->ref_count = 1;
-};
+}
 
 _scv_tr_handle_core::~_scv_tr_handle_core()
 {
@@ -652,11 +662,11 @@ int scv_tr_db::get_debug()
 const char *scv_tr_db::get_name() const
 {
   if (this->_scv_tr_db_core_p == NULL) {
-    static string tmp_name = "<anonymous>";
+    static std::string tmp_name = "<anonymous>";
     return tmp_name.c_str();
   }
 
-  static string tmp_my_name;
+  static std::string tmp_my_name;
   tmp_my_name = this->_scv_tr_db_core_p->my_name;
   return tmp_my_name.c_str();
 }
@@ -791,11 +801,11 @@ int scv_tr_stream::get_debug()
 const char *scv_tr_stream::get_name() const
 {
   if (this->_scv_tr_stream_core_p == NULL) {
-    static string tmp_name = "<anonymous>";
+    static std::string tmp_name = "<anonymous>";
     return tmp_name.c_str();
   }
 
-  static string tmp_my_name;
+  static std::string tmp_my_name;
   tmp_my_name = this->_scv_tr_stream_core_p->my_name;
   return tmp_my_name.c_str();
 }
@@ -814,7 +824,7 @@ uint64 scv_tr_stream::get_id() const
 const char* scv_tr_stream::get_stream_kind() const
 {
   if (this->_scv_tr_stream_core_p == NULL) return NULL;
-  return this->_scv_tr_stream_core_p->my_stream_kind_name;
+  return this->_scv_tr_stream_core_p->my_stream_kind_name.c_str();
 }
 
 // ----------------------------------------------------------------------------
@@ -1169,7 +1179,7 @@ int scv_tr_handle::get_debug()
 const char *scv_tr_handle::get_name() const
 {
   if (this->_scv_tr_handle_core_p == NULL) {
-    static string tmp_name = "<anonymous>";
+    static std::string tmp_name = "<anonymous>";
     return tmp_name.c_str();
   }
 
@@ -1276,62 +1286,62 @@ void scv_tr_handle::remove_callback(callback_h h)
   // There are 3 callback lists in scv_tr_handle
 
   {
-  _scv_tr_callback_list* my_cb_list_p = _scv_tr_handle_core::callback_list_p;
+    _scv_tr_callback_list* my_cb_list_p = _scv_tr_handle_core::callback_list_p;
 
-  if (my_cb_list_p != NULL) {
+    if (my_cb_list_p != NULL) {
 
-  _scv_tr_callback_list::iterator i = my_cb_list_p->begin();
+      _scv_tr_callback_list::iterator i = my_cb_list_p->begin();
 
-  for ( ; i != my_cb_list_p->end(); i++) {
-    if ((*i)->id == h) {
-      // The entry gets deleted the next time callbacks get processed -
-      // you can't delete here because you might currently be in the middle of
-      // a callback, and that would screw up the list if the item were deleted.
-      (*i)->callback_fp = NULL;
-      return;
+      for ( ; i != my_cb_list_p->end(); i++) {
+        if ((*i)->id == h) {
+          // The entry gets deleted the next time callbacks get processed -
+          // you can't delete here because you might currently be in the middle of
+          // a callback, and that would screw up the list if the item were deleted.
+          (*i)->callback_fp = NULL;
+          return;
+        }
+      }
     }
-  }
-  }
   }
 
   {
-  _scv_tr_callback_list* my_cb_list_p =
-				_scv_tr_handle_core::callback_relation_list_p;
+    _scv_tr_callback_list* my_cb_list_p =
+      _scv_tr_handle_core::callback_relation_list_p;
 
-  if (my_cb_list_p != NULL) {
+    if (my_cb_list_p != NULL) {
 
-  _scv_tr_callback_list::iterator i = my_cb_list_p->begin();
+      _scv_tr_callback_list::iterator i = my_cb_list_p->begin();
 
-  for ( ; i != my_cb_list_p->end(); i++) {
-    if ((*i)->id == h) {
-      // The entry gets deleted the next time callbacks get processed -
-      // you can't delete here because you might currently be in the middle of
-      // a callback, and that would screw up the list if the item were deleted.
-      (*i)->callback_fp = NULL;
-      return;
+      for ( ; i != my_cb_list_p->end(); i++) {
+        if ((*i)->id == h) {
+          // The entry gets deleted the next time callbacks get processed -
+          // you can't delete here because you might currently be in the middle of
+          // a callback, and that would screw up the list if the item were deleted.
+          (*i)->callback_fp = NULL;
+          return;
+        }
+      }
     }
-  }
-  }
   }
 
   {
-  _scv_tr_callback_list* my_cb_list_p =
-			_scv_tr_handle_core::callback_record_attribute_list_p;
+    _scv_tr_callback_list* my_cb_list_p =
+      _scv_tr_handle_core::callback_record_attribute_list_p;
 
-  if (my_cb_list_p != NULL) {
+    if (my_cb_list_p != NULL) {
 
-  _scv_tr_callback_list::iterator i = my_cb_list_p->begin();
+      _scv_tr_callback_list::iterator i = my_cb_list_p->begin();
 
-  for ( ; i != my_cb_list_p->end(); i++) {
-    if ((*i)->id == h) {
-      // The entry gets deleted the next time callbacks get processed -
-      // you can't delete here because you might currently be in the middle of
-      // a callback, and that would screw up the list if the item were deleted.
-      (*i)->callback_fp = NULL;
-      return;
+      for ( ; i != my_cb_list_p->end(); i++) {
+        if ((*i)->id == h) {
+          // The entry gets deleted the next time callbacks get processed -
+          // you can't delete here because you might currently be in the middle of
+          // a callback, and that would screw up the list if the item were deleted.
+          (*i)->callback_fp = NULL;
+          return;
+        }
+      }
     }
-  }
-  }
   }
 }
 
@@ -1529,6 +1539,8 @@ scv_tr_generator_base::~scv_tr_generator_base()
 #ifdef scv_tr_TRACE
   cout << "Entering ~scv_tr_generator_base\n";
 #endif
+
+  delete this->_scv_tr_generator_core_p;
 }
 
 // ----------------------------------------------------------------------------
@@ -1704,11 +1716,11 @@ void scv_tr_generator_base::remove_callback(callback_h h)
 const char *scv_tr_generator_base::get_name() const
 {
   if (this->_scv_tr_generator_core_p == NULL) {
-    static string tmp_name = "<anonymous>";
+    static std::string tmp_name = "<anonymous>";
     return tmp_name.c_str();
   }
 
-  static string tmp_my_name;
+  static std::string tmp_my_name;
   tmp_my_name = this->_scv_tr_generator_core_p->my_name;
   return tmp_my_name.c_str();
 }
@@ -1717,14 +1729,14 @@ const char *scv_tr_generator_base::get_name() const
 
 const char* scv_tr_generator_base::get_begin_attribute_name() const
 {
-  return this->_scv_tr_generator_core_p->my_begin_attribute_name;
+  return this->_scv_tr_generator_core_p->my_begin_attribute_name.c_str();
 }
 
 // ----------------------------------------------------------------------------
 
 const char* scv_tr_generator_base::get_end_attribute_name() const
 {
-  return this->_scv_tr_generator_core_p->my_end_attribute_name;
+  return this->_scv_tr_generator_core_p->my_end_attribute_name.c_str();
 }
 
 // ----------------------------------------------------------------------------
@@ -1745,4 +1757,3 @@ const scv_tr_db* scv_tr_stream::get_scv_tr_db() const
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-

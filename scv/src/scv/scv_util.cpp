@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -36,10 +36,6 @@
   Description of Modification:
 
  *****************************************************************************/
-
-#include "scv/scv_config.h"
-
-#include "systemc.h"
 
 #include "scv/scv_util.h"
 #include "scv/_scv_associative_array.h"
@@ -95,15 +91,15 @@ bool scv_startup()
 //
 
 
-int _scv_make_unique_id(const string& name, const string& kind)
+int _scv_make_unique_id(const std::string& name, const std::string& kind)
 {
-  typedef _scv_associative_array<string,int> xref;
+  typedef _scv_associative_array<std::string,int> xref;
   static xref table("NameList",0);
-  static const string delim = ":::";
+  static const std::string delim = ":::";
   return table[kind+delim+name]++;
 }
 
-const string _scv_make_unique_name(const string& name, int id)
+const std::string _scv_make_unique_name(const std::string& name, int id)
 {
   static char *image = 0;
   static int len = 0;
@@ -129,30 +125,12 @@ _scv_process_name_server_t *_scv_process_name_server = 0;
 void _scv_set_process_name_server(_scv_process_name_server_t *server)
 { _scv_process_name_server = server; }
 
-#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
-
-const char *_scv_get_process_name(const sc_process_b *proc_p)
-// Enhance later to return unique name that's as stable as
-// possible despite changes in order of execution.
-{ return proc_p->name(); }
-
-const char *scv_get_process_name(sc_process_b *proc_p)
-{
-  if ( ! proc_p ) return "<main>";
-  if ( _scv_process_name_server ) {
-    return _scv_process_name_server(proc_p);
-  }
-  return _scv_get_process_name(proc_p);
-}
-
-#else  //SystemC 2.2
-
-const char *_scv_get_process_name(const sc_process_handle proc_p)
+const char *_scv_get_process_name(const sc_core::sc_process_handle proc_p)
 // Enhance later to return unique name that's as stable as
 // possible despite changes in order of execution.
 { return proc_p.name(); }
 
-const char *scv_get_process_name(sc_process_handle proc_p)
+const char *scv_get_process_name(sc_core::sc_process_handle proc_p)
 {
   if ( proc_p.valid() ) return "<main>";
   if ( _scv_process_name_server ) {
@@ -161,14 +139,12 @@ const char *scv_get_process_name(sc_process_handle proc_p)
   return _scv_get_process_name(proc_p);
 }
 
-#endif  // !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
-
 
 //
 // Class and associated methods for scv_out
 //
 
-class _scv_out_buf_t : public streambuf {
+class _scv_out_buf_t : public std::streambuf {
  public:
   int sync();
   int overflow(int ch); // Called with just one character
@@ -176,7 +152,7 @@ class _scv_out_buf_t : public streambuf {
 };
 
 _scv_out_buf_t *_scv_out_buf_p = new _scv_out_buf_t;
-ostream *_scv_out_p = new ostream(_scv_out_buf_p);
+std::ostream *_scv_out_p = new std::ostream(_scv_out_buf_p);
 static int _scv_out_buffer_index = 0;
 static char _scv_out_buffer[3000];
 static bool _add_scv_prefix = true;
@@ -189,7 +165,7 @@ int _scv_out_buf_t::sync() {
   _scv_out_buffer[_scv_out_buffer_index] = '\0';
   if (_scv_prefix == NULL || strlen(_scv_prefix) == 0) {
     _scv_out_buffer_index = 0;
-    cout << _scv_out_buffer;
+    std::cout << _scv_out_buffer;
     return 0;
   }
   char scv_prefix[10];
@@ -221,7 +197,7 @@ int _scv_out_buf_t::sync() {
   }
   strcpy(_scv_out_buffer, scv_spare_buffer);
   _scv_out_buffer_index = 0;
-  cout << _scv_out_buffer << endl;
+  std::cout << _scv_out_buffer << std::endl;
   return 0;
 }
 

@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -44,25 +44,20 @@
 #define SCV_ASSOCIATIVE_ARRAY_H
 
 #include "scv/_scv_data_structure.h"
-#include "scv/scv_config.h"
 #include "scv/scv_util.h"
 #include "scv/scv_random.h"
 #include <map>
 
-#if defined(_USE_HASH_MAP)
-#include <hash_map.h>
-#endif
-
 template <class Data>   // needed for scv_random.cpp
-ostream& operator<<(ostream&os, const list<Data> & t) {
-  typename list<Data>::const_iterator temp;
+std::ostream& operator<<(std::ostream&os, const std::list<Data> & t) {
+  typename std::list<Data>::const_iterator temp;
   for (temp=t.begin(); temp != t.end(); ++temp) {
-    os << (*temp) << endl;
+    os << (*temp) << std::endl;
   }
   return os; 
 }
 
-template <class Key, class Data, typename container_type = map<Key,  Data, less<Key> > > 
+template <class Key, class Data, typename container_type = std::map<Key,  Data, std::less<Key> > > 
 class _scv_associative_array : public _scv_data_structure {
 public:
   typedef typename container_type::iterator iteratorT;  
@@ -105,7 +100,7 @@ public:
   virtual Data& operator[](const Key& i) { 
     if (_map.count(i)) return _map[i]; 
     else { 
-      pair<const Key, Data> tmp(i, _defaultValue);  _map.insert(tmp);  // modified for hp
+      std::pair<const Key, Data> tmp(i, _defaultValue);  _map.insert(tmp);  // modified for hp
       return _map[i];
     }
   } 
@@ -202,13 +197,13 @@ public:
   int hasNonDefaultElt() const;
   int has_non_default_elt() const;
 
-  virtual void print(ostream& os=scv_out, int details=0, int indent=0) const {
+  virtual void print(std::ostream& os=scv_out, int details=0, int indent=0) const {
   typename container_type::const_iterator temp;
-  os << kind() << " Name: " << get_name() << endl;
+  os << kind() << " Name: " << get_name() << std::endl;
   if ( ! details ) return;
   for (temp = _map.begin(); temp != _map.end(); ++temp) {
     os << "\t[ " << (*temp).first << " ] = ";
-    os << (*temp).second << endl;
+    os << (*temp).second << std::endl;
   }
   }
 
@@ -221,7 +216,7 @@ public:
 };
 
 template <class Key, class Data, typename container_type>
-ostream& operator<<(ostream&os, const _scv_associative_array<Key, Data, container_type>& t){
+std::ostream& operator<<(std::ostream&os, const _scv_associative_array<Key, Data, container_type>& t){
   t.print(os, 1);
   return(os);
 }
@@ -266,25 +261,4 @@ int _scv_associative_array<Key, Data, container_type>::has_non_default_elt() con
 return _scv_associative_array<Key, Data, container_type>::hasNonDefaultElt();
 }
 
-#if defined(_USE_HASH_MAP)
-// to support usage of hash_map instead of map 
-
-template<class T>
-class hash<T*> : public hash<T> {
-public:
-  size_t operator()(T * i) const { return hash<T>::operator()((T) i)
-; }
-};
-
-template<>
-class hash<string> : public hash<int> {
-public:
-  size_t operator()(const string &i) const { return hash<int>::operator()((int) atoi(i.c_str())); }
-};
-
-#endif
-
 #endif // SCV_ASSOCIATIVE_ARRAY_H
-
-
-

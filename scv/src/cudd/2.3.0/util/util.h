@@ -61,12 +61,6 @@ extern char *optarg;
 extern int optind, opterr;
 #endif
 
-#if !defined(__linux__) && !defined(_MSC_VER)
-#if defined(__STDC__) || defined(__cplusplus)
-EXTERN void exit ARGS((int));
-#endif
-#endif
-
 #define NIL(type)		((type *) 0)
 
 #if defined(USE_MM) || defined(MNEMOSYNE)
@@ -139,7 +133,6 @@ extern VOID_OR_INT rewind();
 /* most machines don't give us a header file for these */
 #if (defined(__STDC__) || defined(__cplusplus) || defined(ultrix)) && !defined(MNEMOSYNE) || defined(__SVR4)
 # include <stdlib.h>
-EXTERN void free ARGS((void *));
 #else
 # ifndef _IBMR2
     extern VOID_OR_INT abort(), exit();
@@ -180,7 +173,7 @@ extern int memcmp(), strcmp();
 #include <search.h>
 #endif
 
-#if defined(__STDC__) || defined(_MSC_VER)
+#if defined(__STDC__) || defined(__cplusplus) || defined(_MSC_VER)
 #include <assert.h>
 #else
 #ifndef _HPUX_SOURCE

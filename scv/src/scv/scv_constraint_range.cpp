@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -155,11 +155,11 @@
     }  \
     if (Discrete) {  \
       if (rhs._lowerbound <= _lowerbound && _lowerbound <= rhs._upperbound) {  \
-	_lowerbound = (SizeT)rhs._upperbound+1;  \
+	_lowerbound = rhs._upperbound+1;  \
 	if (_lowerbound < rhs._upperbound) _empty = true; /* overflow */  \
       }  \
       if (rhs._lowerbound <= _upperbound && _upperbound <= rhs._upperbound) {  \
-	_upperbound = (SizeT)rhs._lowerbound-1;  \
+	_upperbound = rhs._lowerbound-1;  \
 	if (rhs._lowerbound < _upperbound) _empty = true; /* underflow */  \
       }  \
     } else {  \
@@ -232,7 +232,7 @@ _SCV_INTERVAL_FC_I(sc_signed ,sc_signed ,sc_unsigned,true);
 	  os << "(size:<unconstrainted>) ";  \
 	else  \
 	  os << "(size:" << a.getSize() << ") ";  \
-	list<_scv_interval_ ## TypeId >::const_iterator i;  \
+	std::list<_scv_interval_ ## TypeId >::const_iterator i;  \
 	i = a._intervals.begin();  \
 	/* using print() instead of operator<< because gcc 3.0 has problem with -O2. */  \
 	i->print(os);  \
@@ -240,7 +240,7 @@ _SCV_INTERVAL_FC_I(sc_signed ,sc_signed ,sc_unsigned,true);
 	  os << ","; i->print(os);  \
 	}  \
       } else {  \
-	list<EltT>::const_iterator i;  \
+	std::list<EltT>::const_iterator i;  \
 	i = a._explicits.begin();  \
 	os << "[" << *i << "]";  \
 	while (++i != a._explicits.end())  \
@@ -260,7 +260,7 @@ _SCV_INTERVAL_FC_I(sc_signed ,sc_signed ,sc_unsigned,true);
   }  \
   void _scv_constraint_range_ ## TypeId::setSize() const {  \
     _sizeValid = true; _size = 0;  \
-    list<_scv_interval_ ## TypeId >::const_iterator i;  \
+    std::list<_scv_interval_ ## TypeId >::const_iterator i;  \
     for (i = _intervals.begin(); i != _intervals.end(); ++i) {  \
       _size += i->size();  \
     }  \
@@ -305,7 +305,7 @@ getRandomValue(scv_shared_ptr<scv_random> random) const {  \
     }  \
     if (_explicits.empty()) {  \
       SizeT remain = _flexRandom.next(random,getSize());  \
-      list<_scv_interval_ ## TypeId >::const_iterator i;  \
+      std::list<_scv_interval_ ## TypeId >::const_iterator i;  \
       for (i = _intervals.begin(); i != _intervals.end(); ++i) {  \
 	if (remain < i->size()) {  \
 	  return i->lowerbound() + remain;   \
@@ -314,7 +314,7 @@ getRandomValue(scv_shared_ptr<scv_random> random) const {  \
       }  \
     } else {  \
       unsigned int index = random->next() % _explicits.size();  \
-      list<EltT>::const_iterator i = _explicits.begin();  \
+      std::list<EltT>::const_iterator i = _explicits.begin();  \
       while (index != 0) {  \
 	--index;  \
 	++i;  \
@@ -336,7 +336,7 @@ getScanValue(const EltT& base, const SizeT& increment) const {  \
     if (nextValue < base) return base; /* overflow */  \
     if (isUnconstrainted()) { return nextValue; }  \
     if (_explicits.empty()) {  \
-      list<_scv_interval_ ## TypeId >::const_iterator i;  \
+      std::list<_scv_interval_ ## TypeId >::const_iterator i;  \
       for (i = _intervals.begin(); i != _intervals.end(); ++i) {  \
 	int position = i->position(nextValue);  \
 	if (position == 0)  \
@@ -369,7 +369,7 @@ getScanValue(const EltT& base, const SizeT& increment) const {  \
       }  \
       return base;  \
     } else {  \
-      list<EltT>::const_iterator i;  \
+      std::list<EltT>::const_iterator i;  \
       for (i = _explicits.begin(); i != _explicits.end(); ++i) {  \
 	if (nextValue == *i) return *i;  \
 	if (nextValue < *i && _flexRandom.mod(*i-nextValue,increment) == 0) return *i;  \
@@ -439,8 +439,8 @@ merge(const _scv_constraint_range_ ## TypeId& a,  \
   \
   /* special cases */  \
   if (!a._explicits.empty()) {  \
-    list<EltT> common;  \
-    list<EltT>::const_iterator i = a._explicits.begin();  \
+    std::list<EltT> common;  \
+    std::list<EltT>::const_iterator i = a._explicits.begin();  \
     while (i != a._explicits.end()) {  \
       if (b.satisfy(*i)) common.push_back(*i);  \
       ++i;  \
@@ -461,7 +461,7 @@ merge(const _scv_constraint_range_ ## TypeId& a,  \
   /* common cases */  \
   _scv_constraint_range_ ## TypeId m(a.getLowerBound());  \
   m._mode = INTERVAL_LIST;  \
-  list<_scv_interval_ ## TypeId >::const_iterator i,j;  \
+  std::list<_scv_interval_ ## TypeId >::const_iterator i,j;  \
   i = a._intervals.begin();  \
   j = b._intervals.begin();  \
   while (i != a._intervals.end() && j != b._intervals.end()) {  \
@@ -496,7 +496,7 @@ keepOnly(const EltT& lb, const EltT& ub) {  \
   \
   /* special cases */  \
   if (!_explicits.empty()) {  \
-    list<EltT>::iterator i = _explicits.begin();  \
+    std::list<EltT>::iterator i = _explicits.begin();  \
     while (i != _explicits.end()) {  \
       int position = interval.position(*i);  \
       if (position != 0)  \
@@ -508,7 +508,7 @@ keepOnly(const EltT& lb, const EltT& ub) {  \
     return;  \
   }  \
   \
-  list<_scv_interval_ ## TypeId >::iterator i;  \
+  std::list<_scv_interval_ ## TypeId >::iterator i;  \
   i = _intervals.begin();  \
   while (i != _intervals.end()) {  \
     if (overlap(*i,interval)) {  \
@@ -542,13 +542,13 @@ void _scv_constraint_range_ ## TypeId::keepOnly(const EltT& v) {  \
   }  \
 }  \
   \
-void _scv_constraint_range_ ## TypeId::keepOnly(const list<EltT>& l) {  \
+void _scv_constraint_range_ ## TypeId::keepOnly(const std::list<EltT>& l) {  \
   /* simple cases */  \
   if (isEmpty()) return;  \
   \
   /* convert to a list of legal values */  \
-  list<EltT> l2;  \
-  for (list<EltT>::const_iterator i = l.begin();  \
+  std::list<EltT> l2;  \
+  for (std::list<EltT>::const_iterator i = l.begin();  \
        i != l.end();  \
        ++i) {  \
     if (satisfy(*i))  \
@@ -563,10 +563,10 @@ void _scv_constraint_range_ ## TypeId::keepOnly(const list<EltT>& l) {  \
   _intervals.clear();  \
   _sizeValid = false;  \
   if (Discrete) {  \
-    for (list<EltT>::iterator j = l2.begin();  \
+    for (std::list<EltT>::iterator j = l2.begin();  \
 	 j != l2.end();  \
 	 ++j) {  \
-      list< _scv_interval_ ## TypeId >::iterator k;  \
+      std::list< _scv_interval_ ## TypeId >::iterator k;  \
       for (k = _intervals.begin(); k != _intervals.end(); ++k) {  \
 	if (k->lowerbound() > *j) {  \
 	  _tmpLb = *j;  \
@@ -582,10 +582,10 @@ void _scv_constraint_range_ ## TypeId::keepOnly(const list<EltT>& l) {  \
     checkIntervals();  \
   } else {  \
     _explicits.clear();  \
-    for (list<EltT>::iterator j = l2.begin();  \
+    for (std::list<EltT>::iterator j = l2.begin();  \
 	 j != l2.end();  \
 	 ++j) {  \
-      list<EltT>::iterator k;  \
+      std::list<EltT>::iterator k;  \
       for (k = _explicits.begin(); k != _explicits.end(); ++k) {  \
 	if (*j < *k) {  \
 	  _explicits.insert(k,*j);  \
@@ -615,7 +615,7 @@ keepOut(const EltT& lb, const EltT& ub) {  \
   \
   /* special cases */  \
   if (!_explicits.empty()) {  \
-    list<EltT>::iterator i = _explicits.begin();  \
+    std::list<EltT>::iterator i = _explicits.begin();  \
     while (i != _explicits.end()) {  \
       int position = interval.position(*i);  \
       if (position == 0)  \
@@ -628,7 +628,7 @@ keepOut(const EltT& lb, const EltT& ub) {  \
   }  \
   \
   /* common cases */  \
-  list<_scv_interval_ ## TypeId >::iterator i;  \
+  std::list<_scv_interval_ ## TypeId >::iterator i;  \
   i = _intervals.begin();  \
   while (i != _intervals.end()) {  \
     if (i->contain(interval)) {  \
@@ -674,11 +674,11 @@ void _scv_constraint_range_ ## TypeId::keepOut(const EltT& v) {  \
 }  \
   \
 void _scv_constraint_range_ ## TypeId::  \
-keepOut(const list<EltT>& l) {  \
+keepOut(const std::list<EltT>& l) {  \
   if (!Discrete) {  \
     _scv_message::message(_scv_message::CONSTRAINT_ERROR_INTERNAL,"non-discrete keepOut");  \
   }  \
-  for (list<EltT>::const_iterator i = l.begin(); i != l.end(); ++i)  \
+  for (std::list<EltT>::const_iterator i = l.begin(); i != l.end(); ++i)  \
     keepOut(*i);  \
 }  \
   \
@@ -687,14 +687,14 @@ satisfy(const EltT& v) const {  \
   \
   if (isEmpty()) return false;  \
   if (_explicits.empty()) {  \
-    list<_scv_interval_ ## TypeId >::const_iterator i;  \
+    std::list<_scv_interval_ ## TypeId >::const_iterator i;  \
     for (i = _intervals.begin(); i != _intervals.end(); ++i) {  \
       int j = i->position(v);  \
       if (j== 0) return true;  \
       if (j < 0) return false;  \
     }  \
   } else {  \
-    list<EltT>::const_iterator i;  \
+    std::list<EltT>::const_iterator i;  \
     for (i = _explicits.begin(); i != _explicits.end(); ++i) {  \
       if (*i == v) return true;  \
       /* assuming that the explicit list is typically short,  */  \
@@ -726,7 +726,7 @@ _SCV_CONSTRAINT_RANGE_FC_I(sc_signed ,sc_signed ,sc_unsigned,true,_scv_random_un
 
 #define _SCV_CONSTRAINT_RANGE_GENERATOR_FC_I(TypeId, EltT, SizeT, Discrete, FlexRandomT)  \
   void _scv_constraint_range_generator_base_ ## TypeId::print(ostream& os, const char * prefixP) const {  \
-    string prefix = "";  \
+    std::string prefix = "";  \
     if (prefixP) prefix = prefixP;  \
     os << prefix << "legal values : " << _simpleConstraint << endl;  \
     if (_onGoingConstraintValid)  \

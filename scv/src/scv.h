@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -41,8 +41,6 @@
 #ifndef SCV_H
 #define SCV_H
 
-#include "scv/scv_config.h"
-
 #include "scv/scv_util.h"
 #include "scv/scv_bag.h"
 #include "scv/scv_constraint.h"
@@ -60,3 +58,9 @@
 #include "scv/scv_ver.h"
 
 #endif
+
+#if !defined(SCV_DISABLE_USING_NAMESPACES) && !defined(SCV_NAMESPACES_INCLUDED_)
+#define SCV_NAMESPACES_INCLUDED_ // 2nd include guard
+#include <systemc.h>             // for future SystemC name cleanup
+using namespace std;             // bring back std:: names
+#endif // SC_DISABLE_USING_NAMESPACES

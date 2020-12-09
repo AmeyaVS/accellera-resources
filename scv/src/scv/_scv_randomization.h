@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -41,7 +41,7 @@
 #include "scv/scv_shared_ptr.h"
 #include "scv/scv_constraint_range.h"
 
-#include <float.h>
+#include <cfloat>
 
 class scv_extensions_if;
 class scv_constraint_base;
@@ -153,7 +153,7 @@ template <typename T>
 class _scv_distribution_base {
 public:
   scv_bag<T>* dist_;
-  scv_bag<pair<T, T> >* dist_r_;
+  scv_bag<std::pair<T, T> >* dist_r_;
 public:
   _scv_distribution_base() : dist_(NULL), dist_r_(NULL) {}
   virtual ~_scv_distribution_base() {
@@ -162,17 +162,17 @@ public:
   }
 public:
   virtual scv_bag<T>* get_distribution() { return dist_; }
-  virtual scv_bag<pair<T,T> >* get_distribution_range() { return dist_r_; }
+  virtual scv_bag<std::pair<T,T> >* get_distribution_range() { return dist_r_; }
   virtual void generate_value_(scv_extensions_if * data,
 		       _scv_constraint_data * cdata_) = 0; 
 
   // For all generic types except enumeration
-  virtual void set_mode(scv_bag< pair<T,T> >& d, 
+  virtual void set_mode(scv_bag< std::pair<T,T> >& d, 
 			_scv_constraint_data * constraint_data,
 			scv_extensions_if * data) { 
     if (dist_r_) *dist_r_ = d;
     else {
-      dist_r_ = new scv_bag< pair<T,T> >(d);
+      dist_r_ = new scv_bag< std::pair<T,T> >(d);
       dist_r_->setRandom(*(constraint_data->get_random(data)));
     }
     constraint_data->set_mode(_scv_constraint_data::DISTRIBUTION_RANGE);
@@ -193,11 +193,11 @@ public:
   }
 
   // For enumeration type
-  virtual void set_mode(scv_bag< pair<T,T> >& d, 
+  virtual void set_mode(scv_bag< std::pair<T,T> >& d, 
                 _scv_extension_rand_enum * data) {
     if (dist_r_) *dist_r_ = d;
     else {
-      dist_r_ = new scv_bag< pair<T,T> >(d);
+      dist_r_ = new scv_bag< std::pair<T,T> >(d);
       dist_r_->setRandom(*_get_random_enum(data));
     }
     _set_mode_enum(data, _scv_constraint_data::DISTRIBUTION_RANGE);
@@ -240,7 +240,7 @@ void generate_value_distribution(scv_extensions_if *,
   scv_bag<T>*);
 template <typename T> 
 void generate_value_distribution_range(scv_extensions_if*,
-  scv_bag<pair<T, T> >*, _scv_constraint_data*);
+  scv_bag<std::pair<T, T> >*, _scv_constraint_data*);
 void generate_value_no_constraint(scv_extensions_if*,
   _scv_constraint_data*);
 void generate_value_extension(scv_extensions_if*, 
@@ -300,57 +300,57 @@ void generate_value_distribution_bigvalue(scv_extensions_if*,
   scv_bag<T>*);
 template <typename T>
 void generate_value_distribution_range_bigvalue(scv_extensions_if*, 
-  scv_bag<pair<T,T> >*, _scv_constraint_data*, sc_unsigned*);
+  scv_bag<std::pair<T,T> >*, _scv_constraint_data*, sc_unsigned*);
 
-#define _SCV_DISTRIBUTION(typename)                        \
-template<int N>                                           \
-class _scv_distribution <typename<N> > :                   \
-  public _scv_distribution_base<typename<N> > {            \
-public:                                                   \
-  void generate_value_(scv_extensions_if * data,           \
-		       _scv_constraint_data * cdata_) {    \
-    switch(cdata_->get_mode()) {                          \
-    case _scv_constraint_data::DISTRIBUTION : {            \
-      generate_value_distribution_bigvalue(data,          \
-        this->get_distribution());                              \
-      break;                                              \
-    }                                                     \
-    case _scv_constraint_data::DISTRIBUTION_RANGE : {      \
-      sc_biguint<N> big_num;                              \
-      generate_value_distribution_range_bigvalue(data,    \
-        this->get_distribution_range(), cdata_, &big_num);      \
-      break;                                              \
-    }                                                     \
-    case _scv_constraint_data::NO_CONSTRAINT:              \
-    case _scv_constraint_data::CONSTRAINT: {               \
-      _scv_set_value(data, cdata_);                        \
-      break;                                              \
-    }                                                     \
-    case _scv_constraint_data::RANGE_CONSTRAINT: {         \
-      generate_value_range_constraint(data, cdata_);      \
-      break;                                              \
-    }                                                     \
-    case _scv_constraint_data::EXTENSION: {                \
-      scv_extensions_if *e = cdata_->get_extension();      \
-      _scv_constraint_data *cd = e->get_constraint_data(); \
+#define _SCV_DISTRIBUTION(type_name)                        \
+template<int N>                                             \
+class _scv_distribution <type_name<N> > :                   \
+  public _scv_distribution_base<type_name<N> > {            \
+public:                                                     \
+  void generate_value_(scv_extensions_if * data,            \
+		       _scv_constraint_data * cdata_) {     \
+    switch(cdata_->get_mode()) {                            \
+    case _scv_constraint_data::DISTRIBUTION : {             \
+      generate_value_distribution_bigvalue(data,            \
+        this->get_distribution());                          \
+      break;                                                \
+    }                                                       \
+    case _scv_constraint_data::DISTRIBUTION_RANGE : {       \
+      sc_biguint<N> big_num;                                \
+      generate_value_distribution_range_bigvalue(data,      \
+        this->get_distribution_range(), cdata_, &big_num);  \
+      break;                                                \
+    }                                                       \
+    case _scv_constraint_data::NO_CONSTRAINT:               \
+    case _scv_constraint_data::CONSTRAINT: {                \
+      _scv_set_value(data, cdata_);                         \
+      break;                                                \
+    }                                                       \
+    case _scv_constraint_data::RANGE_CONSTRAINT: {          \
+      generate_value_range_constraint(data, cdata_);        \
+      break;                                                \
+    }                                                       \
+    case _scv_constraint_data::EXTENSION: {                 \
+      scv_extensions_if *e = cdata_->get_extension();       \
+      _scv_constraint_data *cd = e->get_constraint_data();  \
       _scv_set_value(e, cd->get_constraint(),               \
-        cdata_->get_random(data));                        \
-      data->assign(e->get_unsigned());                    \
-      break;                                              \
-    }                                                     \
-    default:                                              \
-      _scv_message::message(_scv_message::INTERNAL_ERROR,     \
-        "illegal randomization type");                    \
-      break;                                              \
-    }                                                     \
-  }                                                       \
-};
+        cdata_->get_random(data));                          \
+      data->assign(e->get_unsigned());                      \
+      break;                                                \
+    }                                                       \
+    default:                                                \
+      _scv_message::message(_scv_message::INTERNAL_ERROR,   \
+        "illegal randomization type");                      \
+      break;                                                \
+    }                                                       \
+  }                                                         \
+}
 
-_SCV_DISTRIBUTION(sc_biguint)
-_SCV_DISTRIBUTION(sc_bigint)
+_SCV_DISTRIBUTION(sc_biguint);
+_SCV_DISTRIBUTION(sc_bigint);
 
-_SCV_DISTRIBUTION(sc_lv)
-_SCV_DISTRIBUTION(sc_bv)
+_SCV_DISTRIBUTION(sc_lv);
+_SCV_DISTRIBUTION(sc_bv);
 
 //////////////////////////////////////////////////////////////////////////
 // Template methods to generate values  (bitwidth <= 64 bits)
@@ -407,9 +407,9 @@ void generate_value_distribution(scv_extensions_if * data,
 
 template <typename T>
 void generate_value_distribution_range(scv_extensions_if* data,
-  scv_bag<pair<T, T> >* dist_range, _scv_constraint_data* cdata_)
+  scv_bag<std::pair<T, T> >* dist_range, _scv_constraint_data* cdata_)
 {
-  pair<T, T> p = dist_range->peekRandom();
+  std::pair<T, T> p = dist_range->peekRandom();
   switch(data->get_type()) {
     case scv_extensions_if::INTEGER : 
     case scv_extensions_if::BOOLEAN : {
@@ -540,10 +540,10 @@ void generate_value_distribution_bigvalue(scv_extensions_if* data,
 
 template <typename T>
 void generate_value_distribution_range_bigvalue(scv_extensions_if* data,
-  scv_bag<pair<T, T> >* dist_range, _scv_constraint_data* cdata_, 
+  scv_bag<std::pair<T, T> >* dist_range, _scv_constraint_data* cdata_, 
   sc_unsigned* big_num)
 {
-  pair<T, T> p = dist_range->peekRandom();
+  std::pair<T, T> p = dist_range->peekRandom();
   const T e1_v = p.first;
   const T e2_v = p.second;
   int bitwidth = data->get_bitwidth();
@@ -675,7 +675,7 @@ void generate_value_distribution_range_bigvalue(scv_extensions_if* data,
 
 template <typename T>
 bool check_mode(scv_extensions_if::mode_t t, 
-  scv_extensions_if* e, const string& name,
+  scv_extensions_if* e, const std::string& name,
    _scv_distribution<T> * dist)
 {
   _scv_constraint_data* cdata_ = e->get_constraint_data();
@@ -704,9 +704,9 @@ bool check_mode(scv_extensions_if::mode_t t,
 }
 
 inline void _scv_rand_util_get_list(scv_extensions_if* e, int lb, int ub, unsigned& mth, unsigned& nth) {
-  list<int> ilist;
-  list<const char *> slist; 
-  list<int>::iterator iter;
+  std::list<int> ilist;
+  std::list<const char *> slist; 
+  std::list<int>::iterator iter;
   unsigned count = 0;
   e->get_enum_details(slist, ilist);
   for (iter=ilist.begin(); iter != ilist.end(); iter++) {
@@ -728,133 +728,137 @@ inline void _scv_rand_util_get_list(scv_extensions_if* e, int lb, int ub, unsign
 
 bool _scv_has_complex_constraint(scv_extensions_if*);
 
-#define _SCV_CHECK_DATA()                                                  \
-  _scv_constraint_data* cd = e->get_constraint_data();                     
+#define _SCV_CHECK_DATA()                               \
+  _scv_constraint_data* cd = e->get_constraint_data()
 
-#define _SCV_ONLY_OR_OUT(dummy_values, exclude, gen, lb, ub)               \
-    if (!dummy_values) {                                                  \
-      if (!exclude)                                                       \
-        gen->keepOnly(lb, ub);                                            \
-      else                                                                \
-        gen->keepOut(lb, ub);                                             \
-    }          
+#define _SCV_ONLY_OR_OUT(dummy_values, exclude, gen, lb, ub)            \
+  if (!dummy_values) {                                                  \
+    if (!exclude)                                                       \
+      gen->keepOnly(lb, ub);                                            \
+    else                                                                \
+      gen->keepOut(lb, ub);                                             \
+  }          
 
-#define _SCV_KEEP_RANGE_TYPE(_typename)                                    \
-template <int W>                                                          \
-inline void _scv_keep_range(scv_extensions_if* e, const _typename<W>& lb,          \
-  const _typename<W>& ub, bool exclude, bool dummy_values = false) {                                 
+#define _SCV_KEEP_RANGE_TYPE(type_name)                                 \
+  template <int W>                                                      \
+  inline void _scv_keep_range(scv_extensions_if* e, const type_name<W>& lb, \
+                              const type_name<W>& ub, bool exclude,     \
+                              bool dummy_values = false)
 
-#define _SCV_KEEP_RANGE_TYPE_NO_W(_typename)                               \
-inline void _scv_keep_range(scv_extensions_if* e, const _typename& lb,      \
-  const _typename& ub, bool exclude, bool dummy_values = false) {                                    
+#define _SCV_KEEP_RANGE_TYPE_NO_W(type_name)                            \
+  inline void _scv_keep_range(scv_extensions_if* e, const type_name& lb, \
+                              const type_name& ub, bool exclude,        \
+                              bool dummy_values = false)
 
-#define _SCV_KEEP_RANGE_INT(_typename)                                     \
-  _SCV_KEEP_RANGE_TYPE(_typename)                                          \
-  _SCV_CHECK_DATA()                                                        \
-  _scv_constraint_range_generator_unsigned_big *ugen = NULL;               \
-  _scv_constraint_range_generator_signed_big *sgen = NULL;                 \
-  if (e->is_integer()) {                                                  \
-    sgen = cd->get_signed_big_generator(e);                               \
-    _SCV_ONLY_OR_OUT(dummy_values, exclude, sgen, lb, ub)                                \
-  } else if (e->is_unsigned()) {                                          \
-    ugen = cd->get_unsigned_big_generator(e);                             \
-    _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lb, ub)                                \
-  }                                                                       \
-  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);                    \
-}                                                                         
+#define _SCV_KEEP_RANGE_INT(type_name)                                  \
+  _SCV_KEEP_RANGE_TYPE(type_name) {                                     \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned_big *ugen = NULL;          \
+    _scv_constraint_range_generator_signed_big *sgen = NULL;            \
+    if (e->is_integer()) {                                              \
+      sgen = cd->get_signed_big_generator(e);                           \
+      _SCV_ONLY_OR_OUT(dummy_values, exclude, sgen, lb, ub);            \
+    } else if (e->is_unsigned()) {                                      \
+      ugen = cd->get_unsigned_big_generator(e);                         \
+      _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lb, ub);            \
+    }                                                                   \
+    cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);               \
+  }
 
-#define _SCV_SC_UNSIGNED_VALUE(dummy_values, W, lb, ub)                   \
-  sc_unsigned lbv(W), ubv(W);                                             \
-  if (dummy_values) { lbv = 0; ubv = 0; }                                 \
-  else { lbv = lb; ubv = ub; } 
+#define _SCV_SC_UNSIGNED_VALUE(dummy_values, W, lb, ub)                 \
+  sc_unsigned lbv(W), ubv(W);                                           \
+  if (dummy_values) { lbv = 0; ubv = 0; }                               \
+  else { lbv = lb; ubv = ub; }
 
-#define _SCV_KEEP_RANGE_BIT(_typename)                                     \
-  _SCV_KEEP_RANGE_TYPE(_typename)                                          \
-  _SCV_CHECK_DATA()                                                        \
-  _scv_constraint_range_generator_unsigned_big *ugen = NULL;               \
-  ugen = cd->get_unsigned_big_generator(e);                               \
-  _SCV_SC_UNSIGNED_VALUE(dummy_values, W, lb, ub)        \
-  _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lbv, ubv)                                \
-  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);                    \
-}                                                                         
+#define _SCV_KEEP_RANGE_BIT(type_name)                                  \
+  _SCV_KEEP_RANGE_TYPE(type_name) {                                     \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned_big *ugen = NULL;          \
+    ugen = cd->get_unsigned_big_generator(e);                           \
+    _SCV_SC_UNSIGNED_VALUE(dummy_values, W, lb, ub);                    \
+    _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lbv, ubv);            \
+    cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);               \
+  }
 
-#define _SCV_UNSIGNED_VALUE(lb, ub)                                        \
-  unsigned lbv, ubv;                                                      \
-  lbv = (unsigned)lb.to_bool(); ubv = (unsigned)ub.to_bool();             
+#define _SCV_UNSIGNED_VALUE(lb, ub)                                     \
+  unsigned lbv, ubv;                                                    \
+  lbv = (unsigned)lb.to_bool(); ubv = (unsigned)ub.to_bool()
 
-#define _SCV_KEEP_RANGE_LOGIC(_typename)                                   \
-  _SCV_KEEP_RANGE_TYPE_NO_W(_typename)                                     \
-  _SCV_CHECK_DATA()                                                        \
-  _scv_constraint_range_generator_unsigned *ugen = NULL;                   \
-  ugen = cd->get_unsigned_generator(e);                                   \
-  _SCV_UNSIGNED_VALUE(lb, ub)                                              \
-  _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lbv, ubv)                                \
-  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);                    \
-}                                                                         \
+#define _SCV_KEEP_RANGE_LOGIC(type_name)                                \
+  _SCV_KEEP_RANGE_TYPE_NO_W(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned *ugen = NULL;              \
+    ugen = cd->get_unsigned_generator(e);                               \
+    _SCV_UNSIGNED_VALUE(lb, ub);                                        \
+    _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lbv, ubv);            \
+    cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);               \
+  }
 
-#define _SCV_KEEP_RANGE_FLOAT(_typename)                                   \
-  _SCV_KEEP_RANGE_TYPE_NO_W(_typename)                                     \
-  _SCV_CHECK_DATA()                                                        \
-  _scv_constraint_range_generator_double *dgen = NULL;                     \
-  dgen = cd->get_double_generator(e);                                     \
-  _SCV_ONLY_OR_OUT(dummy_values, exclude, dgen, lb, ub)                                  \
-  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);                    \
-}                                                                         \
+#define _SCV_KEEP_RANGE_FLOAT(type_name)                                \
+  _SCV_KEEP_RANGE_TYPE_NO_W(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_double *dgen = NULL;                \
+    dgen = cd->get_double_generator(e);                                 \
+    _SCV_ONLY_OR_OUT(dummy_values, exclude, dgen, lb, ub);              \
+    cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);               \
+  }
 
-#define _SCV_KEEP_RANGE_BASE_TYPE(_typename)                               \
-  _SCV_KEEP_RANGE_TYPE_NO_W(_typename)                                     \
-  _SCV_CHECK_DATA()                                                        \
-  if (e->is_integer()) {                                                  \
-    if (e->get_bitwidth() <= 64) {   \
-      _scv_constraint_range_generator_int_ll * gen =  \
-        cd->get_int_ll_generator(e); \
-      _SCV_ONLY_OR_OUT(dummy_values, exclude, gen, lb.to_int64(), \
-        ub.to_int64()) \
-    } else { \
-      _scv_message::message(_scv_message::INTERNAL_ERROR, "_scv_keep_range (sc_signed), unsupported bitwidth."); \
-    } \
-  } else if (e->is_unsigned()) {                                          \
-    if (e->get_bitwidth() <= 64) { \
-      _scv_constraint_range_generator_unsigned_ll * gen =  \
-        cd->get_unsigned_ll_generator(e); \
-      _SCV_ONLY_OR_OUT(dummy_values, exclude, gen, lb.to_uint64(), \
-        ub.to_uint64()) \
-    } else { \
-      _scv_message::message(_scv_message::INTERNAL_ERROR, "_scv_keep_range (sc_unsigned), unsupported bitwidth."); \
-    } \
-  }                                                                       \
-  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);                    \
-}                                                                         \
+#define _SCV_KEEP_RANGE_BASE_TYPE(type_name)                            \
+  _SCV_KEEP_RANGE_TYPE_NO_W(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    if (e->is_integer()) {                                              \
+      if (e->get_bitwidth() <= 64) {                                    \
+        _scv_constraint_range_generator_int_ll * gen =                  \
+          cd->get_int_ll_generator(e);                                  \
+        _SCV_ONLY_OR_OUT(dummy_values, exclude, gen, lb.to_int64(),     \
+                         ub.to_int64());                                \
+      } else {                                                          \
+        _scv_message::message(_scv_message::INTERNAL_ERROR,             \
+                              "_scv_keep_range (sc_signed), unsupported bitwidth."); \
+      }                                                                 \
+    } else if (e->is_unsigned()) {                                      \
+      if (e->get_bitwidth() <= 64) {                                    \
+        _scv_constraint_range_generator_unsigned_ll * gen =             \
+          cd->get_unsigned_ll_generator(e);                             \
+        _SCV_ONLY_OR_OUT(dummy_values, exclude, gen, lb.to_uint64(),    \
+                         ub.to_uint64());                               \
+      } else {                                                          \
+        _scv_message::message(_scv_message::INTERNAL_ERROR,             \
+                              "_scv_keep_range (sc_unsigned), unsupported bitwidth."); \
+      }                                                                 \
+    }                                                                   \
+    cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);               \
+  }
 
-#define _SCV_KEEP_RANGE_BASE_BIG_TYPE(_typename)                           \
-  _SCV_KEEP_RANGE_TYPE_NO_W(_typename)                                     \
-  _SCV_CHECK_DATA()                                                        \
-  if (e->is_integer()) {                                                  \
-    _scv_constraint_range_generator_signed_big *gen = NULL;               \
-    gen = cd->get_signed_big_generator(e);                             \
-    _SCV_ONLY_OR_OUT(dummy_values, exclude, gen, lb, ub)                 \
-  } else if (e->is_unsigned()) {                                          \
-    _scv_constraint_range_generator_unsigned_big *ugen = NULL;               \
-    ugen = cd->get_unsigned_big_generator(e);                             \
-    _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lb, ub)                 \
-  } \
-  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);                    \
-}                                                                         \
+#define _SCV_KEEP_RANGE_BASE_BIG_TYPE(type_name)                        \
+  _SCV_KEEP_RANGE_TYPE_NO_W(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    if (e->is_integer()) {                                              \
+      _scv_constraint_range_generator_signed_big *gen = NULL;           \
+      gen = cd->get_signed_big_generator(e);                            \
+      _SCV_ONLY_OR_OUT(dummy_values, exclude, gen, lb, ub);             \
+    } else if (e->is_unsigned()) {                                      \
+      _scv_constraint_range_generator_unsigned_big *ugen = NULL;        \
+      ugen = cd->get_unsigned_big_generator(e);                         \
+      _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lb, ub);            \
+    }                                                                   \
+    cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);               \
+  }
 
-#define _SCV_KEEP_RANGE_BASE_LOGIC_TYPE(_typename)                       \
-  _SCV_KEEP_RANGE_TYPE_NO_W(_typename)                                   \
-  _SCV_CHECK_DATA()                                                      \
-  _scv_constraint_range_generator_unsigned_big *ugen = NULL;               \
-  ugen = cd->get_unsigned_big_generator(e);                             \
-  _SCV_SC_UNSIGNED_VALUE(dummy_values, e->get_bitwidth(), lb, ub)       \
-  _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lbv, ubv)                 \
-  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);                    \
-}                                                                  \
+#define _SCV_KEEP_RANGE_BASE_LOGIC_TYPE(type_name)                      \
+  _SCV_KEEP_RANGE_TYPE_NO_W(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned_big *ugen = NULL;          \
+    ugen = cd->get_unsigned_big_generator(e);                           \
+    _SCV_SC_UNSIGNED_VALUE(dummy_values, e->get_bitwidth(), lb, ub);    \
+    _SCV_ONLY_OR_OUT(dummy_values, exclude, ugen, lbv, ubv);            \
+    cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);               \
+  }
 
-#define _SCV_KEEP_RANGE_ERROR(_typename)                                   \
-  _SCV_KEEP_RANGE_TYPE_NO_W(_typename)                                     \
-  _scv_message::message(_scv_message::RANDOM_TYPE_NOT_SUPPORTED, #_typename);  \
-}                                                                         \
+#define _SCV_KEEP_RANGE_ERROR(type_name)                                \
+  _SCV_KEEP_RANGE_TYPE_NO_W(type_name) {                                \
+    _scv_message::message(_scv_message::RANDOM_TYPE_NOT_SUPPORTED, #type_name); \
+  }
 
 _SCV_KEEP_RANGE_INT(sc_biguint)
 _SCV_KEEP_RANGE_INT(sc_bigint)
@@ -868,7 +872,7 @@ _SCV_KEEP_RANGE_LOGIC(sc_logic)
 _SCV_KEEP_RANGE_FLOAT(double)
 _SCV_KEEP_RANGE_FLOAT(float)
 
-_SCV_KEEP_RANGE_ERROR(string)
+_SCV_KEEP_RANGE_ERROR(std::string)
 
 _SCV_KEEP_RANGE_BASE_BIG_TYPE(sc_signed)
 _SCV_KEEP_RANGE_BASE_BIG_TYPE(sc_unsigned)
@@ -879,7 +883,7 @@ _SCV_KEEP_RANGE_BASE_LOGIC_TYPE(sc_bv_base)
 
 template <typename T>
 inline void _scv_keep_range(scv_extensions_if* e, const T& lb, const T& ub, bool exclude, bool dummy_values=false) {
-    _SCV_CHECK_DATA()
+    _SCV_CHECK_DATA();
     switch(e->get_type()) {
       case scv_extensions_if::BOOLEAN:
       case scv_extensions_if::UNSIGNED: {
@@ -931,18 +935,18 @@ inline void _scv_keep_range(scv_extensions_if* e, const T& lb, const T& ub, bool
 }
 
 template <typename T>
-inline void _scv_keep_range_list_enum(scv_extensions_if* e, const list<T>& vlist, bool exclude) {  
-  list<int> ilist;
-  list<const char *> slist;
-  list<int>::iterator iter;
+inline void _scv_keep_range_list_enum(scv_extensions_if* e, const std::list<T>& vlist, bool exclude) {  
+  std::list<int> ilist;
+  std::list<const char *> slist;
+  std::list<int>::iterator iter;
   unsigned count = 0;
   unsigned nth = 0;
   e->get_enum_details(slist, ilist);
 
   _scv_constraint_range_generator_unsigned * gen =         
      e->get_constraint_data()->get_unsigned_generator(e); 
-  typename list<T>::const_iterator i;                
-  list<unsigned> tlist;
+  typename std::list<T>::const_iterator i;                
+  std::list<unsigned> tlist;
 
   for (i = vlist.begin(); i != vlist.end(); i++) { 
     count = 0;
@@ -964,36 +968,36 @@ inline void _scv_keep_range_list_enum(scv_extensions_if* e, const list<T>& vlist
 }
 
 template <typename T1, typename T2>
-void _scv_get_list(const list<T2>& vlist, list<T1>& tlist) { 
-  typename list<T2>::const_iterator i;                                        
+void _scv_get_list(const std::list<T2>& vlist, std::list<T1>& tlist) { 
+  typename std::list<T2>::const_iterator i;                                        
   for (i = vlist.begin(); i != vlist.end(); i++)                             
     tlist.push_back(*i);                                                       
 }
 
 template <typename T1, typename T2>
-void _scv_get_base_unsigned_list(const list<T2>& vlist, list<T1>& tlist) { 
-  typename list<T2>::const_iterator i;                                        
+void _scv_get_base_unsigned_list(const std::list<T2>& vlist, std::list<T1>& tlist) { 
+  typename std::list<T2>::const_iterator i;                                        
   for (i = vlist.begin(); i != vlist.end(); i++)                             
     tlist.push_back((*i).to_uint64()); 
 }
 
 template <typename T1, typename T2>
-void _scv_get_base_signed_list(const list<T2>& vlist, list<T1>& tlist) { 
-  typename list<T2>::const_iterator i;                                        
+void _scv_get_base_signed_list(const std::list<T2>& vlist, std::list<T1>& tlist) { 
+  typename std::list<T2>::const_iterator i;                                        
   for (i = vlist.begin(); i != vlist.end(); i++)                             
     tlist.push_back((*i).to_int64()); 
 }
 
 template <typename T1, typename T2> 
-void _scv_get_list_sc(int W, const list<T2>& vlist, list<T1>& tlist ) { 
-  typename list<T2>::const_iterator i;                                   
+void _scv_get_list_sc(int W, const std::list<T2>& vlist, std::list<T1>& tlist ) { 
+  typename std::list<T2>::const_iterator i;                                   
   for (i = vlist.begin(); i != vlist.end(); i++)                        
     tlist.push_back(*i);                                               
 }
 
 template <typename T1, typename T2>
-void _scv_get_sc_list(int W, const list<T2>& vlist, list<T1>& tlist) {
-  typename list<T2>::const_iterator i;
+void _scv_get_sc_list(int W, const std::list<T2>& vlist, std::list<T1>& tlist) {
+  typename std::list<T2>::const_iterator i;
   T1 val(W);                         
   for (i = vlist.begin(); i != vlist.end(); i++) { 
     val = *i;                                     
@@ -1002,156 +1006,168 @@ void _scv_get_sc_list(int W, const list<T2>& vlist, list<T1>& tlist) {
 }
 
 template <typename T1, typename T2> 
-void _scv_get_logic_list(const list<T2> &vlist, list<T1> &tlist) {
-  typename list<T2>::const_iterator i;                       
+void _scv_get_logic_list(const std::list<T2> &vlist, std::list<T1> &tlist) {
+  typename std::list<T2>::const_iterator i;                       
   for (i = vlist.begin(); i != vlist.end(); i++)            
     tlist.push_back((unsigned)((*i).to_bool()));           
 }
 
 template <typename T>
-inline void _scv_keep_range(scv_extensions_if* e, const list<T>& vlist) {
+inline void _scv_keep_range(scv_extensions_if* e, const std::list<T>& vlist) {
   _scv_message::message(_scv_message::RANDOM_TYPE_NOT_SUPPORTED, e->get_type_name());
 }
 
-#define _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                  \
-template <>                                                                    \
-inline void _scv_keep_range(scv_extensions_if* e, const list<_typename>& vlist) {       \
-  _SCV_CHECK_DATA()                                                             \
+#define _SCV_KEEP_RANGE_LIST_HEADER(type_name)                          \
+  template <>                                                           \
+  inline void _scv_keep_range(scv_extensions_if* e, const std::list<type_name>& vlist)
 
-#define _SCV_KEEP_RANGE_SC_HEADER(_typename)                               \
-template <int W>                                                               \
-inline void _scv_keep_range(scv_extensions_if* e, const list<_typename<W> >& vlist) {   \
-  _SCV_CHECK_DATA()                                                             \
+#define _SCV_KEEP_RANGE_SC_HEADER(type_name)                            \
+  template <int W>                                                      \
+  inline void _scv_keep_range(scv_extensions_if* e, const std::list<type_name<W> >& vlist)
 
-#define _SCV_KEEP_RANGE_SET_LIST(tlist)                                         \
-  gen->keepOnly(tlist);                                                        \
-  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT);                         \
+#define _SCV_KEEP_RANGE_SET_LIST(tlist)                                 \
+  gen->keepOnly(tlist);                                                 \
+  cd->set_mode(_scv_constraint_data::RANGE_CONSTRAINT)
 
-#define _SCV_KEEP_RANGE_LIST_INT_TYPE(_typename)                                \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                        \
-  _scv_constraint_range_generator_int * gen =                                   \
-  cd->get_int_generator(e);                                                    \
-  list<int> tlist;                                                             \
-  _scv_get_list(vlist, tlist);                                                  \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                                               \
-}
+#define _SCV_KEEP_RANGE_LIST_INT_TYPE(type_name)                        \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_int * gen =                         \
+      cd->get_int_generator(e);                                         \
+    std::list<int> tlist;                                               \
+    _scv_get_list(vlist, tlist);                                        \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_INT64_TYPE(_typename)                              \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                        \
-  _scv_constraint_range_generator_int_ll * gen =                                \
-  cd->get_int_ll_generator(e);                                                 \
-  list<long long> tlist;                                                             \
-  _scv_get_list(vlist, tlist);                                                   \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                                               \
-}
+#define _SCV_KEEP_RANGE_LIST_INT64_TYPE(type_name)                      \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_int_ll * gen =                      \
+      cd->get_int_ll_generator(e);                                      \
+    std::list<long long> tlist;                                         \
+    _scv_get_list(vlist, tlist);                                        \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_SC_INT_TYPE(_typename)                             \
-  _SCV_KEEP_RANGE_SC_HEADER(_typename)                                     \
-  _scv_constraint_range_generator_int_ll * gen =                                \
-  cd->get_int_ll_generator(e); \
-  list<long long> tlist;                                              \
-  _scv_get_list_sc(W, vlist, tlist);                              \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                                               \
-}
+#define _SCV_KEEP_RANGE_LIST_SC_INT_TYPE(type_name)                     \
+  _SCV_KEEP_RANGE_SC_HEADER(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_int_ll * gen =                      \
+      cd->get_int_ll_generator(e);                                      \
+    std::list<long long> tlist;                                         \
+    _scv_get_list_sc(W, vlist, tlist);                                  \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_UNSIGNED_TYPE(_typename)                           \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                        \
-  _scv_constraint_range_generator_unsigned * gen =                              \
-  cd->get_unsigned_generator(e);                                               \
-  list<unsigned> tlist; \
-  _scv_get_list(vlist, tlist)      ;                               \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                                               \
-}
+#define _SCV_KEEP_RANGE_LIST_UNSIGNED_TYPE(type_name)                   \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned * gen =                    \
+      cd->get_unsigned_generator(e);                                    \
+    std::list<unsigned> tlist;                                          \
+    _scv_get_list(vlist, tlist);                                        \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_UNSIGNED64_TYPE(_typename)                         \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                        \
-  _scv_constraint_range_generator_unsigned_ll * gen =                           \
-  cd->get_unsigned_ll_generator(e);                                            \
-  list<unsigned long long> tlist; \
-  _scv_get_list(vlist, tlist) ;                          \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                                               \
-}
+#define _SCV_KEEP_RANGE_LIST_UNSIGNED64_TYPE(type_name)                 \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned_ll * gen =                 \
+      cd->get_unsigned_ll_generator(e);                                 \
+    std::list<unsigned long long> tlist;                                \
+    _scv_get_list(vlist, tlist);                                        \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_SC_UINT_TYPE(_typename)                            \
-  _SCV_KEEP_RANGE_SC_HEADER(_typename)                                     \
-  _scv_constraint_range_generator_unsigned_ll * gen =                           \
-  cd->get_unsigned_ll_generator(e);                                            \
-  list<unsigned long long> tlist; \
-  _scv_get_list_sc(W, vlist, tlist);                     \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_SC_UINT_TYPE(type_name)                    \
+  _SCV_KEEP_RANGE_SC_HEADER(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned_ll * gen =                 \
+      cd->get_unsigned_ll_generator(e);                                 \
+    std::list<unsigned long long> tlist;                                \
+    _scv_get_list_sc(W, vlist, tlist);                                  \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_FLOAT_TYPE(_typename)                              \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                        \
-  _scv_constraint_range_generator_double * gen =                                \
-  cd->get_double_generator(e);                                                 \
-  list<double> tlist; \
-  _scv_get_list(vlist, tlist) ;                                      \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_FLOAT_TYPE(type_name)                      \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_double * gen =                      \
+      cd->get_double_generator(e);                                      \
+    std::list<double> tlist;                                            \
+    _scv_get_list(vlist, tlist);                                        \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_SC_SIGNED_TYPE(_typename)                          \
-  _SCV_KEEP_RANGE_SC_HEADER(_typename)                                     \
-  _scv_constraint_range_generator_signed_big * gen =                            \
-  cd->get_signed_big_generator(e);                                             \
-  list<sc_signed> tlist; \
-  _scv_get_sc_list(W, vlist, tlist);                              \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_SC_SIGNED_TYPE(type_name)                  \
+  _SCV_KEEP_RANGE_SC_HEADER(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_signed_big * gen =                  \
+      cd->get_signed_big_generator(e);                                  \
+    std::list<sc_signed> tlist;                                         \
+    _scv_get_sc_list(W, vlist, tlist);                                  \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_SC_UNSIGNED_TYPE(_typename)                        \
-  _SCV_KEEP_RANGE_SC_HEADER(_typename)                                     \
-  _scv_constraint_range_generator_unsigned_big * gen =                          \
-  cd->get_unsigned_big_generator(e);                                           \
-  list<sc_unsigned> tlist; \
-  _scv_get_sc_list(e->get_bitwidth(), vlist, tlist);                         \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_SC_UNSIGNED_TYPE(type_name)                \
+  _SCV_KEEP_RANGE_SC_HEADER(type_name) {                                \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned_big * gen =                \
+      cd->get_unsigned_big_generator(e);                                \
+    std::list<sc_unsigned> tlist;                                       \
+    _scv_get_sc_list(e->get_bitwidth(), vlist, tlist);                  \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_BASE_UNSIGNED_TYPE(_typename)                \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                  \
-  _scv_constraint_range_generator_unsigned_ll * gen =                        \
-  cd->get_unsigned_ll_generator(e);                                          \
-  list<unsigned long long> tlist; \
-  _scv_get_base_unsigned_list(vlist, tlist)      ;                    \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_BASE_UNSIGNED_TYPE(type_name)              \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned_ll * gen =                 \
+      cd->get_unsigned_ll_generator(e);                                 \
+    std::list<unsigned long long> tlist;                                \
+    _scv_get_base_unsigned_list(vlist, tlist);                          \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_BASE_SIGNED_TYPE(_typename)                \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                  \
-  _scv_constraint_range_generator_int_ll * gen =                        \
-  cd->get_int_ll_generator(e);                                          \
-  list<long long> tlist; \
-  _scv_get_base_signed_list(vlist, tlist)      ;                    \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_BASE_SIGNED_TYPE(type_name)                \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_int_ll * gen =                      \
+      cd->get_int_ll_generator(e);                                      \
+    std::list<long long> tlist;                                         \
+    _scv_get_base_signed_list(vlist, tlist);                            \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_BASE_SC_SIGNED_TYPE(_typename)                        \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                     \
-  _scv_constraint_range_generator_signed_big * gen =                          \
-  cd->get_signed_big_generator(e);                                           \
-  list<sc_signed> tlist; \
-  _scv_get_sc_list(e->get_bitwidth(), vlist, tlist);                         \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_BASE_SC_SIGNED_TYPE(type_name)             \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_signed_big * gen =                  \
+      cd->get_signed_big_generator(e);                                  \
+    std::list<sc_signed> tlist;                                         \
+    _scv_get_sc_list(e->get_bitwidth(), vlist, tlist);                  \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_BASE_SC_UNSIGNED_TYPE(_typename)                        \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                     \
-  _scv_constraint_range_generator_unsigned_big * gen =                          \
-  cd->get_unsigned_big_generator(e);                                           \
-  list<sc_unsigned> tlist; \
-  _scv_get_sc_list(e->get_bitwidth(), vlist, tlist);                         \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_BASE_SC_UNSIGNED_TYPE(type_name)           \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned_big * gen =                \
+      cd->get_unsigned_big_generator(e);                                \
+    std::list<sc_unsigned> tlist;                                       \
+    _scv_get_sc_list(e->get_bitwidth(), vlist, tlist);                  \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
-#define _SCV_KEEP_RANGE_LIST_LOGIC_TYPE(_typename)                              \
-  _SCV_KEEP_RANGE_LIST_HEADER(_typename)                                        \
-  _scv_constraint_range_generator_unsigned * gen =                              \
-  cd->get_unsigned_generator(e);                                               \
-  list<unsigned> tlist; \
-  _scv_get_logic_list(vlist, tlist);                               \
-  _SCV_KEEP_RANGE_SET_LIST(tlist)                \
-}
+#define _SCV_KEEP_RANGE_LIST_LOGIC_TYPE(type_name)                      \
+  _SCV_KEEP_RANGE_LIST_HEADER(type_name) {                              \
+    _SCV_CHECK_DATA();                                                  \
+    _scv_constraint_range_generator_unsigned * gen =                    \
+      cd->get_unsigned_generator(e);                                    \
+    std::list<unsigned> tlist;                                          \
+    _scv_get_logic_list(vlist, tlist);                                  \
+    _SCV_KEEP_RANGE_SET_LIST(tlist);                                    \
+  }
 
 _SCV_KEEP_RANGE_LIST_INT_TYPE(char)
 _SCV_KEEP_RANGE_LIST_INT_TYPE(short)
@@ -1186,4 +1202,3 @@ _SCV_KEEP_RANGE_LIST_BASE_SIGNED_TYPE(sc_int_base)
 _SCV_KEEP_RANGE_LIST_BASE_UNSIGNED_TYPE(sc_uint_base)
 _SCV_KEEP_RANGE_LIST_BASE_SC_UNSIGNED_TYPE(sc_lv_base)
 _SCV_KEEP_RANGE_LIST_BASE_SC_UNSIGNED_TYPE(sc_bv_base)
-

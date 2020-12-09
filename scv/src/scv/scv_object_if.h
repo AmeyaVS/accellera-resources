@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -44,11 +44,7 @@
 #ifndef SCV_OBJECT_IF_H
 #define SCV_OBJECT_IF_H
 
-#ifdef SCV_USE_IOSTREAM_H
-# include <iostream.h>
-#else
-# include <iostream>
-#endif
+#include <iostream>
 
 class scv_object_if {
 public:
@@ -60,7 +56,7 @@ public:
   virtual const char *kind() const = 0;
 
   // print current values on output stream
-  virtual void print(ostream& o=scv_out, int details=0, int indent=0) const = 0;
+  virtual void print(std::ostream& o=scv_out, int details=0, int indent=0) const = 0;
 
   // print current values on output stream
   virtual void show(int details=0, int indent=0) const { print(scv_out,-1,0); }

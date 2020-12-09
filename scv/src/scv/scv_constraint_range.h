@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -44,22 +44,15 @@
 // Implementation for Value Generation using _scv_constraint_range
 // *************************************************************************
 
-#include "scv_config.h"
-
 #include <string>
-
-#ifdef SCV_USE_IOSTREAM_H
-# include <iostream.h>
-#else
-# include <iostream>
-#endif
+#include <iostream>
 
 // *************************************************************************
 // Simple Constraint Facility Implementation
 // *************************************************************************
 
 #include <list>
-#include <math.h> // floor
+#include <cmath> // floor
 
 
 
@@ -193,10 +186,10 @@ public: /* constructions */  \
 				     const _scv_constraint_range_ ## TypeId& b);  \
   void keepOnly(const EltT& lb, const EltT& ub);  \
   void keepOnly(const EltT& v);  \
-  void keepOnly(const list<EltT>& l);  \
+  void keepOnly(const std::list<EltT>& l);  \
   void keepOut(const EltT& lb, const EltT& ub);  \
   void keepOut(const EltT& v); /* illegal if 'Discrete' is false. */  \
-  void keepOut(const list<EltT>& l);  \
+  void keepOut(const std::list<EltT>& l);  \
   \
 public:  \
   bool isEmpty() const { return _mode == EMPTY; }  \
@@ -216,18 +209,18 @@ public:  \
   friend ostream& operator<<(ostream& os, const _scv_constraint_range_ ## TypeId& a);  \
   \
 public:  \
-  void setNameP(const string & s) { _nameP = s; }  \
-  const string & getNameP() const { return _nameP; }  \
+  void setNameP(const std::string & s) { _nameP = s; }  \
+  const std::string & getNameP() const { return _nameP; }  \
   \
 private:  \
   enum {  \
     EMPTY,  \
     INTERVAL_LIST  \
   } _mode;  \
-  string _nameP;  \
+  std::string _nameP;  \
   \
-  list<_scv_interval_ ## TypeId > _intervals;  \
-  list<EltT> _explicits; /* only for 'Discrete' == false */  \
+  std::list<_scv_interval_ ## TypeId > _intervals;  \
+  std::list<EltT> _explicits; /* only for 'Discrete' == false */  \
   FlexRandomT _flexRandom;  \
   EltT _tmpUb, _tmpLb; /* variable to make sure lsb/msb are save as signal */  \
   \
@@ -279,11 +272,11 @@ public:
   ~_scv_random_double() {}
   double mod(double data, double n) const {
     double count1 = data / n;
-    if (count1 - ::floor(count1) < 0.1) return 0;
+    if (count1 - std::floor(count1) < 0.1) return 0;
     else return 1;
   }
   double floor(double data) const {
-    return ::floor(data);
+    return std::floor(data);
   }
   double next(scv_shared_ptr<scv_random> random) const {
     double i = random->next();
@@ -382,29 +375,29 @@ _SCV_CONSTRAINT_RANGE_FC_D(sc_signed ,sc_signed ,sc_unsigned,true,_scv_random_un
 
 class _scv_constraint_range_error {
 public:
-  static void invalidScanInterval(const string& nameP) {
+  static void invalidScanInterval(const std::string& nameP) {
     setName(nameP);
     _scv_message::message(_scv_message::CONSTRAINT_INVALID_SCAN,nameP.c_str());
   }
-  static void invalidDistance(const string& nameP) {
+  static void invalidDistance(const std::string& nameP) {
     setName(nameP);
     _scv_message::message(_scv_message::CONSTRAINT_INVALID_DISTANCE, nameP.c_str());
   }
-  static void invalidDistribution(const string& nameP, const char * locationP) {
+  static void invalidDistribution(const std::string& nameP, const char * locationP) {
     setName(nameP);
     _scv_message::message(_scv_message::CONSTRAINT_BAD_BAG, nameP.c_str(),locationP);
   }
-  static void overConstraint(const string&  nameP, const char * locationP) {
+  static void overConstraint(const std::string&  nameP, const char * locationP) {
     setName(nameP);
     _scv_message::message(_scv_message::CONSTRAINT_ERROR_OVER_CONSTRAINED, nameP.c_str(),locationP);
   }
-  static void emptyGenerator(const string& nameP) {
+  static void emptyGenerator(const std::string& nameP) {
     setName(nameP);
     _scv_message::message(_scv_message::CONSTRAINT_ERROR_OVER_CONSTRAINED, nameP.c_str(),"value generation");
   }
 private:
-  static void setName(const string& nameP) {
-    string s = nameP; 
+  static void setName(const std::string& nameP) {
+    std::string s = nameP; 
   }
 };
 
@@ -453,7 +446,7 @@ public: /* constraints */  \
     _simpleConstraint.keepOnly(v);  \
     checkConstraint("keepOnly");  \
   }  \
-  void keepOnly(const list<EltT>& l) {  \
+  void keepOnly(const std::list<EltT>& l) {  \
     _simpleConstraint.keepOnly(l);  \
     checkConstraint("keepOnly");  \
   }  \
@@ -468,11 +461,11 @@ public: /* constraints */  \
       _simpleConstraint.keepOut(v-_duplicateDistance, v+_duplicateDistance);  \
     checkConstraint("keepOut");  \
   }  \
-  void keepOut(const list<EltT>& l) {  \
+  void keepOut(const std::list<EltT>& l) {  \
     if (Discrete)  \
       _simpleConstraint.keepOut(l);  \
     else {  \
-      for (list<EltT>::const_iterator i = l.begin(); i != l.end(); ++i)  \
+      for (std::list<EltT>::const_iterator i = l.begin(); i != l.end(); ++i)  \
 	_simpleConstraint.keepOut(*i-_duplicateDistance, *i+_duplicateDistance);  \
     }  \
     checkConstraint("keepOut");  \
@@ -550,7 +543,7 @@ public:  \
     this->_simpleConstraint.keepOnly(v);  \
     this->checkConstraint("keepOnly");  \
   }  \
-  void keepOnly(const list<EltT>& l) {  \
+  void keepOnly(const std::list<EltT>& l) {  \
     this->_simpleConstraint.keepOnly(l);  \
     this->checkConstraint("keepOnly");  \
   }  \
@@ -569,11 +562,11 @@ public:  \
       this->_simpleConstraint.keepOut(v-this->_duplicateDistance, v+this->_duplicateDistance);  \
     this->checkConstraint("keepOut");  \
   }  \
-  void keepOut(const list<EltT>& l) {  \
+  void keepOut(const std::list<EltT>& l) {  \
     if (Discrete)  \
       this->_simpleConstraint.keepOut(l);  \
     else {  \
-      for (list<EltT>::const_iterator i = l.begin(); i != l.end(); ++i)  \
+      for (std::list<EltT>::const_iterator i = l.begin(); i != l.end(); ++i)  \
         this->_simpleConstraint.keepOut(*i-this->_duplicateDistance, *i+this->_duplicateDistance);  \
     }  \
     this->checkConstraint("keepOut");  \

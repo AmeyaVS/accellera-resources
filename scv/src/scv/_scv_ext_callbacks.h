@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -56,8 +56,8 @@ inline static void s_remove_callback(_scv_dynamic_data * data,
       return;
     }
 
-    list<scv_extensions_if::callback_base*>::iterator i = data->_callbacks.begin();
-    list<scv_extensions_if::callback_base*>::iterator e = data->_callbacks.end();
+    std::list<scv_extensions_if::callback_base*>::iterator i = data->_callbacks.begin();
+    std::list<scv_extensions_if::callback_base*>::iterator e = data->_callbacks.end();
     while (i != e) {
       if ((*i)->get_id() == id) {
 	data->_callbacks.erase(i);
@@ -68,16 +68,16 @@ inline static void s_remove_callback(_scv_dynamic_data * data,
   _scv_message::message(_scv_message::INTROSPECTION_BAD_CALLBACK_REMOVAL);
 }
 
-inline static   list<scv_extensions_if::callback_base*>::iterator 
+inline static   std::list<scv_extensions_if::callback_base*>::iterator 
 s_select_callback(_scv_dynamic_data * data,
 				 scv_extensions_if::callback_h id) {
   if (!data) { 
     _scv_message::message(_scv_message::INTROSPECTION_INVALID_DYNAMIC_EXTENSIONS,"callbacks");
-    return list<scv_extensions_if::callback_base*>::iterator();
+    return std::list<scv_extensions_if::callback_base*>::iterator();
   }
  
-  list<scv_extensions_if::callback_base*>::iterator i = data->_callbacks.begin();
-  list<scv_extensions_if::callback_base*>::iterator e = data->_callbacks.end();
+  std::list<scv_extensions_if::callback_base*>::iterator i = data->_callbacks.begin();
+  std::list<scv_extensions_if::callback_base*>::iterator e = data->_callbacks.end();
   while (i != e) {
     if ((*i)->get_id() == id) {
       return i;
@@ -130,7 +130,7 @@ public:
   }
   virtual void remove_cb(scv_extensions_if::callback_h id) {
     if (id != -1) {
-      list<scv_extensions_if::callback_base*>::iterator iter
+      std::list<scv_extensions_if::callback_base*>::iterator iter
 	= s_select_callback(this->_get_dynamic_data(),id);
       int size = this->get_num_fields();
       int * children = (*iter)->get_children();
@@ -169,7 +169,7 @@ public:
   }
   virtual void remove_cb(scv_extensions_if::callback_h id) {
     if (id != -1) {
-      list<scv_extensions_if::callback_base*>::iterator iter
+      std::list<scv_extensions_if::callback_base*>::iterator iter
 	= s_select_callback(this->_get_dynamic_data(),id);
       int * children = (*iter)->get_children();
       for (int i=0; i<(int)N; ++i) {
@@ -283,11 +283,11 @@ _SCV_EXT_CALLBACKS_FC_D(long long,long_long);
 _SCV_EXT_CALLBACKS_FC_D(unsigned long long,unsigned_long_long);	
 _SCV_EXT_CALLBACKS_FC_D(float,float);			
 _SCV_EXT_CALLBACKS_FC_D(double,double);			
-_SCV_EXT_CALLBACKS_FC_D(string,string);			
+_SCV_EXT_CALLBACKS_FC_D(std::string,string);			
 _SCV_EXT_CALLBACKS_FC_N_D(test_uint);		
 
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 _SCV_EXT_CALLBACKS_FC_1_D(sc_bit,sc_bit);		
 _SCV_EXT_CALLBACKS_FC_1_D(sc_logic,sc_logic);		
 _SCV_EXT_CALLBACKS_FC_N_D(sc_int);		

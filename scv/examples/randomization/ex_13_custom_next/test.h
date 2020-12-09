@@ -1,3 +1,20 @@
+//  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
+/*****************************************************************************
+
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
+
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
+
+ *****************************************************************************/
 #include "constraint.h"
 
 #include <iomanip>
@@ -20,12 +37,12 @@ SC_MODULE(test) {
     unsigned i;
     for(i=10; i<100; i+=20) {
       addr=i;
-      scv_out << "addr = " << setw(2) << addr << ", Setting to "
-              << setw(2) << i << endl;
+      scv_out << "addr = " << std::setw(2) << addr << ", Setting to "
+              << std::setw(2) << i << endl;
       wait(0, SC_NS);
       cnstr.next();
-      scv_out << "addr = " << setw(2) << addr << ", rval = "
-              << setw(2) << *cnstr.rval << "\n" << endl;
+      scv_out << "addr = " << std::setw(2) << addr << ", rval = "
+              << std::setw(2) << *cnstr.rval << "\n" << endl;
       wait(10, SC_NS);
     }
     sc_stop();

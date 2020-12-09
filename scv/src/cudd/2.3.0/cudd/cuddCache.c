@@ -899,7 +899,7 @@ cuddCacheResize(
 	table->acache = oldacache;
 	/* Do not try to resize again. */
 	table->maxCacheHard = oldslots - 1;
-	table->cacheSlack = - (oldslots + 1);
+	table->cacheSlack = - (int) (oldslots + 1);
 	return;
     }
     /* If the size of the cache entry is a power of 2, we want to

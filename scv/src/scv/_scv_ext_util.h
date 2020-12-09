@@ -1,14 +1,14 @@
 //  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
 /*****************************************************************************
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -36,8 +36,6 @@
 
  *****************************************************************************/
 
-#include <stdio.h>
-
 // ----------------------------------------
 // a first class in the hierarchy that contains class variables.
 // ----------------------------------------
@@ -62,7 +60,7 @@ public:
   virtual bool is_dynamic() const;
   virtual std::string get_short_name() const;
   virtual void set_name(const char * s);
-  virtual void _set_name(const string& s);
+  virtual void _set_name(const std::string& s);
 
 public: // non-virtual for fast execution
   inline void trigger_value_change_cb() {
@@ -83,7 +81,7 @@ public: // internal methods (non-virtual for efficiency)
   _scv_dynamic_data * _get_dynamic_data();
   _scv_dynamic_data * get_dynamic_data();
   const _scv_dynamic_data *_get_dynamic_data() const;
-  void _set_parent(_scv_extension_util *p, const string& name);
+  void _set_parent(_scv_extension_util *p, const std::string& name);
   const scv_extensions_if *_get_parent() const { return _parent; }
 
 public: // internal methods (virtual to distinguish basic/record/array)
@@ -95,8 +93,8 @@ public:
   //   1 : capable of dynamic
   //   valid-ptr: has dynamic
   mutable _scv_dynamic_data *_data; 
-  string _name;
-  string _short_name;
+  std::string _name;
+  std::string _short_name;
   scv_extensions_if *_parent;
 };
 
@@ -111,14 +109,14 @@ public:
   virtual bool has_valid_extensions() const { return false; }
   virtual void set_name(const char * s) {
     _name = s;
-    list<_scv_extension_util*>::iterator f;
+    std::list<_scv_extension_util*>::iterator f;
     for (f = _fields.begin(); f != _fields.end(); ++f) {
       (*f)->_set_name(_name + "." + (*f)->get_short_name().c_str());
     }
   }
-  virtual void _set_name(const string& s) {
+  virtual void _set_name(const std::string& s) {
     _name = s;
-    list<_scv_extension_util*>::iterator f;
+    std::list<_scv_extension_util*>::iterator f;
     for (f = _fields.begin(); f != _fields.end(); ++f) {
       (*f)->_set_name(_name + "." + (*f)->get_short_name().c_str());
     }
@@ -131,7 +129,7 @@ protected: // fast version of the introspection interface (non-virtual)
     _scv_message::message(_scv_message::INTROSPECTION_INVALID_INDEX,i,"composite object",get_name());
     return NULL;
   }
-    list<_scv_extension_util*>::iterator f = _fields.begin();	
+    std::list<_scv_extension_util*>::iterator f = _fields.begin();	
     while (i--) { ++f; }
     return *f;	
   }
@@ -140,7 +138,7 @@ protected: // fast version of the introspection interface (non-virtual)
     _scv_message::message(_scv_message::INTROSPECTION_INVALID_INDEX,i,"composite object",get_name());
     return NULL;
   }
-    list<_scv_extension_util*>::const_iterator f = _fields.begin();	
+    std::list<_scv_extension_util*>::const_iterator f = _fields.begin();	
     while (i--) { ++f; }
     return *f;	
   }
@@ -158,7 +156,7 @@ public: // internal methods (virtual to distinguish basic/record/array)
   }
 
 protected:
-  list<_scv_extension_util*> _fields;
+  std::list<_scv_extension_util*> _fields;
 };
 
 template<typename T>
@@ -189,7 +187,7 @@ public:
       _elts[i]->_set_name(_name + "[" + _scv_ext_util_get_string(i) + "]");
     }
   }
-  virtual void _set_name(const string& s) {
+  virtual void _set_name(const std::string& s) {
     _name = s;
     for (int i=0; i<(int)N; ++i) {
       _elts[i]->_set_name(_name + "[" + _scv_ext_util_get_string(i) + "]");
@@ -253,11 +251,11 @@ public:
 
 protected: // fast version of the introspection interface (non-virtual)
   inline int _get_enum_size() const { return _get_names().size(); }
-  void _get_enum_details(list<const char *>&, list<int>&) const;
+  void _get_enum_details(std::list<const char *>&, std::list<int>&) const;
   const char * _get_enum_string(int) const;
 
-  virtual list<const char *>& _get_names() const = 0;
-  virtual list<int>& _get_values() const = 0;
+  virtual std::list<const char *>& _get_names() const = 0;
+  virtual std::list<int>& _get_values() const = 0;
 };
 
 // ----------------------------------------

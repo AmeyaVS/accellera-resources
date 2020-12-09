@@ -755,7 +755,7 @@ CreateBotDist(
     
     /* Return the entry in the table if found. */
     N = Cudd_Regular(node);
-    if (st_lookup(distanceTable, (char *)N, (char **)(void *)&nodeStat)) {
+    if (st_lookup(distanceTable, (char *)N, (char **)&nodeStat)) {
 	nodeStat->localRef++;
 	return(nodeStat);
     }
@@ -829,7 +829,7 @@ CountMinterms(
     }
 
     /* Return the entry in the table if found. */
-    if (st_lookup(mintermTable, (char *)node, (char **)(void *)&dummy)) {
+    if (st_lookup(mintermTable, (char *)node, (char **)&dummy)) {
 	min = *dummy;
 	return(min);
     }
@@ -1663,7 +1663,7 @@ BuildConjuncts(
   st_table * mintermTable)
 {
     int topid, distance;
-    Conjuncts *factorsNv, *factorsNnv, *factors;
+    Conjuncts *factorsNv = NULL, *factorsNnv = NULL, *factors;
     Conjuncts *dummy;
     DdNode *N, *Nv, *Nnv, *temp, *g1, *g2, *h1, *h2, *topv;
     double minNv = 0.0, minNnv = 0.0;
@@ -1687,14 +1687,14 @@ BuildConjuncts(
     }
 
     /* If result (a pair of conjuncts) in cache, return the factors. */
-    if (st_lookup(cacheTable, (char *)node, (char **)(void *)&dummy)) {
+    if (st_lookup(cacheTable, (char *)node, (char **)&dummy)) {
 	factors = dummy;
 	return(factors);
     }
     
     /* check distance and local reference count of this node */
     N = Cudd_Regular(node);
-    if (!st_lookup(distanceTable, (char *)N, (char **)(void *)&nodeStat)) {
+    if (!st_lookup(distanceTable, (char *)N, (char **)&nodeStat)) {
 	(void) fprintf(dd->err, "Not in table, Something wrong\n");
 	dd->errorCode = CUDD_INTERNAL_ERROR;
 	return(NULL);
@@ -1764,8 +1764,7 @@ BuildConjuncts(
      * minterms. We go first where there are more minterms.
      */
     if (!Cudd_IsConstant(Nv)) {
-	if (!st_lookup(mintermTable, (char *)Nv,
-                       (char **)(void *)&doubleDummy)) {
+	if (!st_lookup(mintermTable, (char *)Nv, (char **)&doubleDummy)) {
 	    (void) fprintf(dd->err, "Not in table: Something wrong\n");
 	    dd->errorCode = CUDD_INTERNAL_ERROR;
 	    return(NULL);
@@ -1774,8 +1773,7 @@ BuildConjuncts(
     }
     
     if (!Cudd_IsConstant(Nnv)) {
-	if (!st_lookup(mintermTable, (char *)Nnv,
-                       (char **)(void *)&doubleDummy)) {
+	if (!st_lookup(mintermTable, (char *)Nnv, (char **)&doubleDummy)) {
 	    (void) fprintf(dd->err, "Not in table: Something wrong\n");
 	    dd->errorCode = CUDD_INTERNAL_ERROR;
 	    return(NULL);
@@ -1810,7 +1808,6 @@ BuildConjuncts(
 	    return(factors);
 	}
     }
-    else factorsNv =  NULL; /* To shut up GCC warnings */
 
     /* build ge, he recursively */
     if (Nnv != zero) {
@@ -1818,6 +1815,11 @@ BuildConjuncts(
 				    cacheTable, approxDistance, maxLocalRef,
 				    ghTable, mintermTable);
 	if (factorsNnv == NULL) {
+	    /* The CUDD implemenation assumes that factorsNv is not
+	    ** NULL at this point. Make this explicit for static code
+	    ** analysis.
+	    */
+	    assert(factorsNv);
 	    Cudd_RecursiveDeref(dd, factorsNv->g);
 	    Cudd_RecursiveDeref(dd, factorsNv->h);
 	    if (freeNv) FREE(factorsNv);
@@ -1837,7 +1839,6 @@ BuildConjuncts(
 	    return(factors);
 	}
     }
-    else factorsNnv =  NULL;  /* To shut up GCC warnings */
 
     /* construct the 2 pairs */
     /* g1 = x*gt + x'*ge; h1 = x*ht + x'*he; */
@@ -1855,6 +1856,12 @@ BuildConjuncts(
     topid = N->index;
     topv = dd->vars[topid];
     
+    /* The CUDD implemenation assumes that factorsNv and factorsNnv
+    ** are not NULL at this point. Make this explicit for static code
+    ** analysis.
+    */
+    assert(factorsNv);
+    assert(factorsNnv);
     g1 = cuddBddIteRecur(dd, topv, factorsNv->g, factorsNnv->g);
     if (g1 == NULL) {
 	Cudd_RecursiveDeref(dd, factorsNv->g);

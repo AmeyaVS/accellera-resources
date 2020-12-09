@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -64,7 +64,7 @@ scv_expression::scv_expression(unsigned long long u) : core_(new scv_expression_
 
 scv_expression::scv_expression(double d) : core_(new scv_expression_core(d)) {}
 
-scv_expression::scv_expression(string s) : core_(new scv_expression_core(s)) {}
+scv_expression::scv_expression(std::string s) : core_(new scv_expression_core(s)) {}
 
 scv_expression::~scv_expression() {}
 
@@ -170,8 +170,8 @@ bool scv_expression::evaluate(void) const {
   case scv_extensions_if::FLOATING_POINT_NUMBER:
     return valueP->get_double() > 0; 
   default: {
-    string msg = "Cannot recognize extensions of type " +
-                 string(valueP->get_type_name()) + "in scv_expression";
+    std::string msg = "Cannot recognize extensions of type " +
+                 std::string(valueP->get_type_name()) + "in scv_expression";
     _scv_message::message(_scv_message::INTERNAL_ERROR, msg.c_str());
     return false;
   }
@@ -213,18 +213,18 @@ sc_interface* scv_expression::get_signal(void) const
 }
 
 static void _get_extension_list(const scv_expression& e, 
-  list<scv_extensions_if*>&ext_list);
+  std::list<scv_extensions_if*>&ext_list);
 
-void scv_expression::get_extension_list(list<scv_extensions_if*>& ext_list)
+void scv_expression::get_extension_list(std::list<scv_extensions_if*>& ext_list)
 {
   ext_list.clear();
   _get_extension_list(*this, ext_list);
 }
 
 static void _get_signal_list(const scv_expression& e, 
-  list<sc_interface*>&sig_list);
+  std::list<sc_interface*>&sig_list);
 
-void scv_expression::get_signal_list(list<sc_interface*>& sig_list)
+void scv_expression::get_signal_list(std::list<sc_interface*>& sig_list)
 {
   sig_list.clear();
   _get_signal_list(*this, sig_list);
@@ -250,11 +250,11 @@ void _scv_update_signal_value(const scv_expression& e)
   e.update_signal_value();
 }
 
-static string _get_expression_string(const scv_expression& e);
+static std::string _get_expression_string(const scv_expression& e);
 
 const char *scv_expression::get_expression_string(void) const 
 {
-  static string text;
+  static std::string text;
   text = _get_expression_string(*this);
   return text.c_str();
 }
@@ -333,7 +333,7 @@ void scv_expression::get_value(float& v) const{
 void scv_expression::get_value(double& v) const{ 
   core_->get_value(v);
 }
-void scv_expression::get_value(string& v) const{ 
+void scv_expression::get_value(std::string& v) const{ 
   core_->get_value(v);
 }
 void scv_expression::get_value(sc_bv_base& v) const{ 
@@ -343,7 +343,7 @@ void scv_expression::get_value(sc_lv_base& v) const{
   core_->get_value(v);
 }
 
-static string _get_expression_string(const scv_expression& e) {
+static std::string _get_expression_string(const scv_expression& e) {
   char tmpString[1024];
   switch (e.get_operator()) {
   case scv_expression::EMPTY:
@@ -363,16 +363,7 @@ static string _get_expression_string(const scv_expression& e) {
   case scv_expression::SC_BV_CONSTANT: {
     sc_bv_base val(e.get_bit_width());
     e.get_value(val);
-    for (int i=0; i < val.size(); i++) {
-      // sc_bv_base::get_word() used to return unsigned long before
-      // SystemC 2.2. Since then, it returns unsigned int.
-#if SCV_SC_VERSION < 2002000
-      sprintf(tmpString , "%d%s", val.get_word(i), tmpString) ;
-#else
-      sprintf(tmpString , "%ld%s", val.get_word(i), tmpString) ;
-#endif
-    }
-    return tmpString;
+    return val.to_string();
   }
   case scv_expression::DOUBLE_CONSTANT:
     sprintf(tmpString,"%f",e.get_double_value()); return tmpString;
@@ -410,7 +401,7 @@ static string _get_expression_string(const scv_expression& e) {
   }
 }
 
-static void _get_extension_list(const scv_expression& e, list<scv_extensions_if*>&ext_list)
+static void _get_extension_list(const scv_expression& e, std::list<scv_extensions_if*>&ext_list)
 {
   switch (e.get_operator()) {
   case scv_expression::EMPTY:
@@ -445,7 +436,7 @@ static void _get_extension_list(const scv_expression& e, list<scv_extensions_if*
   }
 }
 
-static void _get_signal_list(const scv_expression& e, list<sc_interface*>&sig_list)
+static void _get_signal_list(const scv_expression& e, std::list<sc_interface*>&sig_list)
 {
   switch (e.get_operator()) {
   case scv_expression::EMPTY:
@@ -597,8 +588,8 @@ _evaluateExpression(const scv_expression& e) {
         break;
       }
       default: {
-        string msg = "Cannot recognize extensions of type " +
-                 string(valueP->get_type_name()) + "in scv_expression";
+        std::string msg = "Cannot recognize extensions of type " +
+                 std::string(valueP->get_type_name()) + "in scv_expression";
         _scv_message::message(_scv_message::INTERNAL_ERROR, msg.c_str());
 	*s_intValue = 0; return &*s_intValue;
       }
@@ -690,8 +681,8 @@ scv_expression_core::scv_expression_core(double d) : core_(NULL) , _data(NULL){
   _bit_width = sizeof(double) * 8;
   _operator = scv_expression::DOUBLE_CONSTANT;
 }
-scv_expression_core::scv_expression_core(string s) : core_(NULL) , _data(NULL){
-  _value._str = new string;
+scv_expression_core::scv_expression_core(std::string s) : core_(NULL) , _data(NULL){
+  _value._str = new std::string;
   _bit_width = s.length();
   *(_value._str) = s;
   _operator = scv_expression::STRING_CONSTANT;
@@ -818,13 +809,13 @@ void scv_expression_core::get_value(double& val) const {
   _SCV_GET_SC_VAL(double, to_double);
 }
 
-void scv_expression_core::get_value(string& val) const {
+void scv_expression_core::get_value(std::string& val) const {
   if (_operator == scv_expression::STRING_CONSTANT) { 
     val = *(_value._str);
   } else if (_operator == scv_expression::SC_STRING_CONSTANT) {
     val = (_value._sc_str)->c_str();
   } else {
-    _scv_expression_error::illegalAccess("get_value(string&)");
+    _scv_expression_error::illegalAccess("get_value(std::string&)");
     return ;                                               
   }
 }

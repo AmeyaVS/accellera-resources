@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -37,7 +37,7 @@
 
  *****************************************************************************/
 
-#include <assert.h>
+#include <cassert>
 #include <string>
 
 // ----------------------------------------
@@ -54,7 +54,7 @@
 // default implementation of various interfaces
 // ----------------------------------------
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 #define _SCV_DEFAULT_RW_SYSC \
   virtual void assign(const sc_bv_base& v) { assert(0); } \
   virtual void get_value(sc_bv_base& v) const { assert(0); } \
@@ -77,7 +77,7 @@
   virtual void assign(unsigned long long) { assert(0); } \
   virtual void assign(float) { assert(0); }		       \
   virtual void assign(double) { assert(0); }		       \
-  virtual void assign(const string&) { assert(0); }	       \
+  virtual void assign(const std::string&) { assert(0); }	       \
   virtual void assign(const char *) { assert(0); }	       \
 							       \
   virtual bool get_bool() const  { assert(0); return false; } \
@@ -88,7 +88,7 @@
 							       \
   _SCV_DEFAULT_RW_SYSC					       \
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 #define _SCV_INTROSPECTION_RW_FC_D_SYSC           \
   virtual void assign(const sc_bv_base& v); \
   virtual void get_value(sc_bv_base& v) const; \
@@ -111,7 +111,7 @@
   virtual void assign(unsigned long long); \
   virtual void assign(float); \
   virtual void assign(double); \
-  virtual void assign(const string&); \
+  virtual void assign(const std::string&); \
   virtual void assign(const char *); \
   \
   virtual bool get_bool() const; \
@@ -127,7 +127,7 @@
   void write(const type_id& rhs) { *_get_instance() = rhs; this->trigger_value_change_cb(); } \
   void _set_instance(type_id * p) { _instance = p; _set_instance_core_wrap(p); } \
   void _set_as_field(_scv_extension_util_record * parent,              \
-			    type_id * p, const string& name) { \
+			    type_id * p, const std::string& name) { \
     if (p) _set_instance(p); \
     else if ( ! this->_get_parent() ) { this->_set_parent(parent,name); parent->_add_field(this); } \
   } \
@@ -162,7 +162,7 @@ public: // internal API for implementation only
   void _set_instance(T* p) { _instance = p; _set_instance_core_wrap(p); }
   virtual void _set_instance_core_wrap(void* p) {}
   void _set_as_field(_scv_extension_util_record * parent, T* p,
-		    const string& name) {
+		    const std::string& name) {
     if (p) _set_instance(p);
     else if ( ! this->_get_parent() ) { this->_set_parent(parent,name); parent->_add_field(this); }
   }
@@ -237,8 +237,8 @@ template<typename T, int N> void scv_extension_rw<T[N]>::assign(float) {
 template<typename T, int N> void scv_extension_rw<T[N]>::assign(double) {
   _SCV_RW_ERROR(assign,double,array);
 }
-template<typename T, int N> void scv_extension_rw<T[N]>::assign(const string&) {
-  _SCV_RW_ERROR(assign,string,array);
+template<typename T, int N> void scv_extension_rw<T[N]>::assign(const std::string&) {
+  _SCV_RW_ERROR(assign,std::string,array);
 }
 template<typename T, int N> void scv_extension_rw<T[N]>::assign(const char *) {
   _SCV_RW_ERROR(assign,const char *,array);
@@ -260,7 +260,7 @@ template<typename T, int N> std::string scv_extension_rw<T[N]>::get_string() con
   _SCV_RW_ERROR(get_string,string,array); return std::string("");
 }
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 template<typename T, int N> void scv_extension_rw<T[N]>::assign(const sc_bv_base& v) {
   _SCV_RW_ERROR(assign,sc_bv_base,array);
 }
@@ -288,7 +288,7 @@ public: // public API for use only when full type information is available
 public:
   void _set_instance(T** p) { _instance = p; }
   void _set_as_field(_scv_extension_util_record * parent, T** p,
-		    const string& name) {
+		    const std::string& name) {
     if (p) _set_instance(p); 
     else if ( ! this->_get_parent() ) { this->_set_parent(parent,name); parent->_add_field(this); }
   }
@@ -320,7 +320,7 @@ public:
   }
   void _set_instance(int * p) { _instance = p; }
   void _set_as_field(_scv_extension_util_record * parent, int * p,
-		     const string& name) {
+		     const std::string& name) {
     if (p) _set_instance(p);
     else if ( ! this->_get_parent() ) { _set_parent(parent,name); parent->_add_field(this); }
   }
@@ -335,7 +335,7 @@ public:
 };
 
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 #define _SCV_EXT_RW_FC_COMMON_SYSC_D           \
   virtual void assign(const sc_bv_base& v); \
   virtual void get_value(sc_bv_base& v) const; \
@@ -366,7 +366,7 @@ public: /* internal API for implementation only */ \
   void _set_instance(basic_type* p); \
   virtual void _set_instance_core_wrap(void* p); \
   void _set_as_field(_scv_extension_util_record * parent, basic_type* p, \
-		     const string& name); \
+		     const std::string& name); \
   \
 public: \
   virtual void assign(bool); \
@@ -382,7 +382,7 @@ public: \
   virtual void assign(unsigned long long); \
   virtual void assign(float); \
   virtual void assign(double); \
-  virtual void assign(const string&); \
+  virtual void assign(const std::string&); \
   virtual void assign(const char *); \
   \
   virtual bool get_bool() const; \
@@ -439,14 +439,14 @@ _SCV_EXT_RW_FC_D(double,double)
 // string type
 // --------------
 
-_SCV_EXT_RW_FC_D(string,string)
+_SCV_EXT_RW_FC_D(std::string,string)
 
 
 // ------------------------------------------------------------
 // SystemC Types
 // ------------------------------------------------------------
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 
 // --------------
 // sc_bit
@@ -485,7 +485,7 @@ public: /* internal API for implementation only */ \
   void _set_instance(T* p) { _instance = p; _set_instance_core_wrap(p); } \
   virtual void _set_instance_core_wrap(void* p) {} \
   void _set_as_field(_scv_extension_util_record * parent, T* p,  \
-		    const string& name) { \
+		    const std::string& name) { \
     if (p) _set_instance(p); \
     else if ( ! this->_get_parent() ) { this->_set_parent(parent,name); parent->_add_field(this); } \
   } \
@@ -528,7 +528,7 @@ public: \
 
 
 #define _SCV_EXT_RW_FC_N_ASSIGNS_STRING(type_name) \
-  virtual void assign(const string& s) { \
+  virtual void assign(const std::string& s) { \
     *(this->get_instance()) = s.c_str();	 \
     this->trigger_value_change_cb();		 \
   }						 \
@@ -595,7 +595,7 @@ public:
 public:
   _SCV_EXT_RW_FC_N_BASE(sc_int<N>)
   _SCV_EXT_RW_FC_N_ASSIGNS(sc_int)
-  _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_int,const string&)
+  _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_int,const std::string&)
   _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_int,const char *)
   _SCV_EXT_RW_FC_N_ASSIGNS_GET(sc_int<N>)
   _SCV_EXT_RW_FC_N_ASSIGNS_SYSC(sc_int)
@@ -613,7 +613,7 @@ public:
 public:
   _SCV_EXT_RW_FC_N_BASE(sc_uint<N>)
   _SCV_EXT_RW_FC_N_ASSIGNS(sc_uint)
-  _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_uint,const string&)
+  _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_uint,const std::string&)
   _SCV_EXT_RW_FC_N_BAD_ASSIGN(sc_uint,const char *)
   _SCV_EXT_RW_FC_N_ASSIGNS_GET(sc_uint<N>)
   _SCV_EXT_RW_FC_N_ASSIGNS_SYSC(sc_uint)

@@ -71,7 +71,7 @@ Dddmp_cuddBddDisplayBinary(
   int id, size;
   struct binary_dd_code code;
   char buf[1000];
-  int nnodes, i;
+  int nnodes = 0, i;
 
   fp = fopen (filein, "rb");
   if (fp == 0)

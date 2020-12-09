@@ -832,6 +832,10 @@ Cudd_ApaPrintDensity(
   </xmp>
   where f0 and f1 are the two cofactors of f.
   Uses the identity <code>|f'| = max - |f|</code>.
+  The procedure expects the argument "node" to be a regular pointer, and
+  guarantees this condition is met in the recursive calls.
+  For efficiency, the result of a call is cached only if the node has
+  a reference count greater than 1.
   Returns the number of minterms of the function rooted at node.]
 
   SideEffects [None]
@@ -856,7 +860,7 @@ cuddApaCountMintermAux(
 	    return(max);
 	}
     }
-    if (node->ref > 1 && st_lookup(table, (char *)node, (char **)(void *)&mint)) {
+    if (node->ref > 1 && st_lookup(table, (char *)node, (char **)&mint)) {
 	return(mint);
     }
 
@@ -865,9 +869,14 @@ cuddApaCountMintermAux(
     mint1 = cuddApaCountMintermAux(Nt,  digits, max, min, table);
     if (mint1 == NULL) return(NULL);
     mint2 = cuddApaCountMintermAux(Cudd_Regular(Ne), digits, max, min, table);
-    if (mint2 == NULL) return(NULL);
+    if (mint2 == NULL) {
+	if (Nt->ref == 1) FREE(mint1);
+	return(NULL);
+    }
     mint = Cudd_NewApaNumber(digits);
     if (mint == NULL) {
+	if (Nt->ref == 1) FREE(mint1);
+	if (Cudd_Regular(Ne)->ref == 1) FREE(mint2);
 	return(NULL);
     }
     if (Cudd_IsComplement(Ne)) {
@@ -877,9 +886,12 @@ cuddApaCountMintermAux(
 	carryout = Cudd_ApaAdd(digits,mint1,mint2,mint);
     }
     Cudd_ApaShiftRight(digits,carryout,mint,mint);
-    if (Cudd_Regular(Nt)->ref == 1) FREE(mint1);
+    /* If the reference count of a child is 1, its minterm count
+    ** hasn't been stored in table.  Therefore, it must be explicitly
+    ** freed here. */
+    if (Nt->ref == 1) FREE(mint1);
     if (Cudd_Regular(Ne)->ref == 1) FREE(mint2);
-    
+
     if (node->ref > 1) {
 	if (st_insert(table, (char *)node, (char *)mint) == ST_OUT_OF_MEM) {
 	    FREE(mint);

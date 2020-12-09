@@ -1,14 +1,14 @@
 ## ****************************************************************************
 ##
 ##  The following code is derived, directly or indirectly, from the SystemC
-##  source code Copyright (c) 1996-2012 by all Contributors.
+##  source code Copyright (c) 1996-2014 by all Contributors.
 ##  All Rights reserved.
 ##
 ##  The contents of this file are subject to the restrictions and limitations
-##  set forth in the SystemC Open Source License Version 2.3 (the "License");
+##  set forth in the SystemC Open Source License (the "License");
 ##  You may not use this file except in compliance with such restrictions and
 ##  limitations. You may obtain instructions on how to receive a copy of the
-##  License at http://www.systemc.org/. Software distributed by Contributors
+##  License at http://www.accellera.org/. Software distributed by Contributors
 ##  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
 ##  ANY KIND, either express or implied. See the License for the specific
 ##  language governing rights and limitations under the License.
@@ -51,61 +51,49 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-BUILT_SOURCES = \
-	scv_config.h
+# support local addition of automake macros
+ACLOCAL_AMFLAGS= -I config
 
 SUBDIRS = \
-	scripts \
 	src \
 	docs \
 	examples
 
 TEXTDOCS = LICENSE README AUTHORS COPYING INSTALL NEWS RELEASENOTES
-
-my_data_DATA = $(TEXTDOCS:=.scv)
-
-my_datadir = $(prefix)
-
-nodist_my_includes_HEADERS = \
-	${buildInc}/scv/scv_config.h
-
-my_includesdir = $(includedir)/scv
+SCVDOCS  = $(TEXTDOCS:=.scv)
 
 %.scv : %
-	cp -fp $< $@
+	$(INSTALL_DATA) $< $@
+
+# FIXME: handle $docdir and/or $docdatadir
+scvdocsdir = $(prefix)
+
+if SCV_INSTALL_NOTSELF    # install documentation in non-local tree
+scvdocs_DATA = $(SCVDOCS)
+else
+if !SCV_INSTALL_SOURCEDIR # "install" documentation in build tree
+noinst_DATA  = $(SCVDOCS)
+endif
+endif # SCV_INSTALL_NOTSELF
 
 EXTRA_DIST = \
 	${TEXTDOCS} \
-	osci_issues_for_scv.txt \
-	msvc71/cudd/cudd.vcproj \
-	msvc71/cudd/ReadMe.txt \
-	msvc71/mtr/mtr.vcproj \
-	msvc71/mtr/ReadMe.txt \
-	msvc71/st/st.vcproj \
-	msvc71/st/ReadMe.txt \
-	msvc71/dddmp/dddmp.vcproj \
-	msvc71/dddmp/ReadMe.txt \
-	msvc71/obj/ReadMe.txt \
-	msvc71/obj/obj.vcproj \
-	msvc71/util/util.vcproj \
-	msvc71/util/ReadMe.txt \
-	msvc71/scv_config.h \
-	msvc71/README \
-	msvc71/scv.vcproj
-
-${buildInc}/scv/scv_config.h : config.h
-	rm -f $@ $@.tmp
-	mkdir -p ${buildInc}/scv
-	cp $< $@.tmp
-	echo "#undef PACKAGE" >>$@.tmp
-	mv $@.tmp $@
-
-scv_config.h : ${buildInc}/scv/scv_config.h
-	cp -fp $< $@
+	config/bootstrap \
+	msvc80/cudd/cudd.vcproj \
+	msvc80/mtr/mtr.vcproj \
+	msvc80/st/st.vcproj \
+	msvc80/dddmp/dddmp.vcproj \
+	msvc80/obj/obj.vcproj \
+	msvc80/util/util.vcproj \
+	msvc80/README \
+	msvc80/run_examples.bat \
+	msvc80/scv/scv_config.h \
+	msvc80/scv/scv.vcproj \
+	msvc80/scv.sln \
+	msvc80/scv-examples.sln
 
 CLEANFILES = \
-	scv_config.h \
-	${buildInc}/scv/scv_config.h
+	$(SCVDOCS)
 
 debug:
 	$(MAKE) all CXXFLAGS="$(CXXFLAGS_DEBUG)" CFLAGS="$(CFLAGS_DEBUG)"

@@ -509,6 +509,13 @@ zddFindNodeHiLo(
     int low;
     int high;
 
+    /* Initialize *upper to -1 to signal to the caller that no
+    ** reordering should take place by default. The rest of the
+    ** function updates *lower and *upper to signal the potential
+    ** need for reordering.
+    */
+    *upper = -1;
+
     /* Check whether no variables in this group already exist.
     ** If so, return immediately. The calling procedure will know from
     ** the values of upper that no reordering is needed.
@@ -520,7 +527,6 @@ zddFindNodeHiLo(
     }
 
     *lower = low = (unsigned int) table->permZ[treenode->index];
-    *upper = low; /* To shut up GCC warnings */
     high = (int) (low + treenode->size - 1);
 
     if (high >= table->sizeZ) {
@@ -1061,7 +1067,7 @@ zddGroupMove(
     Move *move;
     int  size;
     int  i,j,xtop,xbot,xsize,ytop,ybot,ysize,newxtop;
-    int  swapx,swapy;
+    int  swapx = x, swapy = y;
 #if defined(DD_DEBUG) && defined(DD_VERBOSE)
     int  initialSize,bestSize;
 #endif
@@ -1079,7 +1085,6 @@ zddGroupMove(
         ybot = table->subtableZ[ybot].next;
     ytop = y;
     ysize = ybot - ytop + 1;
-    swapx = swapy = 0; /* To shut up GCC warnings */
 
 #if defined(DD_DEBUG) && defined(DD_VERBOSE)
     initialSize = bestSize = table->keysZ;

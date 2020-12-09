@@ -1,3 +1,20 @@
+//  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
+/*****************************************************************************
+
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
+
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
+
+ *****************************************************************************/
 #include "scv.h"
 #include "packet.h"
 
@@ -10,8 +27,7 @@ sctop::sctop(sc_module_name name) : sc_module(name)
 {
   // Create a sparse packet array
   packetT defaultPacket;
-  sc_int<64> upper_bound;
-  upper_bound = ( ( (long long) 1 ) << 63 ) - 1;
+  sc_int<64> upper_bound = ( ( (unsigned long long) 1 ) << 63 ) - 1;
   const sc_int<64> lower_bound = -(upper_bound+1);
   scv_sparse_array< sc_int<64>, packetT >
     packets("packets", defaultPacket,
@@ -49,7 +65,7 @@ sctop::sctop(sc_module_name name) : sc_module(name)
   unsigned int count = 0;
   for (sc_int<64> i=low; i<=high; i++) {
     if (count == 0) {
-      scv_out << setw(6) << i << ": ";
+      scv_out << std::setw(6) << i << ": ";
     }
     if (packets[i] == defaultPacket) { // uses packetT == operator
       scv_out << ".";
@@ -69,7 +85,7 @@ sctop::sctop(sc_module_name name) : sc_module(name)
   for (sc_int<64> i=low; i<=high; i++) {
     if (packets[i] != defaultPacket) { // uses packetT == operator
       // Uses output operator
-      scv_out << setw(6) << i << ": " << packets[i] << endl;
+      scv_out << std::setw(6) << i << ": " << packets[i] << endl;
     }
   }
   scv_out << endl;

@@ -1384,7 +1384,7 @@ cuddHashTableAlloc(
 		hash->manager->stash = NULL;
 		/* Inhibit resizing of tables. */
 		hash->manager->maxCacheHard = hash->manager->cacheSlots - 1;
-		hash->manager->cacheSlack = -(hash->manager->cacheSlots + 1);
+		hash->manager->cacheSlack = - (int) (hash->manager->cacheSlots + 1);
 		for (i = 0; i < hash->manager->size; i++) {
 		    hash->manager->subtables[i].maxKeys <<= 2;
 		}

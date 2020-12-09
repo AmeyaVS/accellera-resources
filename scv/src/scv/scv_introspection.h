@@ -1,14 +1,14 @@
 //  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
 /*****************************************************************************
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -46,12 +46,11 @@
 #ifndef SCV_INTROSPECTION_H
 #define SCV_INTROSPECTION_H
 
+#include "systemc.h"
 #include "scv/scv_object_if.h"
 
 // ----------------------------------------
 // configuration
-//
-// some of these to be moved to scv_config.h
 // ----------------------------------------
 
 // compiler configuration
@@ -62,17 +61,9 @@
 #endif
 
 // utilities
-#include <assert.h>
+#include <cassert>
 #include <list>
 #include <string>
-
-
-#if defined(__SUNPRO_CC)
-using std::list;
-using std::pair;
-#include <string>
-using std::string;
-#endif
 
 // specific stuff for randomization extensions
 template<typename T> class scv_extensions ;
@@ -98,14 +89,14 @@ enum scv_severity {
 class _scv_message_desc {
 friend class _scv_message;
 private:
-  _scv_message_desc(string tag, string format, scv_severity severity, unsigned actions)
+  _scv_message_desc(std::string tag, std::string format, scv_severity severity, unsigned actions)
     : _tag(tag), _format(format), _severity(severity), _actions(actions) {}
   const char *get_tag() const { return _tag.c_str(); }
   const char *get_format() const { return _format.c_str(); }
   scv_severity get_severity() const { return _severity; }
   unsigned get_actions() const { return _actions; }
-  string _tag;
-  string _format;
+  std::string _tag;
+  std::string _format;
   scv_severity _severity;
   unsigned _actions;
 };
@@ -211,7 +202,7 @@ public:
 
   bool is_enum() const { return get_type() == ENUMERATION; }
   virtual int get_enum_size() const = 0;
-  virtual void get_enum_details(list<const char *>&, list<int>&) const = 0;
+  virtual void get_enum_details(std::list<const char *>&, std::list<int>&) const = 0;
   virtual const char *get_enum_string(int) const = 0;
 
   bool is_integer() const { return get_type() == INTEGER; }
@@ -269,7 +260,7 @@ public:
   virtual void assign(unsigned long long) = 0;
   virtual void assign(float) = 0;
   virtual void assign(double) = 0;
-  virtual void assign(const string&) = 0;
+  virtual void assign(const std::string&) = 0;
   virtual void assign(const char *) = 0;
 
   virtual bool get_bool() const = 0;
@@ -278,7 +269,7 @@ public:
   virtual double get_double() const = 0;
   virtual std::string get_string() const = 0;
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
   virtual void assign(const sc_bv_base& v) = 0;
   virtual void get_value(sc_bv_base& v) const = 0;
   virtual void assign(const sc_lv_base& v) = 0;
@@ -332,8 +323,10 @@ public: // implementation (private)
 // ----------------------------------------
 // dynamic extension to perform value change callback
 // ----------------------------------------
-#ifdef _WIN32
-# undef DELETE //defined in winnt.h
+#if defined(_MSC_VER) || defined(_WIN32)
+#  ifdef DELETE
+#    undef DELETE //defined in winnt.h
+#  endif
 #endif
 
 class scv_extension_callbacks_if : public _SCV_INTROSPECTION_BASE {
@@ -441,14 +434,14 @@ public:
     if (this->_has_dynamic_data() && this->_get_dynamic_data()->dist_)
       delete _get_distribution();
   }
-  virtual list<const char *>& _get_names() const { static list<const char *> _names; return _names; }
-  virtual list<int>& _get_values() const { static list<int> _values; return _values; }
+  virtual std::list<const char *>& _get_names() const { static std::list<const char *> _names; return _names; }
+  virtual std::list<int>& _get_values() const { static std::list<int> _values; return _values; }
   virtual int get_bitwidth() const { return 8*sizeof(T); }
   T read() const { return (T) _SCV_INTROSPECTION_BASE_ENUM::read(); }
   void write(const T rhs) { _SCV_INTROSPECTION_BASE_ENUM::write((int) rhs); }
   void _set_instance(T *p) { _SCV_INTROSPECTION_BASE_ENUM::_set_instance((int*)p); }
   void _set_as_field(_scv_extension_util_record *parent,
-		     T *p, const string& name) {
+		     T *p, const std::string& name) {
     _SCV_INTROSPECTION_BASE_ENUM::_set_as_field(parent,(int*)p,name);
   }
   T *_get_instance() const { return (T*)_instance; }
@@ -482,7 +475,7 @@ public:
       e->get_dynamic_data()->dist_;
     _set_distribution(dist);
   }
-  void set_mode(scv_bag<pair<T, T> >& d){               
+  void set_mode(scv_bag<std::pair<T, T> >& d){               
     _reset_keep_only_distribution();                                   
     if (!_get_distribution())                                          
       _get_dynamic_data()->dist_ = new _scv_distribution<T>;   
@@ -519,7 +512,7 @@ public:
     _reset_bag_distribution(); 
     _scv_keep_range(this, lb, ub, false); 
   }                                                                    
-  void keep_only(const list<T>& vlist) {                       
+  void keep_only(const std::list<T>& vlist) {                       
     _reset_bag_distribution(); 
     _scv_keep_range_list_enum(this, vlist, false);
   }                                                                    
@@ -531,7 +524,7 @@ public:
     _reset_bag_distribution();  
     _scv_keep_range(this, lb, ub, true); 
   }                                                                    
-  void keep_out(const list<T>& vlist) {                        
+  void keep_out(const std::list<T>& vlist) {                        
     _reset_bag_distribution(); 
     _scv_keep_range_list_enum(this, vlist, true);  
   }                                                                    
@@ -550,17 +543,17 @@ public:
 
 
 
-#define _SCV_PAREN_OPERATOR(typename)  \
-  scv_expression operator()() {                                     \
-    return scv_expression(new scv_expression_core(this));\
-  }                                                                \
+#define _SCV_PAREN_OPERATOR(type_name)                                   \
+  scv_expression operator()() {                                          \
+    return scv_expression(new scv_expression_core(this));                \
+  }
 
 
 
 // supporting macros
 #define SCV_EXTENSIONS(type_name)                                        \
   template<>                                                             \
-  class scv_extensions<type_name> : public scv_extensions_base<type_name>\
+  class scv_extensions<type_name> : public scv_extensions_base<type_name>
 
 #define SCV_EXTENSIONS_CTOR(type_name)                                   \
   virtual const char *get_type_name() const {                            \
@@ -580,23 +573,23 @@ public:
     write(rhs); return *this;                                            \
   }                                                                      \
   operator const type_name&() const { return *(type_name*)_get_instance(); } \
-  _SCV_PAREN_OPERATOR(typename);                                         \
+  _SCV_PAREN_OPERATOR(type_name)                                         \
   virtual void _set_instance_core_wrap(void *p) { _set_instance_core((type_name*)p); } \
-  void _set_instance_core(type_name *_scv_object_with_introspection) \
+  void _set_instance_core(type_name *_scv_object_with_introspection)
 
 #define SCV_FIELD(field_name)                                            \
-  string field_name ## _name = #field_name;                       \
-  field_name._set_as_field(this,_scv_object_with_introspection?(&_scv_object_with_introspection->field_name):0,field_name ## _name);   \
+  std::string field_name ## _name = #field_name;                         \
+  field_name._set_as_field(this,_scv_object_with_introspection?(&_scv_object_with_introspection->field_name):0,field_name ## _name)
 
-#define SCV_EXTENSIONS_BASE_CLASS(class_name) \
-  scv_extensions<class_name>::_set_instance_core(_scv_object_with_introspection); \
+#define SCV_EXTENSIONS_BASE_CLASS(class_name)                            \
+  scv_extensions<class_name>::_set_instance_core(_scv_object_with_introspection)
 
 #define SCV_ENUM_EXTENSIONS(type_name)                                   \
   template<>                                                             \
-  class scv_extensions<type_name> : public scv_enum_base<type_name>      \
+  class scv_extensions<type_name> : public scv_enum_base<type_name>
 
 #define SCV_ENUM_CTOR(type_name)                                         \
-  virtual const char *get_type_name() const {                           \
+  virtual const char *get_type_name() const {                            \
     static const char *s = strdup(#type_name);                           \
     return s;                                                            \
   }                                                                      \
@@ -612,12 +605,12 @@ public:
     write(rhs); return *this;                                            \
   }                                                                      \
   operator type_name() const { return *(type_name*)_get_instance(); }    \
-  _SCV_PAREN_OPERATOR(typename);                                         \
+  _SCV_PAREN_OPERATOR(type_name)                                         \
   bool _init() { __init(); return true; }                                \
-  void __init()                                                          \
+  void __init()
 
 #define SCV_ENUM(element_name)                                           \
-  _set_enum((int)element_name,#element_name);                            \
+  _set_enum((int)element_name,#element_name)
 
 
 // convenient functions for extensions 
@@ -665,10 +658,10 @@ public:
 
 public:
   scv_smart_ptr();
-  scv_smart_ptr(const string& name);
+  scv_smart_ptr(const std::string& name);
   scv_smart_ptr(const char *name);
   scv_smart_ptr(T *data);
-  scv_smart_ptr(T *data, const string& name);
+  scv_smart_ptr(T *data, const std::string& name);
   scv_smart_ptr(T *data, const char *name);
   scv_smart_ptr(const scv_smart_ptr<T>& rhs); 
   scv_smart_ptr(

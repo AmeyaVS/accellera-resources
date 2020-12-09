@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -43,25 +43,23 @@
 #ifndef SCV_SPARSE_ARRAY_H
 #define SCV_SPARSE_ARRAY_H
 
-#include <systemc.h>
-#include <limits.h>
-#include "scv/scv_config.h"
 #include "scv/_scv_associative_array.h"
 #include "scv/scv_report.h"
 
-#include <math.h>
+#include <climits>
+#include <cmath>
 #include <map>
 
 // scv_sparse_array (with integer indexing) (using map)
 
 template <class Key, class T>
-class scv_sparse_array : public _scv_associative_array<Key, T, map<Key, T, less<Key> > > {
+class scv_sparse_array : public _scv_associative_array<Key, T, std::map<Key, T, std::less<Key> > > {
   T _dummy;     // only for the purpose of error recovery
   Key _indexLB;
   Key _indexUB;
 public:
 
-typedef map<Key, T, less<Key> > container_type;
+typedef std::map<Key, T, std::less<Key> > container_type;
 
   // constructor
   scv_sparse_array(const char *nameP, const T& defaultValue,
@@ -148,9 +146,9 @@ typedef map<Key, T, less<Key> > container_type;
   }
 
   virtual void print(ostream& os=scv_out, int details=0, int indent=0) const {
-  //typename container_type::const_iterator temp;
-  //os << kind() << " Name: " << get_name() << endl;
-  _scv_associative_array<Key, T,container_type>::print(os,details,indent);
+    //typename container_type::const_iterator temp;
+    //os << kind() << " Name: " << get_name() << endl;
+    _scv_associative_array<Key, T,container_type>::print(os,details,indent);
   }
 
   virtual void show(int details=0, int indent=0) const {

@@ -32,11 +32,7 @@
 
 #include "scv/scv_config.h"
 
-#ifdef SCV_USE_IOSTREAM_H
-# include <iostream.h>
-#else
-# include <iostream>
-#endif
+#include <iostream>
 
 #include "util.h"
 #include "cudd.h"

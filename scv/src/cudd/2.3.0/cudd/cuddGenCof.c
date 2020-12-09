@@ -1307,7 +1307,7 @@ cuddBddConstrainDecomp(
     }
     /* Compute abstraction of top variable. */
     fAbs = cuddBddAndRecur(dd, fv, fvn);
-    if (fabs == NULL) {
+    if (fAbs == NULL) {
 	return(0);
     }
     cuddRef(fAbs);
@@ -1467,7 +1467,7 @@ cuddBddLICMarkEdges(
 	return(CUDD_OUT_OF_MEM);
     }
     key->f = f; key->c = c;
-    if (st_lookup(cache, (char *)key, (char **)(void *)&res)) {
+    if (st_lookup(cache, (char *)key, (char **)&res)) {
 	FREE(key);
 	if (comple) {
 	    if (res == DD_LIC_0) res = DD_LIC_1;
@@ -1573,12 +1573,12 @@ cuddBddLICBuildResult(
     f = Cudd_Regular(f);
 
     /* Check the cache. */
-    if (st_lookup(cache, (char *)f, (char **)(void *)&r)) {
+    if (st_lookup(cache, (char *)f, (char **)&r)) {
 	return(Cudd_NotCond(r,comple));
     }
 
     /* Retrieve the edge markings. */
-    if (st_lookup(table, (char *)f, (char **)(void *)&markings) == 0)
+    if (st_lookup(table, (char *)f, (char **)&markings) == 0)
 	return(NULL);
     markT = markings >> 2;
     markE = markings & 3;

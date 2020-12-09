@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -42,22 +42,12 @@
 // final definition of the extension classes for builtin C/C++ types
 // ----------------------------------------
 
-#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
-namespace sc_dt {
-	typedef unsigned long sc_digit;  //defined as unsigned int in SystemC 2.2
-};
-#endif
-
-#if !( defined( __HP_aCC ) || defined(__linux__) )
-#define _SCV_OSTREAM(typename) \
- friend ostream& operator<<(ostream& os,                            \
-			     const scv_extensions< typename >& e) { \
-    const_cast<scv_extensions< typename >& >(e).initialize(); \
-    os << *e._get_instance(); return os; \
+#define _SCV_OSTREAM(type_name)                                      \
+  friend std::ostream& operator<<(std::ostream& os,                  \
+                                  const scv_extensions< type_name >& e) { \
+    const_cast<scv_extensions< type_name >& >(e).initialize();       \
+    os << *e._get_instance(); return os;                             \
   }
-#else
-#define _SCV_OSTREAM(typename)
-#endif
 
 template<>
 class scv_extensions<bool>
@@ -70,138 +60,138 @@ public:
     return *_get_instance();
   }
   _SCV_OSTREAM(bool)
-  _SCV_PAREN_OPERATOR(typename)
+  _SCV_PAREN_OPERATOR(bool)
 };
 
-#define _SCV_INTEGER_INTERFACE(typename) \
+#define _SCV_INTEGER_INTERFACE(type_name) \
 public:                                                             \
-  scv_extensions< typename >& operator=(const scv_extensions<typename>& i) { \
+  scv_extensions< type_name >& operator=(const scv_extensions<type_name>& i) { \
     *_get_instance() = *(i._get_instance()); trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator=(typename i) { \
+  scv_extensions< type_name >& operator=(type_name i) { \
     *_get_instance() = i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator+=(typename i) { \
+  scv_extensions< type_name >& operator+=(type_name i) { \
     *_get_instance() += i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator-=(typename i) { \
+  scv_extensions< type_name >& operator-=(type_name i) { \
     *_get_instance() -= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator*=(typename i) { \
+  scv_extensions< type_name >& operator*=(type_name i) { \
     *_get_instance() *= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator/=(typename i) { \
+  scv_extensions< type_name >& operator/=(type_name i) { \
     *_get_instance() /= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator%=(typename i) { \
+  scv_extensions< type_name >& operator%=(type_name i) { \
     *_get_instance() %= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator&=(typename i) { \
+  scv_extensions< type_name >& operator&=(type_name i) { \
     *_get_instance() &= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator|=(typename i) { \
+  scv_extensions< type_name >& operator|=(type_name i) { \
     *_get_instance() |= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator^=(typename i) { \
+  scv_extensions< type_name >& operator^=(type_name i) { \
     *_get_instance() ^= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator<<=(typename i) { \
+  scv_extensions< type_name >& operator<<=(type_name i) { \
     *_get_instance() <<= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator>>=(typename i) { \
+  scv_extensions< type_name >& operator>>=(type_name i) { \
     *_get_instance() >>= i; trigger_value_change_cb(); return *this; \
   } \
-  scv_extensions< typename >& operator++() { \
+  scv_extensions< type_name >& operator++() { \
     ++*_get_instance(); trigger_value_change_cb(); return *this; \
   } \
-  typename operator++(int) { \
-    typename tmp = *_get_instance(); \
+  type_name operator++(int) { \
+    type_name tmp = *_get_instance(); \
     ++*_get_instance(); trigger_value_change_cb(); return tmp; \
   } \
-  scv_extensions< typename >& operator--() { \
+  scv_extensions< type_name >& operator--() { \
     --*_get_instance(); trigger_value_change_cb(); return *this; \
   } \
-  typename operator--(int) { \
-    typename tmp = *_get_instance(); \
+  type_name operator--(int) { \
+    type_name tmp = *_get_instance(); \
     --*_get_instance(); trigger_value_change_cb(); return tmp; \
   } \
-  operator typename() const { \
-    const_cast<scv_extensions< typename > * >(this)->initialize(); \
+  operator type_name() const { \
+    const_cast<scv_extensions< type_name > * >(this)->initialize(); \
     return *_get_instance(); \
   } \
-  _SCV_OSTREAM(typename) \
-  _SCV_PAREN_OPERATOR(typename) \
+  _SCV_OSTREAM(type_name) \
+  _SCV_PAREN_OPERATOR(type_name)
 
 // for all C/C++ builtin integer types
-#define _SCV_TAG_FINAL_COMPONENT(typename) \
+#define _SCV_TAG_FINAL_COMPONENT(type_name) \
 template<> \
-class scv_extensions< typename > \
-  : public scv_extensions_base< typename > { \
-  _SCV_INTEGER_INTERFACE(typename) \
-};
+class scv_extensions< type_name > \
+  : public scv_extensions_base< type_name > { \
+  _SCV_INTEGER_INTERFACE(type_name) \
+}
 
-_SCV_TAG_FINAL_COMPONENT(char)
-_SCV_TAG_FINAL_COMPONENT(unsigned char)
-_SCV_TAG_FINAL_COMPONENT(short)
-_SCV_TAG_FINAL_COMPONENT(unsigned short)
-_SCV_TAG_FINAL_COMPONENT(int)
-_SCV_TAG_FINAL_COMPONENT(unsigned int)
-_SCV_TAG_FINAL_COMPONENT(long)
-_SCV_TAG_FINAL_COMPONENT(unsigned long)
-_SCV_TAG_FINAL_COMPONENT(long long)
-_SCV_TAG_FINAL_COMPONENT(unsigned long long)
+_SCV_TAG_FINAL_COMPONENT(char);
+_SCV_TAG_FINAL_COMPONENT(unsigned char);
+_SCV_TAG_FINAL_COMPONENT(short);
+_SCV_TAG_FINAL_COMPONENT(unsigned short);
+_SCV_TAG_FINAL_COMPONENT(int);
+_SCV_TAG_FINAL_COMPONENT(unsigned int);
+_SCV_TAG_FINAL_COMPONENT(long);
+_SCV_TAG_FINAL_COMPONENT(unsigned long);
+_SCV_TAG_FINAL_COMPONENT(long long);
+_SCV_TAG_FINAL_COMPONENT(unsigned long long);
 
 #undef _SCV_TAG_FINAL_COMPONENT
 
 // for all C/C++ builtin floating point type types
-#define _SCV_TAG_FINAL_COMPONENT(typename) \
+#define _SCV_TAG_FINAL_COMPONENT(type_name) \
 template<> \
-class scv_extensions< typename > \
-  : public scv_extensions_base< typename > { \
+class scv_extensions< type_name > \
+  : public scv_extensions_base< type_name > { \
 public:                                                            \
-  scv_extensions< typename >& operator=(const scv_extensions<typename>& i) { \
+  scv_extensions< type_name >& operator=(const scv_extensions<type_name>& i) { \
     *_get_instance() = *(i._get_instance()); trigger_value_change_cb(); return *this; \
   }                                                                 \
-  scv_extensions< typename >& operator=(typename i) { \
+  scv_extensions< type_name >& operator=(type_name i) { \
     *_get_instance() = i; trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator+=(typename i) { \
+  scv_extensions< type_name >& operator+=(type_name i) { \
     *_get_instance() += i; trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator-=(typename i) { \
+  scv_extensions< type_name >& operator-=(type_name i) { \
     *_get_instance() -= i; trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator*=(typename i) { \
+  scv_extensions< type_name >& operator*=(type_name i) { \
     *_get_instance() *= i; trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator/=(typename i) { \
+  scv_extensions< type_name >& operator/=(type_name i) { \
     *_get_instance() /= i; trigger_value_change_cb(); return *this; \
   }                                                                \
-  operator typename() const { \
-    const_cast<scv_extensions< typename > * >(this)->initialize(); \
+  operator type_name() const { \
+    const_cast<scv_extensions< type_name > * >(this)->initialize(); \
     return *_get_instance(); \
   }                                                                \
-  _SCV_OSTREAM(typename); \
-  _SCV_PAREN_OPERATOR(typename); \
-}; \
+  _SCV_OSTREAM(type_name) \
+  _SCV_PAREN_OPERATOR(type_name) \
+}
 
 _SCV_TAG_FINAL_COMPONENT(float);
 _SCV_TAG_FINAL_COMPONENT(double);
 
 template<>
-class scv_extensions<string>
-  : public scv_extensions_base<string> {
+class scv_extensions<std::string>
+  : public scv_extensions_base<std::string> {
 public:
-  scv_extensions< string >& operator=(const scv_extensions< string >& i) { \
+  scv_extensions<std::string>& operator=(const scv_extensions<std::string>& i) { \
     *_get_instance() = *(i._get_instance()); trigger_value_change_cb(); return *this; \
   }                                                                 \
-  scv_extensions<string>& operator=(const string& s) {
+  scv_extensions<std::string>& operator=(const std::string& s) {
     *_get_instance() = s; trigger_value_change_cb(); return *this;
   }
-  scv_extensions<string>& operator=(const char * s) {
+  scv_extensions<std::string>& operator=(const char * s) {
     *_get_instance() = s; trigger_value_change_cb(); return *this;
   }
-  _SCV_OSTREAM(string);
+  _SCV_OSTREAM(std::string);
 };
 
 
@@ -209,79 +199,79 @@ public:
 
 #undef _SCV_INTEGER_INTERFACE
 
-#define _SCV_INTEGER_INTERFACE(typename) \
+#define _SCV_INTEGER_INTERFACE(type_name) \
 public:                                                            \
-  scv_extensions< typename >& operator=(const scv_extensions< typename >& i) { \
+  scv_extensions< type_name >& operator=(const scv_extensions< type_name >& i) { \
     *this->_get_instance() = *(i._get_instance()); this->trigger_value_change_cb(); return *this; \
   }                                                                 \
-  scv_extensions< typename >& operator=(typename i) { \
+  scv_extensions< type_name >& operator=(type_name i) { \
     *this->_get_instance() = i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator+=(typename i) { \
+  scv_extensions< type_name >& operator+=(type_name i) { \
     *this->_get_instance() += i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator-=(typename i) { \
+  scv_extensions< type_name >& operator-=(type_name i) { \
     *this->_get_instance() -= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator*=(typename i) { \
+  scv_extensions< type_name >& operator*=(type_name i) { \
     *this->_get_instance() *= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator/=(typename i) { \
+  scv_extensions< type_name >& operator/=(type_name i) { \
     *this->_get_instance() /= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator%=(typename i) { \
+  scv_extensions< type_name >& operator%=(type_name i) { \
     *this->_get_instance() %= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator&=(typename i) { \
+  scv_extensions< type_name >& operator&=(type_name i) { \
     *this->_get_instance() &= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator|=(typename i) { \
+  scv_extensions< type_name >& operator|=(type_name i) { \
     *this->_get_instance() |= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator^=(typename i) { \
+  scv_extensions< type_name >& operator^=(type_name i) { \
     *this->_get_instance() ^= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator<<=(typename i) { \
+  scv_extensions< type_name >& operator<<=(type_name i) { \
     *this->_get_instance() <<= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator>>=(typename i) { \
+  scv_extensions< type_name >& operator>>=(type_name i) { \
     *this->_get_instance() >>= i; this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  scv_extensions< typename >& operator++() { \
+  scv_extensions< type_name >& operator++() { \
     ++*this->_get_instance(); this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  typename operator++(int) { \
-    typename tmp = *this->_get_instance(); \
+  type_name operator++(int) { \
+    type_name tmp = *this->_get_instance(); \
     ++*this->_get_instance(); this->trigger_value_change_cb(); return tmp; \
   }                                                                \
-  scv_extensions< typename >& operator--() { \
+  scv_extensions< type_name >& operator--() { \
     --*this->_get_instance(); this->trigger_value_change_cb(); return *this; \
   }                                                                \
-  typename operator--(int) { \
-    typename tmp = *this->_get_instance(); \
+  type_name operator--(int) { \
+    type_name tmp = *this->_get_instance(); \
     --*this->_get_instance(); this->trigger_value_change_cb(); return tmp; \
   }                                                                \
-  operator typename() const { \
-    const_cast<scv_extensions< typename > * >(this)->initialize(); \
+  operator type_name() const { \
+    const_cast<scv_extensions< type_name > * >(this)->initialize(); \
     return *this->_get_instance(); \
   }                                                                \
-  _SCV_OSTREAM(typename); \
-  _SCV_PAREN_OPERATOR(typename); \
+  _SCV_OSTREAM(type_name) \
+  _SCV_PAREN_OPERATOR(type_name)
 
 
 // for all SystemC templated types
-#define _SCV_TAG_FINAL_COMPONENT(typename) \
+#define _SCV_TAG_FINAL_COMPONENT(type_name) \
 template<int N> \
-class scv_extensions< typename > \
-  : public scv_extensions_base< typename > { \
-  _SCV_INTEGER_INTERFACE(typename); \
-};
+class scv_extensions< type_name > \
+  : public scv_extensions_base< type_name > { \
+  _SCV_INTEGER_INTERFACE(type_name); \
+}
 
 #ifdef TEST_NEST_TEMPLATE
 _SCV_TAG_FINAL_COMPONENT(test_uint<N> );
 #endif
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 
 // _SCV_TAG_FINAL_COMPONENT(sc_fixed);
 // _SCV_TAG_FINAL_COMPONENT(sc_ufixed);
@@ -296,9 +286,7 @@ _SCV_TAG_FINAL_COMPONENT(test_uint<N> );
 #define _SCV_IMPL5(op) { v.initialize(); return u op *v._get_instance(); }
 #define _SCV_MAP(return_type,method) return_type method() const { this->initialize(); return this->_get_instance()->method(); }
 
-#if SCV_SC_VERSION > 2000000
 using namespace sc_dt;
-#endif
 
 #define _SCV_BASE_ASSIGN(src_type) \
   return_type& operator=(src_type i) \
@@ -331,17 +319,17 @@ using namespace sc_dt;
 #endif
 
 #ifdef SC_DT_DEPRECATED
-# define _SCV_INT_DEPRECATED(typename) \
+# define _SCV_INT_DEPRECATED(type_name) \
     _SCV_MAP(int,to_signed) \
     _SCV_MAP(unsigned,to_unsigned)
 #else
-# define _SCV_INT_DEPRECATED(typename)
+# define _SCV_INT_DEPRECATED(type_name)
 #endif
 
-#define _SCV_SIGNED_INTERFACE(typename) \
+#define _SCV_SIGNED_INTERFACE(type_name) \
 public: \
-  operator const typename&() const { this->initialize(); return *this->_get_instance(); } \
-  typedef scv_extensions< typename > return_type; \
+  operator const type_name&() const { this->initialize(); return *this->_get_instance(); } \
+  typedef scv_extensions< type_name > return_type; \
   return_type& operator=(const return_type& i) \
     { *this->_get_instance() = *(i._get_instance()); this->trigger_value_change_cb(); return *this; } \
   _SCV_BASE_ASSIGN(const sc_signed&) \
@@ -363,14 +351,14 @@ public: \
   _SCV_INT_FX_ASSIGN() \
   return_type& operator++() \
     { ++*this->_get_instance(); this->trigger_value_change_cb(); return *this; } \
-  typename operator++(int) { \
-    typename tmp = *this->_get_instance(); \
+  type_name operator++(int) { \
+    type_name tmp = *this->_get_instance(); \
     ++*this->_get_instance(); this->trigger_value_change_cb(); return tmp; \
   } \
   return_type& operator--() \
     { --*this->_get_instance(); this->trigger_value_change_cb(); return *this; } \
-  typename operator--(int) { \
-    typename tmp = *this->_get_instance(); \
+  type_name operator--(int) { \
+    type_name tmp = *this->_get_instance(); \
     --*this->_get_instance(); this->trigger_value_change_cb(); return tmp; \
   } \
   _SCV_MAP(int,to_int) \
@@ -380,7 +368,7 @@ public: \
   _SCV_MAP(int64,to_int64) \
   _SCV_MAP(uint64,to_uint64) \
   _SCV_MAP(double,to_double) \
-  _SCV_INT_DEPRECATED(typename) \
+  _SCV_INT_DEPRECATED(type_name) \
   const std::string to_string(sc_numrep numrep=SC_DEC) const \
     { this->initialize(); return this->_get_instance()->to_string(numrep); } \
   const std::string to_string(sc_numrep numrep, bool w_prefix) const \
@@ -418,18 +406,18 @@ public: \
   _SCV_SIGNED_SELFOPS(^=) \
   _SCV_SIGNED_SELFOPS(<<=) \
   _SCV_SIGNED_SELFOPS(>>=) \
-  _SCV_OSTREAM(typename); \
-  _SCV_PAREN_OPERATOR(typename); \
+  _SCV_OSTREAM(type_name) \
+  _SCV_PAREN_OPERATOR(type_name)
 
-#define _SCV_TAG_FINAL_COMPONENT(typename) \
+#define _SCV_TAG_FINAL_COMPONENT(type_name) \
 template<> \
-class scv_extensions< typename > \
-  : public scv_extensions_base< typename > { \
-  _SCV_SIGNED_INTERFACE(typename) \
-};
+class scv_extensions< type_name > \
+  : public scv_extensions_base< type_name > { \
+  _SCV_SIGNED_INTERFACE(type_name) \
+}
 
-_SCV_TAG_FINAL_COMPONENT(sc_signed)
-_SCV_TAG_FINAL_COMPONENT(sc_unsigned)
+_SCV_TAG_FINAL_COMPONENT(sc_signed);
+_SCV_TAG_FINAL_COMPONENT(sc_unsigned);
 
 #undef _SCV_TAG_FINAL_COMPONENT
 
@@ -443,10 +431,10 @@ _SCV_TAG_FINAL_COMPONENT(sc_unsigned)
   _SCV_SIGNED_SELFOP(op,const sc_int_base&) \
   _SCV_SIGNED_SELFOP(op,const sc_uint_base&) \
 
-#define _SCV_INT_BASE_INTERFACE(typename) \
+#define _SCV_INT_BASE_INTERFACE(type_name) \
 public: \
-  operator const typename&() const { this->initialize(); return *this->_get_instance(); } \
-  typedef scv_extensions< typename > return_type; \
+  operator const type_name&() const { this->initialize(); return *this->_get_instance(); } \
+  typedef scv_extensions< type_name > return_type; \
   void invalid_length() const { this->initialize(); this->invalid_length(); } \
   void invalid_index(int i) const { this->initialize(); this->invalid_index(i); } \
   void invalid_range(int l, int r) const { this->initialize(); this->invalid_range(l,r); } \
@@ -483,14 +471,14 @@ public: \
   _SCV_SIGNED_SELFOP(>>=,int_type) \
   return_type& operator++() \
     { ++*this->_get_instance(); this->trigger_value_change_cb(); return *this; } \
-  typename operator++(int) { \
-    typename tmp = *this->_get_instance(); \
+  type_name operator++(int) { \
+    type_name tmp = *this->_get_instance(); \
     ++*this->_get_instance(); this->trigger_value_change_cb(); return tmp; \
   } \
   return_type& operator--() \
     { --*this->_get_instance(); this->trigger_value_change_cb(); return *this; } \
-  typename operator--(int) { \
-    typename tmp = *this->_get_instance(); \
+  type_name operator--(int) { \
+    type_name tmp = *this->_get_instance(); \
     --*this->_get_instance(); this->trigger_value_change_cb(); return tmp; \
   } \
   bool test(int i) const \
@@ -521,28 +509,28 @@ public: \
     { this->initialize(); return this->_get_instance()->to_string(numrep,w_prefix); } \
   void scan( istream& is = cin ) \
     { this->_get_instance()->scan(is); this->trigger_value_change_cb(); } \
-  _SCV_OSTREAM(typename); \
-  _SCV_PAREN_OPERATOR(typename); \
+  _SCV_OSTREAM(type_name) \
+  _SCV_PAREN_OPERATOR(type_name)
 
-#define _SCV_TAG_FINAL_COMPONENT(typename) \
+#define _SCV_TAG_FINAL_COMPONENT(type_name) \
 template<> \
-class scv_extensions< typename > \
-  : public scv_extensions_base< typename > { \
-  _SCV_INT_BASE_INTERFACE(typename) \
-};
+class scv_extensions< type_name > \
+  : public scv_extensions_base< type_name > { \
+  _SCV_INT_BASE_INTERFACE(type_name) \
+}
 
-_SCV_TAG_FINAL_COMPONENT(sc_int_base)
-_SCV_TAG_FINAL_COMPONENT(sc_uint_base)
+_SCV_TAG_FINAL_COMPONENT(sc_int_base);
+_SCV_TAG_FINAL_COMPONENT(sc_uint_base);
 
 #undef _SCV_TAG_FINAL_COMPONENT
 
-#define _SCV_BIT_BASE_INTERFACE(typename) \
+#define _SCV_BIT_BASE_INTERFACE(type_name) \
 public: \
-  operator const typename&() const { this->initialize(); return *this->_get_instance(); } \
-  typedef scv_extensions< typename > return_type; \
+  operator const type_name&() const { this->initialize(); return *this->_get_instance(); } \
+  typedef scv_extensions< type_name > return_type; \
   return_type& operator=(const return_type& i) \
     { *this->_get_instance() = *(i._get_instance()); this->trigger_value_change_cb(); return *this; } \
-  _SCV_BASE_ASSIGN(const typename&) \
+  _SCV_BASE_ASSIGN(const type_name&) \
   template <class X> \
   _SCV_BASE_ASSIGN(const sc_proxy<X>&) \
   _SCV_BASE_ASSIGN(const char*) \
@@ -575,18 +563,18 @@ public: \
   void clean_tail() \
     { this->initialize(); this->_get_instance()->clean_tail(); this->trigger_value_change_cb(); } \
   _SCV_MAP(bool,is_01) \
-  _SCV_OSTREAM(typename); \
-  _SCV_PAREN_OPERATOR(typename); \
+  _SCV_OSTREAM(type_name) \
+  _SCV_PAREN_OPERATOR(type_name)
 
-#define _SCV_TAG_FINAL_COMPONENT(typename) \
+#define _SCV_TAG_FINAL_COMPONENT(type_name) \
 template<> \
-class scv_extensions< typename > \
-  : public scv_extensions_base< typename > { \
-  _SCV_BIT_BASE_INTERFACE(typename) \
-};
+class scv_extensions< type_name > \
+  : public scv_extensions_base< type_name > { \
+  _SCV_BIT_BASE_INTERFACE(type_name) \
+}
 
-_SCV_TAG_FINAL_COMPONENT(sc_lv_base)
-_SCV_TAG_FINAL_COMPONENT(sc_bv_base)
+_SCV_TAG_FINAL_COMPONENT(sc_lv_base);
+_SCV_TAG_FINAL_COMPONENT(sc_bv_base);
 
 #undef _SCV_TAG_FINAL_COMPONENT
 
@@ -596,8 +584,8 @@ template<int W>
 class scv_extensions< sc_uint<W> >
   : public scv_extensions_base< sc_uint<W> > {
 public:
-  _SCV_PAREN_OPERATOR(sc_uint<W>);
-public:
+  _SCV_PAREN_OPERATOR(sc_uint<W>)
+
   typedef scv_extensions< sc_uint<W> > return_type;
 
   return_type& operator=(const return_type& v) _SCV_IMPL1
@@ -608,13 +596,6 @@ public:
   return_type& operator = (const sc_uint_base&          v) _SCV_IMPL
 #ifndef _SCV_INTROSPECTION_ONLY
   return_type& operator = (const sc_uint_subref&        v) _SCV_IMPL
-#endif
-//for 2.0.1beta, remove sc_uint_concat usage
-#if SCV_SC_VERSION < 2000001
-#ifndef _SCV_INTROSPECTION_ONLY
-  template<class T1, class T2>
-    return_type& operator = (const sc_uint_concat<T1,T2>& v) _SCV_IMPL
-#endif
 #endif
   return_type& operator = (const sc_signed&             v) _SCV_IMPL
   return_type& operator = (const sc_unsigned&           v) _SCV_IMPL
@@ -683,8 +664,8 @@ template<int W>
 class scv_extensions< sc_int<W> >
   : public scv_extensions_base< sc_int<W> > {
 public:
-    _SCV_PAREN_OPERATOR(sc_int<W>);
-public:
+  _SCV_PAREN_OPERATOR(sc_int<W>)
+
   typedef scv_extensions< sc_int<W> > return_type;
 
   return_type& operator=(const return_type& v) _SCV_IMPL1
@@ -695,13 +676,6 @@ public:
   return_type& operator = (const sc_int_base&           v) _SCV_IMPL
 #ifndef _SCV_INTROSPECTION_ONLY
   return_type& operator = (const sc_int_subref&         v) _SCV_IMPL
-#endif
-//for 2.0.1beta, remove sc_int_concat usage
-#if SCV_SC_VERSION < 2000001
-#ifndef _SCV_INTROSPECTION_ONLY
-  template<class T1, class T2>
-  return_type& operator = (const sc_int_concat<T1,T2>&  v) _SCV_IMPL
-#endif
 #endif
   return_type& operator = (const sc_signed&             v) _SCV_IMPL
   return_type& operator = (const sc_unsigned&           v) _SCV_IMPL
@@ -772,8 +746,8 @@ template<int W>
 class scv_extensions< sc_biguint<W> >
   : public scv_extensions_base< sc_biguint<W> > {
 public:
-    _SCV_PAREN_OPERATOR(sc_biguint<W>);
-public:
+  _SCV_PAREN_OPERATOR(sc_biguint<W>)
+
   typedef scv_extensions< sc_biguint<W> > return_type;
 
   return_type& operator=(const return_type& v) _SCV_IMPL1
@@ -970,8 +944,8 @@ template<int W>
 class scv_extensions< sc_bigint<W> >
   : public scv_extensions_base< sc_bigint<W> > {
 public:
-    _SCV_PAREN_OPERATOR(sc_bigint<W>);
-public:
+  _SCV_PAREN_OPERATOR(sc_bigint<W>)
+
   typedef scv_extensions< sc_bigint<W> > return_type;
 
   return_type& operator=(const return_type& v) _SCV_IMPL1
@@ -1169,8 +1143,8 @@ template<>
 class scv_extensions< sc_bit >
   : public scv_extensions_base< sc_bit > {
 public:
-    _SCV_PAREN_OPERATOR(sc_bit);
-public:
+  _SCV_PAREN_OPERATOR(sc_bit)
+
   typedef scv_extensions< sc_bit > return_type;
 
   return_type& operator=(const return_type& v) _SCV_IMPL1
@@ -1178,10 +1152,6 @@ public:
   return_type& operator = ( int v ) _SCV_IMPL
   return_type& operator = ( bool v ) _SCV_IMPL
   return_type& operator = ( char v ) _SCV_IMPL
-  //for 2.0.1beta, assignment from sc_logic to bit is not available
-#if SCV_SC_VERSION < 2000001
-  return_type& operator = ( const sc_logic& v ) _SCV_IMPL
-#endif
   return_type& operator &= ( const sc_bit& v ) _SCV_IMPL2(&=)
   return_type& operator &= ( int v ) _SCV_IMPL2(&=)
   return_type& operator &= ( bool v ) _SCV_IMPL2(&=)
@@ -1204,50 +1174,25 @@ template<>
 class scv_extensions< sc_logic >
   : public scv_extensions_base< sc_logic > {
 public:
-    _SCV_PAREN_OPERATOR(sc_logic);
-public:
+  _SCV_PAREN_OPERATOR(sc_logic)
+
   typedef scv_extensions< sc_logic > return_type;
 
   return_type& operator=(const return_type& v) _SCV_IMPL1
-  //for 2.0.1beta, sc_logic::Log_enum is changed to sc_dt::sc_logic_value_t
-#if SCV_SC_VERSION < 2000001
-  return_type& operator = ( sc_logic::Log_enum v ) _SCV_IMPL
-#else
   return_type& operator = ( sc_dt::sc_logic_value_t v ) _SCV_IMPL
-#endif
   return_type& operator = ( const sc_logic& v ) _SCV_IMPL
   return_type& operator = ( char v ) _SCV_IMPL
-  //for 2.0.1beta, no sc_logic::operator=(long)
-#if SCV_SC_VERSION < 2000001
-  return_type& operator = ( long v ) _SCV_IMPL
-#endif
   return_type& operator = ( int v ) _SCV_IMPL
   return_type& operator = ( bool v ) _SCV_IMPL
   return_type& operator &= ( const sc_logic& v ) _SCV_IMPL2(&=)
   return_type& operator |= ( const sc_logic& v ) _SCV_IMPL2(|=)
   return_type& operator ^= ( const sc_logic& v ) _SCV_IMPL2(^=)
-  //for 2.0.1beta, sc_logic::negate() is removed
-#if SCV_SC_VERSION < 2000001
-  return_type& negate() { this->initialize(); this->_get_instance()->negate(); this->trigger_value_change_cb(); return *this; }
-#endif
   bool operator == ( const sc_logic& r ) const { this->initialize(); return *this->_get_instance() == r; }
   bool operator == ( char r ) const { this->initialize(); return *this->_get_instance() == r; }
   bool operator != ( const sc_logic& r ) const { this->initialize(); return *this->_get_instance() != r; }
   bool operator != ( char r ) const { this->initialize(); return *this->_get_instance() != r; }
-  //for 2.0.1beta, sc_logic::operator! is removed
-#if SCV_SC_VERSION < 2000001
-  sc_logic operator ! () { this->initialize(); return !*this->_get_instance(); }
-#endif
   _SCV_MAP(char,to_char);
-  //for 2.0.1beta, sc_logic::to_long() is removed
-#if SCV_SC_VERSION < 2000001
-  _SCV_MAP(long,to_long);
-#endif
   _SCV_MAP(bool,is_01);
-  //for 2.0.1beta, check_01 is changed to invalid_01 and is now private
-#if SCV_SC_VERSION < 2000001
-  _SCV_MAP(void,check_01);
-#endif
   _SCV_MAP(bool,to_bool);
   //  void print( ostream& os ) const { this->initialize(); this->_get_instance()->print(os); }
 
@@ -1258,9 +1203,9 @@ template<int W>
 class scv_extensions< sc_bv<W> >
   : public scv_extensions_base< sc_bv<W> > {
 public:
-    _SCV_PAREN_OPERATOR(sc_bv<W>);
+  _SCV_PAREN_OPERATOR(sc_bv<W>)
   operator const sc_bv<W>&() const { this->initialize(); return *this->_get_instance(); }
-public:
+
   typedef scv_extensions< sc_bv<W> > return_type;
 
   sc_bv_base* clone() { return this->_get_instance()->clone(); /* don't clone randomization status */ }
@@ -1349,9 +1294,9 @@ template<int W>
 class scv_extensions< sc_lv<W> >
   : public scv_extensions_base< sc_lv<W> > {
 public:
-    _SCV_PAREN_OPERATOR(sc_lv<W>);
+  _SCV_PAREN_OPERATOR(sc_lv<W>)
   operator const sc_lv<W>&() const { this->initialize(); return *this->_get_instance(); }
-public:
+
   typedef scv_extensions< sc_lv<W> > return_type;
 
   sc_bv_base* clone() { return this->_get_instance()->clone(); /* don't clone randomization status */ }
@@ -1545,7 +1490,7 @@ private:
 // ----------------------------------------
 template<typename T, int N>
 scv_extensions<T[N]>::scv_extensions() {
-  string tmp;
+  std::string tmp;
   _scv_extension_util ** a = new _scv_extension_util*[N];
   for (int i=0; i<(int)N; ++i) {
     a[i] = &_array[i];

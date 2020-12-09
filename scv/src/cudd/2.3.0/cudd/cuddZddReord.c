@@ -464,7 +464,7 @@ cuddZddSwapInPlace(
     int		i;
     int		posn;
     DdNode	*f, *f1, *f0, *f11, *f10, *f01, *f00;
-    DdNode	*newf1, *newf0, *next;
+    DdNode	*newf1 = NULL, *newf0, *next;
     DdNodePtr	g, *lastP, *previousP;
 
 #ifdef DD_DEBUG
@@ -555,8 +555,7 @@ cuddZddSwapInPlace(
 	    if (f01 != empty) {
 		newf1 = f01;
 		cuddSatInc(newf1->ref);
-	    } else
-		newf1 = NULL; /* To shut up GCC warnings */
+	    }
 	    /* else case was already handled when finding nodes
 	    ** with both children below level y
 	    */
@@ -726,7 +725,7 @@ cuddZddSwapping(
     int iterate;
     int previousSize;
     Move *moves, *move;
-    int	pivot;
+    int pivot = lower;  /* ensure initialization of pivot */
     int modulo;
     int result;
 
@@ -737,7 +736,6 @@ cuddZddSwapping(
 
     nvars = upper - lower + 1;
     iterate = nvars;
-    pivot = 0; /* To shut up GCC warnings */
 
     for (i = 0; i < iterate; i++) {
 	if (heuristic == CUDD_REORDER_RANDOM_PIVOT) {

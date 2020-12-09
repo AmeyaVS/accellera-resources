@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -100,7 +100,7 @@ public: // constructing an expression from a constant or a variable
   scv_expression(unsigned u);
   scv_expression(unsigned long long i);
   scv_expression(double d);
-  scv_expression(string);
+  scv_expression(std::string);
   template <int W>
   static scv_expression create_constant(const sc_int<W>& v) {
     return _scv_create_expression(v);
@@ -165,8 +165,8 @@ public: // expression tree traversal
   int get_bit_width(void) const;
   scv_extensions_if* get_extension(void) const;
   sc_core::sc_interface* get_signal(void) const;
-  void get_extension_list(list<scv_extensions_if*>& ext_list);
-  void get_signal_list(list<sc_core::sc_interface*>& sig_list);
+  void get_extension_list(std::list<scv_extensions_if*>& ext_list);
+  void get_signal_list(std::list<sc_core::sc_interface*>& sig_list);
 public: // get_value methods to access value of constants
   void get_value(bool&) const;
   void get_value(char&) const;
@@ -180,7 +180,7 @@ public: // get_value methods to access value of constants
   void get_value(unsigned long long&) const;
   void get_value(float&) const;
   void get_value(double&) const;
-  void get_value(string&) const;
+  void get_value(std::string&) const;
   void get_value(sc_bv_base&) const;
   void get_value(sc_lv_base&) const;
 public:
@@ -242,7 +242,7 @@ public:
   virtual void get_value(unsigned long long&) const = 0;
   virtual void get_value(float&) const = 0;
   virtual void get_value(double&) const = 0;
-  virtual void get_value(string&) const = 0;
+  virtual void get_value(std::string&) const = 0;
   virtual void get_value(sc_bv_base&) const = 0;
   virtual void get_value(sc_lv_base&) const = 0;
 };
@@ -263,7 +263,7 @@ protected:
     int _boolValue;
     unsigned long long _unsignedValue;
     double _doubleValue;
-    string* _str;
+    std::string* _str;
     std::string* _sc_str;
   }_value;
   sc_bv_base *_data;
@@ -279,7 +279,7 @@ public:
   scv_expression_core(unsigned u);
   scv_expression_core(unsigned long long u);
   scv_expression_core(double d);
-  scv_expression_core(string s);
+  scv_expression_core(std::string s);
   template <int W>
   scv_expression_core(sc_int<W> v) : core_(NULL), _data(NULL) {
     _value._intValue = v;
@@ -351,7 +351,7 @@ public: // definition of get_value method
   void get_value(unsigned long long&) const;
   void get_value(float&) const;
   void get_value(double&) const;
-  void get_value(string&) const;
+  void get_value(std::string&) const;
   void get_value(sc_bv_base&) const;
   void get_value(sc_lv_base&) const;
 protected:

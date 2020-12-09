@@ -1,3 +1,20 @@
+//  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
+/*****************************************************************************
+
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
+
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
+
+ *****************************************************************************/
 #include "scv.h"
 
 #include <iomanip>
@@ -55,11 +72,11 @@ class packetT {
     // nbcode "out" start
     // Define ostream method to print data
     friend ostream& operator<< (ostream& os, const packetT& p) {
-      os << "  src: "     << setw(5) << p.src
-         << "  dest: "    << setw(5) << p.dest
-         << "  length: "  << setw(4) << p.length 
-         << "  payload: " << setw(5) << p.payload[0]
-         << " .. "        << setw(5) << p.payload[p.length-1];
+      os << "  src: "     << std::setw(5) << p.src
+         << "  dest: "    << std::setw(5) << p.dest
+         << "  length: "  << std::setw(4) << p.length 
+         << "  payload: " << std::setw(5) << p.payload[0]
+         << " .. "        << std::setw(5) << p.payload[p.length-1];
       return os;
     }
 };

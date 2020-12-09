@@ -113,8 +113,8 @@ Cudd_addHarwell(
     DdNode *cubex, *cubey, *minterm1;
     int u, v, err, i, j, nv;
     double val;
-    DdNode **lx, **ly, **lxn, **lyn;	/* local copies of x, y, xn, yn_ */
-    int lnx, lny;			/* local copies of nx and ny */
+    DdNode **lx = 0, **ly = 0, **lxn = 0, **lyn = 0;	/* local copies of x, y, xn, yn_ */
+    int lnx = 0, lny = 0;		/* local copies of nx and ny */
     char title[73], key[9], mxtype[4], rhstyp[4];
     int totcrd, ptrcrd, indcrd, valcrd, rhscrd,
         nrow, ncol, nnzero, neltvl,
@@ -219,7 +219,6 @@ Cudd_addHarwell(
 	v >>= 1;
     }
     lny = i;
-    lxn = NULL; /* To shut up GCC warnings */
 
     /* Allocate or reallocate arrays for variables as needed */
     if (*nx == 0) {
@@ -236,7 +235,6 @@ Cudd_addHarwell(
 	    }
 	} else {
 	    *x = *xn = NULL;
-	    lx = *xn = NULL; /* To Shut up GCC warnings */
 	}
     } else if (lnx > *nx) {
 	*x = lx = REALLOC(DdNode *, *x, lnx);
@@ -267,7 +265,6 @@ Cudd_addHarwell(
 	    }
 	} else {
 	    *y = *yn_ = NULL;
-	    ly = lyn = NULL; /* To shut up GCC warnings */
 	}
     } else if (lny > *ny) {
 	*y = ly = REALLOC(DdNode *, *y, lny);
@@ -322,6 +319,12 @@ Cudd_addHarwell(
     if (nrhs == 0) {
 	*n = ncol;
     } else {
+	/* The CUDD implementation assumes at this point that
+	** 0 <= (lny - 1) < 8 * sizeof(int). Otherwise, the
+	** left shift operation yields undefined behavior.
+	** Make this assumption implicit for static code analysis.
+	*/
+	assert((lny > 0) && (lny <= sizeof(int) * 8));
 	*n = (1 << (lny - 1)) + nrhs;
     }
     

@@ -836,7 +836,7 @@ cuddLinearInPlace(
     int    posn;
     int    isolated;
     DdNode *f,*f0,*f1,*f01,*f00,*f11,*f10,*newf1,*newf0;
-    DdNode *g,*next,*last;
+    DdNode *g,*next,*last = NULL;
     DdNodePtr *previousP;
     DdNode *tmp;
     DdNode *sentinel = &(table->sentinel);
@@ -888,7 +888,6 @@ cuddLinearInPlace(
 	** The chain is handled as a FIFO; g points to the beginning and
 	** last points to the end.
 	*/
-	last = NULL; /* To shut up GCC warnings */
 	g = NULL;
 	for (i = 0; i < xslots; i++) {
 	    f = xlist[i];
@@ -904,6 +903,10 @@ cuddLinearInPlace(
 	    } /* while there are elements in the collision chain */
 	    last = f;
 	} /* for each slot of the x subtable */
+	/* The CUDD implementation assumes that last is not NULL at
+	** this point. Make it explicit for static code analysis.
+	**/
+	assert(last);
 	last->next = NULL;
 
 #ifdef DD_COUNT

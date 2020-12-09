@@ -1,5 +1,20 @@
 //  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
+/*****************************************************************************
 
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
+
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
+
+ *****************************************************************************/
 /*
  * Author:  Dean Shea
  *
@@ -68,9 +83,7 @@
 #ifndef SCV_DEBUG_H
 #define SCV_DEBUG_H
 
-#include "scv/scv_config.h"
-
-#include <stdio.h>
+#include <cstdio>
 
 #include "scv/scv_object_if.h"
 #include "scv/scv_util.h"
@@ -118,8 +131,8 @@ public:
     TRANSACTORS,
     LAST		// Add new ones above this
   };
-  static const int INITIAL_DEBUG_LEVEL = -1;
-  static const int SUSPENDED_DEBUG_LEVEL = -1;
+  static const int INITIAL_DEBUG_LEVEL;
+  static const int SUSPENDED_DEBUG_LEVEL;
 
 private:
   scv_debug(const char *filename = 0);
@@ -159,12 +172,12 @@ public:
   static void resume(int facility);
   static void suspend(int facility);
 
-  static void indent(ostream& os, int indent);
+  static void indent(std::ostream& os, int indent);
 
   // implement scv_object_if methods
   const char *get_name() const { return kind(); }
   const char *kind() const { return _kind; }
-  void print(ostream& o=scv_out, int details=0, int indent=0) const;
+  void print(std::ostream& o=scv_out, int details=0, int indent=0) const;
   void show(int details=0, int indent=0) const { print(scv_out,details,indent); }
   static int get_debug() { return _debug; }
   static void set_debug(int);
@@ -173,7 +186,7 @@ private:
   static void set_level_for_classes(int, int);
 
 private:
-  FILE *file_p;  // Trace log file.
+  std::FILE *file_p;  // Trace log file.
   int facility_levels[LAST];
   int send_to_stdout;  // Toggle stdout tracing.
   static int _debug;

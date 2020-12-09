@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -50,7 +50,7 @@ public:
   virtual scv_extension_type_if::data_type get_type() const { return scv_extension_type_if::RECORD; }
 
   virtual int get_enum_size() const { return 0; }
-  virtual void get_enum_details(list<const char *>&, list<int>&) const {}
+  virtual void get_enum_details(std::list<const char *>&, std::list<int>&) const {}
   virtual const char * get_enum_string(int) const { return "_error"; }
 
   virtual int get_num_fields() const { return this->_get_num_fields(); }
@@ -65,7 +65,7 @@ public:
   virtual const scv_extensions_if * get_array_elt(int) const { return 0; }
 
   virtual int get_bitwidth() const {
-    list<_scv_extension_util*>::const_iterator f;
+    std::list<_scv_extension_util*>::const_iterator f;
     int size = 0;
     for (f = this->_fields.begin(); f!= this->_fields.end(); ++f)
       { size += (*f)->get_bitwidth(); }
@@ -95,7 +95,7 @@ public:
   virtual scv_extension_type_if::data_type get_type() const { return scv_extension_type_if::ARRAY; }
 
   virtual int get_enum_size() const { return 0; }
-  virtual void get_enum_details(list<const char *>&, list<int>&) const {}
+  virtual void get_enum_details(std::list<const char *>&, std::list<int>&) const {}
   virtual const char * get_enum_string(int) const { return "_error"; }
 
   virtual int get_num_fields() const { return 0; }
@@ -135,7 +135,7 @@ public:
   virtual scv_extension_type_if::data_type get_type() const { return scv_extension_type_if::POINTER; }
 
   virtual int get_enum_size() const { return 0; }
-  virtual void get_enum_details(list<const char *>&, list<int>&) const {}
+  virtual void get_enum_details(std::list<const char *>&, std::list<int>&) const {}
   virtual const char * get_enum_string(int) const { return "_error"; }
 
   virtual int get_num_fields() const { return 0; }
@@ -170,7 +170,7 @@ public:
   virtual scv_extension_type_if::data_type get_type() const;
 
   virtual int get_enum_size() const;
-  virtual void get_enum_details(list<const char *>&, list<int>&) const;
+  virtual void get_enum_details(std::list<const char *>&, std::list<int>&) const;
   virtual const char * get_enum_string(int) const;
 
   virtual int get_num_fields() const;
@@ -211,7 +211,7 @@ public: \
   virtual ~_scv_extension_type_ ## type_id() { } \
   \
   virtual int get_enum_size() const; \
-  virtual void get_enum_details(list<const char *>&, list<int>&) const; \
+  virtual void get_enum_details(std::list<const char *>&, std::list<int>&) const; \
   virtual const char * get_enum_string(int) const; \
   virtual int get_num_fields() const; \
   virtual scv_extensions_if * get_field(unsigned); \
@@ -251,7 +251,7 @@ public:  \
   virtual ~scv_extension_type() {} \
          \
   virtual int get_enum_size() const { return 0; } \
-  virtual void get_enum_details(list<const char *>&, list<int>&) const {} \
+  virtual void get_enum_details(std::list<const char *>&, std::list<int>&) const {} \
   virtual const char * get_enum_string(int) const { return "_error"; } \
   virtual int get_num_fields() const { return 0; } \
   virtual scv_extensions_if * get_field(unsigned) { return 0; } \
@@ -283,7 +283,7 @@ public: \
   virtual ~_scv_extension_type_ ## type_id(); \
   \
   virtual int get_enum_size() const; \
-  virtual void get_enum_details(list<const char *>&, list<int>&) const; \
+  virtual void get_enum_details(std::list<const char *>&, std::list<int>&) const; \
   virtual const char * get_enum_string(int) const; \
   virtual int get_num_fields() const; \
   virtual scv_extensions_if * get_field(unsigned); \
@@ -323,13 +323,13 @@ _SCV_EXT_TYPE_FC_D(unsigned long,unsigned_long);
 _SCV_EXT_TYPE_FC_D(unsigned long long,unsigned_long_long);
 _SCV_EXT_TYPE_FC_D(float,float);
 _SCV_EXT_TYPE_FC_D(double,double);
-_SCV_EXT_TYPE_FC_D(string,string);
+_SCV_EXT_TYPE_FC_D(std::string,string);
 
 #ifdef TEST_NEST_TEMPLATE
 _SCV_EXT_TYPE_N_FC_D(test_uint<N>,UNSIGNED);
 #endif
 
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 _SCV_EXT_TYPE_N_FC_D(sc_int<N>,INTEGER);
 _SCV_EXT_TYPE_N_FC_D(sc_bigint<N>,INTEGER);
 _SCV_EXT_TYPE_N_FC_D(sc_uint<N>,UNSIGNED);

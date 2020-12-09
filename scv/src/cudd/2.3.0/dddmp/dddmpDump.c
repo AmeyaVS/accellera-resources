@@ -674,13 +674,13 @@ Dddmp_cuddBddArrayLoad (
   DdNode ***pproots       /* array of returned BDD roots (by reference) */
 )
 {
-DdNode *f, *T, *E;
+DdNode *f, *T = NULL, *E = NULL;
 struct binary_dd_code code;
 char buf[DDDMP_MAXSTRLEN];
 int varinfo;
 int id, size, maxv;
-int nnodes, i, j, k, nsuppvars, nroots, maxaux, 
-    var, vT, vE, idT, idE;
+int nnodes = 0, i, j, k, nsuppvars = 0, nroots = 0, maxaux, 
+    var = 0, vT, vE, idT = 0, idE = 0;
 int  *permsupport = NULL;
 int  *ids = NULL;
 int  *permids = NULL;
@@ -694,7 +694,7 @@ char *ddname = NULL;
 char **varnames = NULL;
 char **sortedvarnames = NULL;
 char **rootnames = NULL;
-int  nvars, nddvars;
+int  nvars = 0, nddvars;
 DdNode **pnodes = NULL;
 unsigned char *pvars1byte = NULL;
 unsigned short *pvars2byte = NULL;
@@ -702,7 +702,6 @@ DdNode **proots = NULL;       /* array of BDD roots to be loaded */
 int close_fp = 0;
 
   *pproots = NULL;
-  T = E = NULL; /* To shut up GCC warnings */
 
   if (fp == NULL) {
     fp = fopen (file, "r");
@@ -921,7 +920,7 @@ int close_fp = 0;
   /* END HEADER */
 
   /*
-   * for each variavle in the support, the relative position in the ordering
+   * for each variable in the support, the relative position in the ordering
    * (within the support only) is computed
    */
 
@@ -1306,6 +1305,11 @@ int close_fp = 0;
   for(i=0; i<nroots; ++i) {
     switch (rootmatchmode) {
       case DDDMP_ROOT_MATCHNAMES:
+        /* The CUDD implementation assumes that at this point the
+        ** rootnames array has been properly allocated. Make this
+        ** explicit for static code analysis.
+        */
+        assert(rootnames);
         for (j=0; j<nroots; j++) {
           if (strcmp(rootmatchnames[i],rootnames[j])==0)
             break;
@@ -1319,6 +1323,11 @@ int close_fp = 0;
         j = i;
         break;
     }
+    /* The CUDD implementation assumes that at this point the rootids
+    ** array has been properly allocated. Make this explicit for
+    ** static code analysis.
+    */
+    assert(rootids);
     id = rootids[i];
     if (id==0) {
       (void) fprintf (stdout,"DdLoad Warning: NULL root found in file\n");
@@ -1400,7 +1409,7 @@ failure:
 
   Synopsis    [Performs the recursive step of Dddmp_bddStore.]
 
-  Description [Stores a node to file in either test or 
+  Description [Stores a node to file in either text or
   binary mode.<l>
   In text mode a node is represented (on a text line basis) as
   <UL>
@@ -1474,11 +1483,12 @@ int *outids       /* output ids for variables */,
 FILE *fp          /* store file */
 )
 {
-  DdNode      *T, *E;
-  int idf, idT, idE, vf, vT, vE;
+  DdNode      *T = NULL, *E = NULL; /* SCV: ensure pointer initialization */
+  int idf, idT = -1, idE = -1, vf = -1, vT = -1, vE = -1; /* SCV: enable check for proper initialization in the range of from 0 to CUDD_MAXINDEX */
   int retval, diff, var;
-  struct binary_dd_code code;
   int nvars = dd->size;
+  struct binary_dd_code code;
+  code.Unused = 0;  /* initialize unused field to avoid compiler warning */
 
 #ifdef DDDMP_DEBUG
   assert(!Cudd_IsComplement(f));
@@ -1496,8 +1506,6 @@ FILE *fp          /* store file */
   if (f == DD_ONE(dd)) {
     /* Check for special case: don't recur */
     idf = DddmpReadNodeIndex(f);
-    idT = idE = vf = vT = vE = 0; /* To shut up GCC warning */
-    T = E = NULL; /* To shut up GCC warnings */
   }
   else {
 
@@ -1557,20 +1565,25 @@ FILE *fp          /* store file */
           retval = fprintf (fp,"%d 1 0 0\n",idf);
 	}
 	else {
-        if (Cudd_IsComplement(cuddE(f)))
-	    idE = -idE;
-	  if (varnames != NULL) {   
-          retval = fprintf (fp,"%d %s %d %d %d\n",
-                            idf,varnames[vf],supportids[vf],idT,idE);
-        }
-	  else {
-  	    if (outids != NULL) {   
-            retval = fprintf (fp,"%d %d %d %d %d\n",
-                            idf,outids[vf],supportids[vf],idT,idE);
+          /* SCV: assert that idE and idT have been initialized upon first usage */
+          assert((idE >= 0) && (idE <= CUDD_MAXINDEX));
+          assert((idT >= 0) && (idT <= CUDD_MAXINDEX));
+          if (Cudd_IsComplement(cuddE(f)))
+            idE = -idE;
+          /* SCV: assert that vf has been initialized upon first usage */
+          assert((vf >= 0) && (vf <= CUDD_MAXINDEX));
+          if (varnames != NULL) {
+            retval = fprintf (fp,"%d %s %d %d %d\n",
+                              idf,varnames[vf],supportids[vf],idT,idE);
           }
-          else 
-            retval = fprintf (fp,"%d %d %d %d\n",
-                            idf,supportids[vf],idT,idE);
+	  else {
+	    if (outids != NULL) {
+              retval = fprintf (fp,"%d %d %d %d %d\n",
+                                idf,outids[vf],supportids[vf],idT,idE);
+            }
+            else
+              retval = fprintf (fp,"%d %d %d %d\n",
+                                idf,supportids[vf],idT,idE);
 	  }
 	}
 
@@ -1597,6 +1610,9 @@ FILE *fp          /* store file */
          * Non terminal: output variable id
          */
 	  var = supportids[vf];
+          /* SCV: assert proper initialization of vT and vE upon first usage */
+          assert((vT >= 0) && (vT <= CUDD_MAXINDEX));
+          assert((vE >= 0) && (vE <= CUDD_MAXINDEX));
 	  diff = (supportids[vT]<supportids[vE]) ? 
 			  (supportids[vT]-var) : (supportids[vE]-var);
         code.V = DDDMP_ABSOLUTE_ID;

@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -49,11 +49,8 @@
 #ifndef SCV_RANDOM_H
 #define SCV_RANDOM_H
 
-#include "scv/scv_config.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-
+#include <cstdlib>
+#include <cstdio>
 #include <list>
 
 #include "scv/_scv_data_structure.h"
@@ -101,7 +98,7 @@ public: // global configuration on algorithm and seed
 public: // debugging and seed files management
 
   // access the list of all current scv_random objects
-  static void get_generators(list<scv_random *>& genList);
+  static void get_generators(std::list<scv_random *>& genList);
 
 public: // constructors for independent random stream
 
@@ -164,9 +161,9 @@ public: // print the seeds of all current scv_random objects
   //   the next unsigned integer value
 
   static void print_initial_seeds(const char* fileName);
-  static void print_initial_seeds(ostream& = scv_out);
+  static void print_initial_seeds(std::ostream& = scv_out);
   static void print_current_seeds(const char* fileName);
-  static void print_current_seeds(ostream& = scv_out);
+  static void print_current_seeds(std::ostream& = scv_out);
 
 public: // a monitor saves or restores seeds from a file
 
@@ -177,7 +174,7 @@ public: // a monitor saves or restores seeds from a file
 
   static void seed_monitor_on(bool retrieve, const char* fileName);
 
-  static void seed_monitor_on(bool retrieve, const char* monitorName, FILE * file);
+  static void seed_monitor_on(bool retrieve, const char* monitorName, std::FILE* file);
 
   // set global seed monitoring off
   static void seed_monitor_off();
@@ -186,7 +183,7 @@ public: // debugging interface
 
   // look at scv_object_if.h for explanation of these methods
   const char *kind() const; 
-  void print(ostream& o=scv_out, int details=0, int indent=0) const; 
+  void print(std::ostream& o=scv_out, int details=0, int indent=0) const; 
   void show(int details=0, int indent=0) const; 
   static int get_debug();
   static void set_debug(int i);

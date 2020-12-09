@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -36,18 +36,26 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Torsten Maehne,
+                               Universite Pierre et Marie Curie, 2013-05-28
+  Description of Modification: Fix initialization of _randomP member variable
+                               in the scv_bag copy constructor.
+                               Fix memory leak due to forgotten delete on the
+                               scv_bag::_randomP member variable in the
+                               scv_bag destructor if it is owned by the
+                               scv_bag instance.
+                               Default initialize _lastPeekIsMarked and
+                               _lastPeek member variables in the
+                               scv_bag constructors to avoid any surprises.
 
  *****************************************************************************/
 
 #ifndef SCV_BAG_H
 #define SCV_BAG_H
 
-#include "scv/scv_config.h"
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
 #include <algorithm>
-#include <assert.h>
 #include <string>
 #include <list>
 #include "scv/scv_random.h"
@@ -135,8 +143,8 @@ public:
   } 
 
   bool is_equal(const _scv_bag_record& other) const ;
-  //  friend ostream& operator<<(ostream& out, const _scv_bag_record<T>& b); 
-  void print(ostream& o=scv_out, int details=0, int indent=0) const;
+  //  friend std::ostream& operator<<(std::ostream& out, const _scv_bag_record<T>& b); 
+  void print(std::ostream& o=scv_out, int details=0, int indent=0) const;
 };
 
 template <class T>
@@ -179,20 +187,20 @@ public:
     { static const char *name="scv_bag"; return name; }
 
 private:
-  typedef typename list<_scv_bag_record<T> >::iterator _bIterT;
-  typedef typename list<_scv_bag_record<T> >::const_iterator _bCIterT;
-  typedef scv_peek_bag_iter<T >  peekIterT;
+  typedef typename std::list<_scv_bag_record<T> >::iterator _bIterT;
+  typedef typename std::list<_scv_bag_record<T> >::const_iterator _bCIterT;
+  typedef scv_peek_bag_iter<T>  peekIterT;
   // Bag data
-  list<_scv_bag_record<T> > _bag;
-  int _size; 
+  std::list<_scv_bag_record<T> > _bag;
+  int _size;
   int _dsize;
   int _unmarkedSize;
   // Peek iter data outside constness checking
   mutable bool _lastPeekIsMarked;
   mutable bool _lastPeekValid;
   mutable peekIterT _lastPeek;
-  mutable bool _randMode ;
-  mutable bool _rlock ;
+  mutable bool _randMode;
+  mutable bool _rlock;
   mutable bool _randomOwner;
   unsigned long _seed;
   scv_random* _randomP;
@@ -273,7 +281,7 @@ inline void prevPeek(bool distinct=false)  const {
   // and update all bookkeeping data members like _size/_dsize/_unmarkedSize
 
 void _bagErase() { 
-  //  cout << "DEBUG bag size before erase" << _bag.size() << endl ;
+  //  cout << "DEBUG bag size before erase" << _bag.size() << std::endl ;
   if (_lastPeekValid) {
 
     _lastPeekIsMarked = false;
@@ -284,7 +292,7 @@ void _bagErase() {
     if (_randMode || _size == 0 ||
 	_lastPeek.peek() == _bag.begin()) {
       _bag.erase(_lastPeek.modify());
-      _lastPeekValid = false ;
+      _lastPeekValid = false;
     } else {
       _bIterT eraseIter = _lastPeek.modify() ;
       dDecPeek();
@@ -293,7 +301,7 @@ void _bagErase() {
   } else { 
     _scv_message::message(_scv_message::BAG_INVALID_PEEK_ERASE,nameP());
   }
-  //  cout << "DEBUG bag size after erase" << _bag.size() << endl ;
+  //  cout << "DEBUG bag size after erase" << _bag.size() << std::endl ;
 }
 
 
@@ -313,7 +321,9 @@ public:
     _size(0), 
     _dsize(0),
     _unmarkedSize(0),
+    _lastPeekIsMarked(),
     _lastPeekValid(false),
+    _lastPeek(),
     _randMode(true),
     _rlock(true),
     _randomOwner(false),
@@ -327,26 +337,27 @@ public:
     _size(other._size), 
     _dsize(other._dsize),
     _unmarkedSize(other._unmarkedSize),
+    _lastPeekIsMarked(),
     _lastPeekValid(other._lastPeekValid),
     _lastPeek(other._lastPeek),
     _randMode(true),
     _rlock(true),
     _randomOwner(other._randomOwner),
     _seed(other._seed),
-    _randomP(_randomP) {
+    _randomP(NULL) {
     if (_randomOwner)
       _randomP = new scv_random(*other._randomP);
   } 
   // Assignement
   scv_bag& operator=(const scv_bag& other) { 
     if (this != &other) { 
-      _bag  = other._bag;
+      _bag = other._bag;
       _size = other._size;
       _dsize = other._dsize;
       _unmarkedSize = other._unmarkedSize;
       _lastPeekValid = other._lastPeekValid;
       _lastPeek = other._lastPeek;
-      _randMode= other._randMode; 
+      _randMode = other._randMode; 
       _rlock = other._rlock;
     } 
     return *this;
@@ -355,7 +366,11 @@ public:
   //
   // virtual destructor
   //
-  ~scv_bag() {}
+  ~scv_bag() {
+    if (_randomOwner) {
+      delete _randomP;
+    }
+  }
 
   //
   // return the number of objects in the bag: We keep a tally instead of
@@ -394,18 +409,18 @@ public:
   void reset_peek () const {
     resetPeek();
   }
-  bool validPeek() const { return _lastPeekValid ; }
-  bool valid_peek() const { return _lastPeekValid ; }
+  bool validPeek() const { return _lastPeekValid; }
+  bool valid_peek() const { return _lastPeekValid; }
   
   const T& peek() const { 
-    if (_lastPeekValid) return (*_lastPeek).element() ; 
+    if (_lastPeekValid) return (*_lastPeek).element();
     else {
       _scv_message::message(_scv_message::BAG_INVALID_PEEK_RETURN,nameP());
-      return (*_lastPeek).element() ;
+      return (*_lastPeek).element();
     }
   };
 
-  const int count() const { return (*_lastPeek).count() ; }
+  const int count() const { return (*_lastPeek).count(); }
 
   //
   // Add identical objects into the bag 
@@ -498,7 +513,7 @@ public:
     return peekRandom();
   }
 
-void print (ostream& o=scv_out, int details=0, int indent=0) const;
+void print (std::ostream& o=scv_out, int details=0, int indent=0) const;
 void show (int details=0, int indent=0) const;
 
 private:
@@ -547,8 +562,8 @@ private:
       nextPeek(distinct);
       _lastPeekValid = true;
       _lastPeekIsMarked = _lastPeek.mflag();
-      //      cout << "lastPeekIsMarked " << _lastPeekIsMarked << endl ;
-      //      cout << "peekuCount " << _lastPeek.uObjCount() << " uCount " << (*_lastPeek).uCount() << endl ;
+      //      cout << "lastPeekIsMarked " << _lastPeekIsMarked << std::endl ;
+      //      cout << "peekuCount " << _lastPeek.uObjCount() << " uCount " << (*_lastPeek).uCount() << std::endl ;
       _randMode = false;
       _rlock = false ;
       return (*_lastPeek).element();
@@ -562,9 +577,9 @@ public:
   //  const T& peekNext(markStatusT peekAt = unMarked) { 
   const T& peekNext(char peekAt = 'a', bool distinct = false) const { 
     switch (peekAt) {
-    case 'u' : return peekNextUnmarked(distinct);
-    case 'm' :   return peekNextMarked(distinct);
-    default : return peekNextAny(distinct);
+    case 'u': return peekNextUnmarked(distinct);
+    case 'm': return peekNextMarked(distinct);
+    default: return peekNextAny(distinct);
     }
   }
   const T& peek_next(char peekAt = 'a', bool distinct = false) const { 
@@ -592,7 +607,7 @@ public:
 
   void unMark(bool AllCopies = false) {
     if (_lastPeekValid) {
-      if (_lastPeekIsMarked || AllCopies ) {
+      if (_lastPeekIsMarked || AllCopies) {
 	//	  _unmarkedSize += (*_lastPeek).unmarkElement(AllCopies);
 	int nUmark = (*(_lastPeek.modify())).unmarkElement(AllCopies);
 	  _unmarkedSize += nUmark;
@@ -616,7 +631,7 @@ public:
     if (_lastPeekValid && !_rlock) { 
       (*(_lastPeek.modify())).popCount(_lastPeekIsMarked, AllCopies, _size, _unmarkedSize
 				       , _lastPeek.uObjCount(), _lastPeek.mObjCount());
-      //      cout << "DEBUG " << "AFter popCount is " << (*_lastPeek).count() << endl ;
+      //      cout << "DEBUG " << "AFter popCount is " << (*_lastPeek).count() << std::endl ;
       if ((*_lastPeek).count() == 0) _bagErase();
       if (_randMode) _lastPeekValid = false;
       _rlock = true ;
@@ -635,8 +650,8 @@ public:
     _size = 0;
     _dsize = 0 ;
     _unmarkedSize = 0;
-    _lastPeekIsMarked = false ;
-    _lastPeekValid = false ;
+    _lastPeekIsMarked = false;
+    _lastPeekValid = false;
     _randMode = true;
     return;
   } 
@@ -649,8 +664,8 @@ public:
 	 iter != _bag.end();
 	 ++iter) (*iter).unmarkElement(true);
     _unmarkedSize = _size;
-    _lastPeekIsMarked = false ;
-  } 
+    _lastPeekIsMarked = false;
+  }
   void unmark_all() {
     unmarkAll();
   }
@@ -660,7 +675,7 @@ public:
 	 iter != _bag.end();
 	 ++iter) (*iter).markElement(true);
     _unmarkedSize = 0;
-    _lastPeekIsMarked = true ;
+    _lastPeekIsMarked = true;
   } 
   void mark_all() {
     markAll();
@@ -668,9 +683,7 @@ public:
   
   bool is_equal(const scv_bag<T>& other) const;
 
-#if defined (_USE_EXPLICIT_NEQ)
   bool operator!=(const scv_bag<T>& other);
-#endif
 
   // 
   // virtual methods from the interface of _scv_data_structure;
@@ -681,7 +694,7 @@ public:
   // 
   // Prints the elements in the bag. Multiple copies get multiple prints...
   //
-  void read(istream& ) ;
+  void read(std::istream& ) ;
 
 public:
   void setRandom(scv_random& random) {
@@ -692,53 +705,50 @@ public:
     _randomP = &random;
   }
   void set_random(scv_random& random) {
-   setRandom(random);
+    setRandom(random);
   } 
 };
 
 template <class T>
-void _scv_bag_record<T>::print(ostream& out, int details, int indent) const {
+void _scv_bag_record<T>::print(std::ostream& out, int details, int indent) const {
     //out << element() ;
-    out << " Count: " << count() << " unmarked: " << uCount() << endl; 
+    out << " Count: " << count() << " unmarked: " << uCount() << std::endl; 
 }
 
 template <class T>
-  ostream& operator<<(ostream& out, const _scv_bag_record<T>& b) { 
+std::ostream& operator<<(std::ostream& out, const _scv_bag_record<T>& b) { 
   b.print(out, 1);
   return out;
-  } 
+}
 
 // 
 // Prints the elements in the bag. Multiple copies get multiple prints...
 //
 
 template <class T>
-void scv_bag<T>::print(ostream& out, int details, int indent) const {
-  out << kind() << " Name: " <<  nameP() << endl;
-  for( typename list<_scv_bag_record<T> >::const_iterator iter = _bag.begin();
+void scv_bag<T>::print(std::ostream& out, int details, int indent) const {
+  out << kind() << " Name: " <<  nameP() << std::endl;
+  for( typename std::list<_scv_bag_record<T> >::const_iterator iter = _bag.begin();
        iter != _bag.end();
        ++iter) (*iter).print(out,details,indent);
-  out << endl << endl;  
+  out << std::endl << std::endl;  
 }
 
 template <class T>
-void scv_bag<T>::show(int details, int indent) const
-{
+void scv_bag<T>::show(int details, int indent) const {
   print(scv_out, details, indent);
 }
 
 template <class T>
-ostream& operator<<(ostream& out, const scv_bag<T>& t){
+std::ostream& operator<<(std::ostream& out, const scv_bag<T>& t) {
   t.print(out, 1);
   return (out);
 }
 
-#if defined (_USE_EXPLICIT_NEQ)
 template <class T>
 bool scv_bag<T>::operator!=(const scv_bag& other) {
   return !(this->_bag == other._bag);
 } 
-#endif
 
 template <class T>
 bool scv_bag<T>::is_equal(const scv_bag<T>& other) const {
@@ -746,13 +756,13 @@ bool scv_bag<T>::is_equal(const scv_bag<T>& other) const {
 } 
 
 template <class T>
-bool operator==(const scv_bag<T>& a, const scv_bag<T>& b){ 
+bool operator==(const scv_bag<T>& a, const scv_bag<T>& b) { 
   return (a.is_equal(b));
 } 
 
 
 template <class T>
-void scv_bag<T>::read(istream& in)  {
+void scv_bag<T>::read(std::istream& in) {
 
   int num = 0;  in >> num ;
   T ip ; 
@@ -765,11 +775,10 @@ void scv_bag<T>::read(istream& in)  {
 }
 
 template <class T>
-istream& operator>>(istream& in, scv_bag<T>& t)  {
+std::istream& operator>>(std::istream& in, scv_bag<T>& t) {
   t.read(in);
   return (in);
 }
 
 
 #endif // SCV_BAG_H
-

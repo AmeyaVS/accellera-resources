@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -79,36 +79,36 @@ public:
   // used in extension "callbacks" only
   typedef scv_extension_callbacks_if::callback_base callback_base;
   int _next_id;
-  list<callback_base*> _callbacks;
+  std::list<callback_base*> _callbacks;
   void execute_callbacks(scv_extensions_if *, scv_extensions_if::callback_reason);
 };
 
 #ifdef _SCV_INTROSPECTION_ONLY
-#include <stdio.h>
+#include <cstdio>
 #endif
 
-inline string _scv_ext_util_get_string(int i) {
+inline std::string _scv_ext_util_get_string(int i) {
   char tmp[128];
-  sprintf(tmp,"%d",i);
+  std::sprintf(tmp,"%d",i);
   return tmp;
 }
 
 inline const char * _scv_ext_util_get_name(const char* format, const char* name, int N) {
   static char tmp[1024];
-  sprintf(tmp, format, name, N);
+  std::sprintf(tmp, format, name, N);
   return strdup(tmp);
 }
 
 inline const char * _scv_ext_util_get_name(const char* format, const char* name) {
   static char tmp[1024];
-  sprintf(tmp, format, name);
+  std::sprintf(tmp, format, name);
   return strdup(tmp); 
 }
 
 // ----------------------------------------
 // others
 // ----------------------------------------
-#ifdef SYSTEMC_H
+#if defined(SYSTEMC_INCLUDED) || defined(IEEE_1666_SYSTEMC)
 #define _SCV_SYSTEMC_BASIC_TYPE_SPECIALIZATION() \
   _SCV_COMPONENT_1(sc_bit); \
   _SCV_COMPONENT_1(sc_logic); \
@@ -132,23 +132,23 @@ inline const char * _scv_ext_util_get_name(const char* format, const char* name)
 #define _SCV_SYSTEMC_BASIC_TYPE_SPECIALIZATION()
 #endif
 
-#define _SCV_BASIC_TYPE_SPECIALIZATION()\
-_SCV_COMPONENT(bool);                   \
-_SCV_COMPONENT(char);                   \
-_SCV_COMPONENT(unsigned char);		\
-_SCV_COMPONENT(short);			\
-_SCV_COMPONENT(unsigned short);		\
-_SCV_COMPONENT(int);			\
-_SCV_COMPONENT(unsigned int);		\
-_SCV_COMPONENT(long);			\
-_SCV_COMPONENT(unsigned long);		\
-_SCV_COMPONENT(long long);		\
-_SCV_COMPONENT(unsigned long long);	\
-_SCV_COMPONENT(float);			\
-_SCV_COMPONENT(double);			\
-_SCV_COMPONENT(string);			\
-_SCV_COMPONENT_N(test_uint);		\
-_SCV_SYSTEMC_BASIC_TYPE_SPECIALIZATION()\
+#define _SCV_BASIC_TYPE_SPECIALIZATION()        \
+  _SCV_COMPONENT(bool);                         \
+  _SCV_COMPONENT(char);                         \
+  _SCV_COMPONENT(unsigned char);                \
+  _SCV_COMPONENT(short);                        \
+  _SCV_COMPONENT(unsigned short);               \
+  _SCV_COMPONENT(int);                          \
+  _SCV_COMPONENT(unsigned int);                 \
+  _SCV_COMPONENT(long);                         \
+  _SCV_COMPONENT(unsigned long);                \
+  _SCV_COMPONENT(long long);                    \
+  _SCV_COMPONENT(unsigned long long);           \
+  _SCV_COMPONENT(float);                        \
+  _SCV_COMPONENT(double);                       \
+  _SCV_COMPONENT(std::string);                  \
+  _SCV_COMPONENT_N(test_uint);                  \
+  _SCV_SYSTEMC_BASIC_TYPE_SPECIALIZATION()
 
 // implementation details
 #include "scv/_scv_ext_util.h"

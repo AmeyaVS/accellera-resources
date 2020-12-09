@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -32,27 +32,15 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Torsten Maehne
+                               Universite Pierre et Marie Curie, 2013-12-02
+  Description of Modification: Fix the equality operator implementation of the
+                               different iterators.
 
  *****************************************************************************/
 
 #include <list>
-
-#ifdef SCV_USE_IOSTREAM_H
-# include <iostream.h>
-#else
-# include <iostream>
-#endif
-
-// The following accommodates differences between compilers concerning
-// declaration of friend functions in template classes.
-#if defined(__SUNPRO_CC)
-# define _SCV_ANGLES()
-  using std::list;
-#else
-# define _SCV_ANGLES() <>
-#endif
+#include <iostream>
 
 //
 // scv_bag_iter class: STL-like iteratorT class to iterate on the bag 
@@ -60,8 +48,8 @@
 //
 template <class T>
 class scv_bag_iter { 
-        typedef typename list<_scv_bag_record<T> >::const_iterator literBRCT ;
-        typedef typename list<_scv_bag_record<T> >::iterator literBRT ;
+        typedef typename std::list<_scv_bag_record<T> >::const_iterator literBRCT ;
+        typedef typename std::list<_scv_bag_record<T> >::iterator literBRT ;
 private:
   literBRT  _current;
   int _objectCount; // Keeps track of no. of object copies.
@@ -101,7 +89,7 @@ public:
   // Dereference
   _scv_bag_record<T>& operator*() { return (*_current); } 
   // Test for equality
-  friend bool operator== _SCV_ANGLES()(const scv_bag_iter<T>& first,const scv_bag_iter<T>& second);
+  friend bool operator==<>(const scv_bag_iter<T>& first,const scv_bag_iter<T>& second);
   // prefix ++
   scv_bag_iter& operator++() { 
     if (++_objectCount > (*_current).count()) {  //should advance
@@ -148,13 +136,9 @@ public:
     return &(*_current).element();
   } 
 
-#ifndef _USE_FRIEND_FOR_EQUAL
-  bool operator==(literBRT& l){
+  bool operator==(literBRT& l) const {
     return (*this)._current == l;
   }
-#else 
-  friend bool operator== _SCV_ANGLES()(const scv_bag_iter<T>& l1, literBRT& l);
-#endif
 
   literBRT& current() {return _current; };
   
@@ -163,13 +147,6 @@ public:
   };
 
 };
-
-#ifdef __linux__
-template <class T>
-bool operator==(const scv_bag_iter<T> & l1, typename scv_bag_iter<T>::literBRT& l){
-  return l1._current == l;
-}
-#endif
 
 template <class T>
 bool operator==(const scv_bag_iter<T>& first, const scv_bag_iter<T>& second) {
@@ -182,8 +159,8 @@ bool operator==(const scv_bag_iter<T>& first, const scv_bag_iter<T>& second) {
 // 
 template <class T>
 class scv_bag_const_iter { 
-        typedef typename list<_scv_bag_record<T> >::const_iterator literBRCT ;
-        typedef typename list<_scv_bag_record<T> >::iterator literBRT ;
+        typedef typename std::list<_scv_bag_record<T> >::const_iterator literBRCT ;
+        typedef typename std::list<_scv_bag_record<T> >::iterator literBRT ;
 private:
   literBRCT _current;
   int _objectCount;
@@ -224,7 +201,7 @@ public:
   const _scv_bag_record<T>& operator*() { return (*_current); } 
 
   // Test for equality
-  friend bool operator== _SCV_ANGLES()(const scv_bag_const_iter<T>& first,const scv_bag_const_iter<T>& second);
+  friend bool operator==<>(const scv_bag_const_iter<T>& first,const scv_bag_const_iter<T>& second);
   // prefix ++
   scv_bag_const_iter& operator++() { 
     if (++_objectCount > (*_current).count()) {  //should advance
@@ -274,13 +251,9 @@ public:
   } 
 
   // compare list constant iterator with bag constant iterator
-#ifndef _USE_FRIEND_FOR_EQUAL
-  bool operator==(literBRCT& l){
+  bool operator==(literBRCT& l) const {
     return (*this)._current == l;
   }
-#else
-  friend bool operator== _SCV_ANGLES()(const scv_bag_const_iter<T>& first,literBRCT& second);
-#endif
 
   literBRCT& current() { return _current ;} 
 
@@ -288,14 +261,6 @@ public:
     return _objectCount ;
   }
 };
-
-#ifdef __linux__
-template <class T>
-bool operator==(const scv_bag_const_iter<T>& first, typename scv_bag_const_iter<T>::literBRCT& second)
-{
-  return first._current == second;
-}
-#endif
 
 template <class T>
 bool operator==(const scv_bag_const_iter<T>& first, const scv_bag_const_iter<T>& second) {
@@ -308,8 +273,8 @@ bool operator==(const scv_bag_const_iter<T>& first, const scv_bag_const_iter<T>&
 
 template <class T>
 class scv_peek_bag_iter { 
-        typedef typename list<_scv_bag_record<T> >::const_iterator lbrIterCT ;
-	typedef typename list<_scv_bag_record<T> >::iterator lbrIterT ;
+        typedef typename std::list<_scv_bag_record<T> >::const_iterator lbrIterCT ;
+	typedef typename std::list<_scv_bag_record<T> >::iterator lbrIterT ;
 private:
 	/*  lbrIterCT& _peek;
   lbrIterT& _modify;
@@ -351,7 +316,7 @@ public:
   const _scv_bag_record<T>& operator*() { return (*_peek); } 
   /*
   // Test for equality
-  friend bool operator== _SCV_ANGLES()(const scv_peek_bag_iter<T>& first,const scv_peek_bag_iter<T>& second);
+  friend bool operator==<>(const scv_peek_bag_iter<T>& first,const scv_peek_bag_iter<T>& second);
   */ //commented by dsb Apr 05, 2000 As it is not used and seems to be giving
   //  hp 2.95 compile problems
   // init counters during increment and decrement

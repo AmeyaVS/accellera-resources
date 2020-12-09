@@ -248,7 +248,7 @@ cuddGa(
 	    st_free_table(computed);
 	    return(0);
 	}
-	if (st_lookup(computed,(char *)&STOREDD(i,0),(char **)(void *)&index)) {
+	if (st_lookup(computed,(char *)&STOREDD(i,0),(char **)&index)) {
 	    repeat[index]++;
 	} else {
 	    if (st_insert(computed,(char *)&STOREDD(i,0),(char *)(long)i) ==
@@ -323,8 +323,8 @@ cuddGa(
 		** Decrease its repetition count. If the repetition count
 		** goes to 0, remove the largest DD from the computed table.
 		*/
-		result = st_lookup(computed,(char *)&STOREDD(large,0),
-                                   (char **)(void *)&index);
+		result = st_lookup(computed,(char *)&STOREDD(large,0),(char
+		**)&index);
 		if (!result) {
 		    FREE(storedd);
 		    FREE(repeat);
@@ -334,8 +334,7 @@ cuddGa(
 		repeat[index]--;
 		if (repeat[index] == 0) {
 		    int *pointer = &STOREDD(index,0);
-		    result = st_delete(computed,
-                                       (char **)(void *)&pointer,NULL);
+		    result = st_delete(computed, (char **)&pointer,NULL);
 		    if (!result) {
 			FREE(storedd);
 			FREE(repeat);
@@ -350,8 +349,8 @@ cuddGa(
 		for (n = 0; n <= numvars; n++) {
 		    STOREDD(large,n) = STOREDD(i,n);
 		}
-		if (st_lookup(computed,(char *)&STOREDD(large,0),
-                              (char **)(void *)&index)) {
+		if (st_lookup(computed,(char *)&STOREDD(large,0),(char
+		**)&index)) {
 		    repeat[index]++;
 		} else {
 		    if (st_insert(computed,(char *)&STOREDD(large,0),
@@ -526,8 +525,7 @@ build_dd(
     /* Check the computed table. If the order already exists, it
     ** suffices to copy the size from the existing entry.
     */
-    if (computed && st_lookup(computed,(char *)&STOREDD(num,0),
-                              (char **)(void *)&index)) {
+    if (computed && st_lookup(computed,(char *)&STOREDD(num,0),(char **)&index)) {
 	STOREDD(num,numvars) = STOREDD(index,numvars);
 #ifdef DD_STATS
 	(void) fprintf(table->out,"\nCache hit for index %d", index);

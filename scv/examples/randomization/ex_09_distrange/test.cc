@@ -1,3 +1,20 @@
+//  -*- C++ -*- <this line is for emacs to recognize it as C++ code>
+/*****************************************************************************
+
+  The following code is derived, directly or indirectly, from the SystemC
+  source code Copyright (c) 1996-2014 by all Contributors.
+  All Rights reserved.
+
+  The contents of this file are subject to the restrictions and limitations
+  set forth in the SystemC Open Source License (the "License");
+  You may not use this file except in compliance with such restrictions and
+  limitations. You may obtain instructions on how to receive a copy of the
+  License at http://www.accellera.org/. Software distributed by Contributors
+  under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+  ANY KIND, either express or implied. See the License for the specific
+  language governing rights and limitations under the License.
+
+ *****************************************************************************/
 #include "data_ext.h"
 
 #include <iomanip>
@@ -9,7 +26,7 @@ int sc_main(int argc, char** argv) {
   // nbcode "decl" end
 
   // nbcode "track_decl" start
-  #define FIELD_PAIR pair<sc_uint<8>, sc_uint<8> >
+  #define FIELD_PAIR std::pair<sc_uint<8>, sc_uint<8> >
   class rangeDef {
   public:
     FIELD_PAIR range;
@@ -66,13 +83,13 @@ int sc_main(int argc, char** argv) {
   // nbcode "print" start
   //print distribution
   for (int i=0; i<numRanges; i++) {
-    scv_out << "Range " << setw(2) << i << ": "
-            << setw(3) << ranges[i].range.first << "-"
-            << setw(3) << ranges[i].range.second << "  "
-            << setw(4) << ranges[i].count << endl;
+    scv_out << "Range " << std::setw(2) << i << ": "
+            << std::setw(3) << ranges[i].range.first << "-"
+            << std::setw(3) << ranges[i].range.second << "  "
+            << std::setw(4) << ranges[i].count << endl;
   }
   scv_out << "                   ====" << endl;
-  scv_out << "            Total: " << setw(4) << total << endl << endl;
+  scv_out << "            Total: " << std::setw(4) << total << endl << endl;
   // nbcode "print" end
 
   return 0;

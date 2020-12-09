@@ -1,5 +1,8 @@
 #include "cuddObj.hh"
 
+using std::cout;
+using std::cerr;
+
 
 // ---------------------------------------------------------------------------
 // Members of class DD
@@ -1285,11 +1288,8 @@ BDDvector::operator=(
 {
     right.p->ref++;
     if (--p->ref == 0) {	// disconnect self
-	for (int i = 1; i < p->size; i++) {
-	    delete &(p->vect[i]);
-	}
-	delete p->vect;
-	delete p;
+        delete [] p->vect;
+        delete p;
     }
     p = right.p;
     return *this;
@@ -1367,11 +1367,8 @@ ADDvector::operator=(
 {
     right.p->ref++;
     if (--p->ref == 0) {	// disconnect self
-	for (int i = 1; i < p->size; i++) {
-	    delete &(p->vect[i]);
-	}
-	delete p->vect;
-	delete p;
+        delete [] p->vect;
+        delete p;
     }
     p = right.p;
     return *this;
@@ -1449,11 +1446,8 @@ ZDDvector::operator=(
 {
     right.p->ref++;
     if (--p->ref == 0) {	// disconnect self
-	for (int i = 1; i < p->size; i++) {
-	    delete &(p->vect[i]);
-	}
-	delete p->vect;
-	delete p;
+       delete [] p->vect;
+       delete p;
     }
     p = right.p;
     return *this;

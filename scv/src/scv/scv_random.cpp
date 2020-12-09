@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -43,8 +43,8 @@
 #include "scv/scv_random.h"
 #include "scv/scv_report.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 
 #if ((defined _MSC_VER) || (defined _WIN32))
@@ -63,12 +63,12 @@ inline int rand_r(unsigned int *) { return rand(); }
 
 class scv_random_error {
 public:
-  static void missing_algorithm(const string algorithm_name) {
+  static void missing_algorithm(const std::string algorithm_name) {
     _scv_message::message(_scv_message::RANDOM_NULL_ALGORITHM,algorithm_name.c_str());
   }
 
-  static void out_of_order_seed(const string instance_name_p,
-    const string fileNameP)
+  static void out_of_order_seed(const std::string instance_name_p,
+    const std::string fileNameP)
   {
     if (instance_name_p =="") {
       _scv_message::message(_scv_message::RANDOM_OUT_OF_ORDER_SEED,
@@ -78,8 +78,8 @@ public:
         instance_name_p.c_str(),fileNameP.c_str());
     }
   }
-  static void cannot_match_seed(const string instance_name,
-    const string fileName)
+  static void cannot_match_seed(const std::string instance_name,
+    const std::string fileName)
   {
     if (instance_name == "") {
       _scv_message::message(_scv_message::RANDOM_CANNOT_MATCH_SEED,
@@ -89,8 +89,8 @@ public:
         instance_name.c_str(),fileName.c_str());
     }
   }
-  static void retrieving_with_same_name(const string instance_name,
-    const string fileName)
+  static void retrieving_with_same_name(const std::string instance_name,
+    const std::string fileName)
   {
     if (instance_name == "") {
       _scv_message::message(_scv_message::RANDOM_RETRIEVING_SEED_WITH_SAME_NAME,
@@ -100,8 +100,8 @@ public:
 			       instance_name.c_str(), fileName.c_str());
     }
   }
-  static void storing_with_same_name(const string instance_name,
-    const string fileName)
+  static void storing_with_same_name(const std::string instance_name,
+    const std::string fileName)
   {
     if (instance_name == "") {
       _scv_message::message(_scv_message::RANDOM_STORING_SEED_WITH_SAME_NAME,
@@ -111,16 +111,16 @@ public:
 			       instance_name.c_str(), fileName.c_str());
     }
   }
-  static void seed_monitor_not_off(const string fileName)
+  static void seed_monitor_not_off(const std::string fileName)
   {
     _scv_message::message(_scv_message::RANDOM_SEED_MONITOR_NOT_OFF,
 			     fileName.c_str());
   }
-  static void seed_not_exhausted(const string fileName) {
+  static void seed_not_exhausted(const std::string fileName) {
     _scv_message::message(_scv_message::RANDOM_SEED_NOT_EXHAUSTED,
 			     fileName.c_str());
   }
-  static void cannot_open_seed_file(const string fileName) {
+  static void cannot_open_seed_file(const std::string fileName) {
     _scv_message::message(_scv_message::RANDOM_CANNOT_OPEN_SEED_FILE,
 			      fileName.c_str());
   }
@@ -137,17 +137,17 @@ static scv_random * s_seed_generator = NULL;
 #endif
 
 static bool s_retrieve = false;
-static void retrieve_seed(const string & name, unsigned long long * seed);
-static unsigned long long _scv_generate_seed(const string& name);
-static void _scv_update_current_thread_info(const string& name);
+static void retrieve_seed(const std::string & name, unsigned long long * seed);
+static unsigned long long _scv_generate_seed(const std::string& name);
+static void _scv_update_current_thread_info(const std::string& name);
 static inline unsigned int _scv_jrand48(unsigned short next[3]);
 
-static string s_current_thread_name;
+static std::string s_current_thread_name;
 static char s_current_inst_num[64];
 static int s_inst_num;
 
-static string _scv_get_unique_name(const string & name);
-static string _scv_extract_name(const char * str);
+static std::string _scv_get_unique_name(const std::string & name);
+static std::string _scv_extract_name(const char * str);
 
 
 class _scv_random_impl {
@@ -162,7 +162,7 @@ public:
     unsigned short _next48[3];
   } u ;
 
-  _scv_random_impl(const string name,
+  _scv_random_impl(const std::string name,
        unsigned long long seed,
        scv_random::alg_func algorithm,
        scv_random::value_generation_algorithm alg_type) :
@@ -281,7 +281,7 @@ extern unsigned long long _scv_get_seed_from_name(const char *, unsigned);
 
 static void _scv_set_algorithm(scv_random::value_generation_algorithm alg,
   scv_random::alg_func custom_alg, scv_random::alg_func * scv_be_set,
-  const string & algorithm_name) ;
+  const std::string & algorithm_name) ;
 
 void scv_random::set_global_seed(unsigned long long seed)
 {
@@ -316,11 +316,11 @@ void scv_random::set_default_algorithm(value_generation_algorithm alg,
   global_alg_type = alg;
 }
 
-static list<scv_random *>& s_list_of_generators();
+static std::list<scv_random *>& s_list_of_generators();
 
-void scv_random::get_generators(list<scv_random *>& genList)
+void scv_random::get_generators(std::list<scv_random *>& genList)
 {
-  list<scv_random*>::iterator iter;
+  std::list<scv_random*>::iterator iter;
   for (iter = s_list_of_generators().begin();
      !(iter == s_list_of_generators().end());
        iter++ ) {
@@ -451,12 +451,12 @@ void scv_random::print_initial_seeds(const char* fileName)
   if (fileName != NULL) {
     FILE * filePtr = fopen(fileName,"wb");
 
-    list<scv_random*>::iterator iter;
+    std::list<scv_random*>::iterator iter;
     for (iter = s_list_of_generators().begin();
 	 !(iter == s_list_of_generators().end());
 	 ++iter) {
 
-      string s = (*iter)->get_name();
+      std::string s = (*iter)->get_name();
       if (s!="") {
 	fprintf(filePtr,"\"%s\" :: %llu\n",s.c_str(),
           (*iter)->get_initial_seed());
@@ -469,18 +469,18 @@ void scv_random::print_initial_seeds(const char* fileName)
   }
 }
 
-void scv_random::print_initial_seeds(ostream& os)
+void scv_random::print_initial_seeds(std::ostream& os)
 {
-  list<scv_random*>::iterator iter;
+  std::list<scv_random*>::iterator iter;
   for (iter = s_list_of_generators().begin();
        !(iter == s_list_of_generators().end());
        ++iter) {
-    string s = (*iter)->get_name();
+    std::string s = (*iter)->get_name();
     if (s!="") {
       os << "\"" << s.c_str() << "\" :: " <<
-        (*iter)->get_initial_seed() << endl;
+        (*iter)->get_initial_seed() << std::endl;
     } else {
-      os << "\"<anonymous>\" :: " << (*iter)->get_initial_seed() << endl;
+      os << "\"<anonymous>\" :: " << (*iter)->get_initial_seed() << std::endl;
     }
   }
 }
@@ -490,12 +490,12 @@ void scv_random::print_current_seeds(const char* fileName)
   if (fileName != NULL) {
     FILE * filePtr = fopen(fileName,"wb");
 
-    list<scv_random*>::iterator iter;
+    std::list<scv_random*>::iterator iter;
     for (iter = s_list_of_generators().begin();
 	 !(iter == s_list_of_generators().end());
 	 ++iter) {
 
-      string s = (*iter)->get_name();
+      std::string s = (*iter)->get_name();
       if (s!="") {
 	fprintf(filePtr,"\"%s\" :: %llu\n",s.c_str(),
           (*iter)->get_current_seed());
@@ -509,18 +509,18 @@ void scv_random::print_current_seeds(const char* fileName)
   }
 }
 
-void scv_random::print_current_seeds(ostream& os)
+void scv_random::print_current_seeds(std::ostream& os)
 {
-  list<scv_random*>::iterator iter;
+  std::list<scv_random*>::iterator iter;
   for (iter = s_list_of_generators().begin();
        !(iter == s_list_of_generators().end());
        ++iter) {
-    string s = (*iter)->get_name();
+    std::string s = (*iter)->get_name();
     if (s!="") {
       os << "\"" << s.c_str() << "\" :: " <<
-        (*iter)->get_current_seed() << endl;
+        (*iter)->get_current_seed() << std::endl;
     } else {
-      os << "\"<anonymous>\" :: " << (*iter)->get_current_seed() << endl;
+      os << "\"<anonymous>\" :: " << (*iter)->get_current_seed() << std::endl;
     }
   }
 }
@@ -534,11 +534,11 @@ static bool s_warned_same_name = false;
 static bool s_warned_anonymous = false;
 static bool s_has_anonymous_generator = false;
 
-static string& s_seed_file_name();
-static _scv_associative_array<string,list<unsigned long long> >& s_outstanding_seeds();
-static _scv_associative_array<string,int>& s_names();
-static bool readname_and_seed(string& nextName, unsigned long long& next_seed);
-static _scv_associative_array<string, int> unique_name_hash("unique_name_hash", 0);
+static std::string& s_seed_file_name();
+static _scv_associative_array<std::string,std::list<unsigned long long> >& s_outstanding_seeds();
+static _scv_associative_array<std::string,int>& s_names();
+static bool readname_and_seed(std::string& nextName, unsigned long long& next_seed);
+static _scv_associative_array<std::string, int> unique_name_hash("unique_name_hash", 0);
 
 void scv_random::seed_monitor_on(bool retrieve, const char* fileName)
 {
@@ -614,7 +614,7 @@ void scv_random::seed_monitor_off()
     s_seed_file_name() = "";
   }
   if (s_retrieve) {
-    string dummyName;
+    std::string dummyName;
     unsigned long long dummy_seed;
     s_retrieve = false;
     if (s_seed_file_ptr && readname_and_seed(dummyName,dummy_seed)) {
@@ -641,10 +641,10 @@ const char *scv_random::kind() const {
   return name;
 }
 
-void scv_random::print(ostream& o, int details, int indent) const {
+void scv_random::print(std::ostream& o, int details, int indent) const {
   char algorithm[100];
 
-  o << "scv_random Name: " <<  get_name() << endl;
+  o << "scv_random Name: " <<  get_name() << std::endl;
   switch(_coreP->_alg_type) {
     case scv_random::RAND48 :
       strcpy(algorithm, "jrand48");
@@ -661,10 +661,10 @@ void scv_random::print(ostream& o, int details, int indent) const {
     default:
       break;
   }
-  o << "\talgorithm: " << algorithm << endl;
-  o << "\tseed: " << _coreP->_seed << endl;
-  o << "\tnext: " << get_current_seed() << endl;
-  o << "\tnext value: " << _coreP->testNext() << endl;
+  o << "\talgorithm: " << algorithm << std::endl;
+  o << "\tseed: " << _coreP->_seed << std::endl;
+  o << "\tnext: " << get_current_seed() << std::endl;
+  o << "\tnext value: " << _coreP->testNext() << std::endl;
 }
 
 void scv_random::set_debug(int debug) {
@@ -676,7 +676,7 @@ void scv_random::show(int details, int indent) const {
 }
 
 /////////////////////////////////////////////////////////////////
-// Staic functions used for scv_random implementation
+// Static functions used for scv_random implementation
 //   * _scv_set_algorithm
 //   * _scv_generate_seed
 //   * s_seed_file_name
@@ -690,59 +690,32 @@ void scv_random::show(int details, int indent) const {
 //   * _scv_jrand48
 /////////////////////////////////////////////////////////////////
 
-#if !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
+extern const char *scv_get_process_name(sc_core::sc_process_handle);
 
-extern const char *scv_get_process_name(sc_process_b*) ;
-
-static void _scv_update_current_thread_info(const string& name)
+static void _scv_update_current_thread_info(const std::string& name)
 {
-  sc_process_b * handle = sc_get_curr_process_handle();
-  if (handle) {
-    s_current_thread_name = scv_get_process_name(handle);
-  } else {
-    s_current_thread_name = "scv_main_thread";
-  }
-  string thread_based_name = s_current_thread_name + name;
-  s_inst_num = unique_name_hash.getValue(thread_based_name);
-  if (s_inst_num == 0) {
-    sprintf(s_current_inst_num, "<noappend>");
-  } else {
-    sprintf(s_current_inst_num, "%d", s_inst_num);
-  }
-  unique_name_hash.insert(thread_based_name, (s_inst_num+1));
-}
-
-#else
-//SystemC 2.2
-extern const char *scv_get_process_name(sc_process_handle) ;
-
-static void _scv_update_current_thread_info(const string& name)
-{
-  sc_process_handle handle = sc_get_current_process_handle();
+  sc_core::sc_process_handle handle = sc_core::sc_get_current_process_handle();
   if (handle.valid() ) {
 	  s_current_thread_name = handle.name();
   } else {
     s_current_thread_name = "scv_main_thread";
   }
-  string thread_based_name = s_current_thread_name + name;
+  std::string thread_based_name = s_current_thread_name + name;
   s_inst_num = unique_name_hash.getValue(thread_based_name);
   if (s_inst_num == 0) {
-    sprintf(s_current_inst_num, "<noappend>");
+    std::sprintf(s_current_inst_num, "<noappend>");
   } else {
-    sprintf(s_current_inst_num, "%d", s_inst_num);
+    std::sprintf(s_current_inst_num, "%d", s_inst_num);
   }
   unique_name_hash.insert(thread_based_name, (s_inst_num+1));
 }
 
-#endif // !( defined SYSTEMC_VERSION ) || ( SYSTEMC_VERSION < 20060204 )
-
-
-static unsigned long long _scv_generate_seed(const string& name)
+static unsigned long long _scv_generate_seed(const std::string& name)
 {
 #ifdef OLD_SEED_GENERATION_SEMANTICS
   return s_seed_generator->next();
 #else
-  string thread_based_name = s_current_thread_name + name;
+  std::string thread_based_name = s_current_thread_name + name;
   return _scv_get_seed_from_name(thread_based_name.c_str(), s_inst_num);
 #endif
 }
@@ -751,7 +724,7 @@ static void
 _scv_set_algorithm(scv_random::value_generation_algorithm alg,
 	     scv_random::alg_func custom_alg,
 	     scv_random::alg_func * scv_be_set,
-	     const string & algorithm_name) {
+	     const std::string & algorithm_name) {
   switch(alg) {
   case scv_random::RAND48:
   case scv_random::RAND:
@@ -767,37 +740,37 @@ _scv_set_algorithm(scv_random::value_generation_algorithm alg,
   }
 }
 
-static string& s_seed_file_name() {
-  static string seed_file_name;
+static std::string& s_seed_file_name() {
+  static std::string seed_file_name;
   return seed_file_name;
 }
 
-static _scv_associative_array<string,list<unsigned long long> >&
+static _scv_associative_array<std::string,std::list<unsigned long long> >&
 s_outstanding_seeds() {
-  static _scv_associative_array<string,list<unsigned long long> >
-    outstanding_seeds("outstanding_seeds",list<unsigned long long>());
+  static _scv_associative_array<std::string,std::list<unsigned long long> >
+    outstanding_seeds("outstanding_seeds",std::list<unsigned long long>());
   return outstanding_seeds;
 }
 
-static _scv_associative_array<string,int>&
+static _scv_associative_array<std::string,int>&
 s_names() {
-  static _scv_associative_array<string,int>
+  static _scv_associative_array<std::string,int>
     names("_generator Name Data Base",0);
   return names;
 }
 
-static list<scv_random *> *_list_of_generators = NULL;
+static std::list<scv_random *> *_list_of_generators = NULL;
 
-static list<scv_random *>& s_list_of_generators() {
+static std::list<scv_random *>& s_list_of_generators() {
   if (!_list_of_generators) {
-    _list_of_generators = new list<scv_random*>;
+    _list_of_generators = new std::list<scv_random*>;
   }
   return *(_list_of_generators);
 }
 
-static bool readname_and_seed(string& nextName, unsigned long long & next_seed) {
+static bool readname_and_seed(std::string& nextName, unsigned long long & next_seed) {
   char nextChar;
-  string name;
+  std::string name;
   name.reserve(60);
 
   if (s_exclusive_seed_file) {
@@ -844,10 +817,10 @@ static bool readname_and_seed(string& nextName, unsigned long long & next_seed) 
   return result != EOF;
 }
 
-static void retrieve_seed(const string & name, unsigned long long * seed) {
-  string s = name;
+static void retrieve_seed(const std::string & name, unsigned long long * seed) {
+  std::string s = name;
 
-  if (s == string("")) s = string("<anonymous>");
+  if (s == std::string("")) s = std::string("<anonymous>");
   if (s_numOutstanding_seeds>0 && s_outstanding_seeds()[s].size()>0) {
     *seed = s_outstanding_seeds()[s].front();
     s_outstanding_seeds()[s].pop_front();
@@ -856,13 +829,13 @@ static void retrieve_seed(const string & name, unsigned long long * seed) {
   }
 
   if (s_seed_file_ptr) {
-    string nextName;
+    std::string nextName;
     unsigned long long next_seed;
     bool done = false;
 
     while (!done && readname_and_seed(nextName,next_seed)) {
       if (nextName == s ||
-	  (nextName == string("<anonymous>") && s == string("")) ) {
+	  (nextName == std::string("<anonymous>") && s == std::string("")) ) {
 	*seed = next_seed;
 	done = true;
       } else {
@@ -888,7 +861,7 @@ static void retrieve_seed(const string & name, unsigned long long * seed) {
 static void addSelf(scv_random * self) {
   s_list_of_generators().push_back(self);
   if (s_store || s_retrieve) {
-    string s = self->get_name();
+    std::string s = self->get_name();
 
     if (s!="") {
       if (++s_names()[s]>1) {
@@ -930,9 +903,9 @@ unsigned long long _scv_get_global_seed(void) {
   return scv_random::get_global_seed();
 }
 
-static string _scv_get_unique_name(const string & name) {
+static std::string _scv_get_unique_name(const std::string & name) {
 #ifndef DONT_UNIQUIFY_NAMES
-  string hier_object_name;
+  std::string hier_object_name;
   if (!strcmp(s_current_inst_num,"<noappend>")) {
     hier_object_name = s_current_thread_name + "." + name;
   } else {
@@ -945,9 +918,9 @@ static string _scv_get_unique_name(const string & name) {
 #endif
 }
 
-static string _scv_extract_name(const char * str) {
-  if (!str || 0==strcmp("",str)) return string("<anonymous>");
-  string s(str);
+static std::string _scv_extract_name(const char * str) {
+  if (!str || 0==strcmp("",str)) return std::string("<anonymous>");
+  std::string s(str);
   return s;
 }
 

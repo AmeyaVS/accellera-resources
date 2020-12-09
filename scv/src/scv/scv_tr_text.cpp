@@ -2,14 +2,14 @@
 /*****************************************************************************
 
   The following code is derived, directly or indirectly, from the SystemC
-  source code Copyright (c) 1996-2002 by all Contributors.
+  source code Copyright (c) 1996-2014 by all Contributors.
   All Rights reserved.
 
   The contents of this file are subject to the restrictions and limitations
-  set forth in the SystemC Open Source License Version 2.3 (the "License");
+  set forth in the SystemC Open Source License (the "License");
   You may not use this file except in compliance with such restrictions and
   limitations. You may obtain instructions on how to receive a copy of the
-  License at http://www.systemc.org/. Software distributed by Contributors
+  License at http://www.accellera.org/. Software distributed by Contributors
   under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
   ANY KIND, either express or implied. See the License for the specific
   language governing rights and limitations under the License.
@@ -33,21 +33,29 @@
   MODIFICATION LOG - modifiers, enter your name, affiliation, date and
   changes you are making here.
 
-      Name, Affiliation, Date:
-  Description of Modification:
+      Name, Affiliation, Date: Torsten Maehne,
+                               Universite Pierre et Marie Curie, 2013-04-30
+  Description of Modification: Fix memory leak caused by not free()-ing
+                               C-strings duplicated using strdup() in the
+                               function scv_tr_db_cbf() by changing the type
+                               of the concerned static variable
+                               my_text_file_namefrom char* to string.
+                               Remove the now unused internal
+                               static scv_tr_strdup() function, which is anyway
+                               not exported by the linker.
 
  *****************************************************************************/
 
 /*
  * Here's the format of the text file:
 
-scv_tr_stream (ID <id>, name "<fullname>", kind "<kind>")
+scv_tr_stream (ID <id>, name "<full_name>", kind "<kind>")
 
 scv_tr_generator (ID <id>, name "<name>", scv_tr_stream <id>,
-	begin_attribute (ID <id1>, name "<name1>", type <"typename">)
-        begin_attribute (ID <id2>, name "<name2>", type <"typename">)
-        end_attribute (ID <id3>, name "<name3>", type <"typename">)
-        end_attribute (ID <id4>, name "<name4>", type <"typename">)
+	begin_attribute (ID <id1>, name "<name1>", type <"type_name">)
+        begin_attribute (ID <id2>, name "<name2>", type <"type_name">)
+        end_attribute (ID <id3>, name "<name3>", type <"type_name">)
+        end_attribute (ID <id4>, name "<name4>", type <"type_name">)
 	... )
 
 tx_begin <this_transaction_id> <generator_id> <begin_time>
@@ -63,8 +71,8 @@ tx_relation <"relation_name"> <tx_id_1> <tx_id_2>
  *
  */
 
+#include <string>
 #include "scv/scv_util.h"
-#include "scv/scv_config.h"
 #include "scv/scv_introspection.h"
 #include "scv/scv_tr.h"
 
@@ -82,14 +90,6 @@ tx_relation <"relation_name"> <tx_id_1> <tx_id_2>
 
 // ----------------------------------------------------------------------------
 
-static char* scv_tr_strdup(const char* src_str)
-{
-  if (src_str) return strdup(src_str);
-  else return NULL;
-}
-
-// ----------------------------------------------------------------------------
-
 static FILE* my_text_file_p = NULL;
 
 static void scv_tr_db_cbf(
@@ -99,20 +99,16 @@ static void scv_tr_db_cbf(
 {
   // This is called from the scv_tr_db ctor.
 
-  static char* my_text_file_name = NULL;
-  static char default_scv_tr_text[] = "DEFAULT_scv_tr_TEXT.txt";
+  static std::string my_text_file_name("DEFAULT_scv_tr_TEXT.txt");
 
   switch (reason) {
 
   case scv_tr_db::CREATE:
-    if ( (_scv_tr_db.get_name() == NULL)
-		|| (strlen(_scv_tr_db.get_name()) == 0) ) {
-      my_text_file_name = default_scv_tr_text;
-    } else {
-      my_text_file_name = scv_tr_strdup(_scv_tr_db.get_name());
+    if ( (_scv_tr_db.get_name() != NULL) && (strlen(_scv_tr_db.get_name()) != 0) ) {
+      my_text_file_name = _scv_tr_db.get_name();
     }
 
-    my_text_file_p = fopen(my_text_file_name, "w");
+    my_text_file_p = fopen(my_text_file_name.c_str(), "w");
 
     if (my_text_file_p == NULL) {
       _scv_message::message(
@@ -168,8 +164,8 @@ static void do_attributes(
 	bool declare_attributes,  // If false then print the values
 	bool undefined_values,
 	bool is_record_attribute,
-	string& prefix_name,
-	const string& exts_kind,
+	std::string& prefix_name,
+	const std::string& exts_kind,
 	const scv_extensions_if* my_exts_p,
 	int* index)  // The attribute index number
 {
@@ -191,7 +187,7 @@ if (my_exts_p) {
 
   if (my_exts_p == 0) return;
 
-  string full_name;
+  std::string full_name;
 
   if (prefix_name == "") {
     full_name = my_exts_p->get_name();
@@ -600,13 +596,13 @@ static void scv_tr_generator_cbf(
 	", name \"%s\", scv_tr_stream " scv_tr_TEXT_LLU",\n",
         g.get_id(), g.get_name(), g.get_scv_tr_stream().get_id());
 
-  string exts_kind;
+  std::string exts_kind;
   int index = 0;
 
   const scv_extensions_if* my_begin_exts_p = g.get_begin_exts_p();
   if (my_begin_exts_p != NULL) {
     exts_kind = "begin_attribute";
-    string tmp_str = g.get_begin_attribute_name() ?
+    std::string tmp_str = g.get_begin_attribute_name() ?
 			g.get_begin_attribute_name() : "";
     do_attributes(
 	true,
@@ -621,7 +617,7 @@ static void scv_tr_generator_cbf(
   const scv_extensions_if* my_end_exts_p = g.get_end_exts_p();
   if (my_end_exts_p != NULL) {
     exts_kind = "end_attribute";
-    string tmp_str = g.get_end_attribute_name() ?
+    std::string tmp_str = g.get_end_attribute_name() ?
 			g.get_end_attribute_name() : "";
     do_attributes(
         true,
@@ -674,7 +670,7 @@ static void scv_tr_handle_cbf(
 
     my_exts_p = t.get_begin_exts_p();
 
-    string exts_kind = "begin_attributes";
+    std::string exts_kind = "begin_attributes";
     bool default_values = false;
 
     if (my_exts_p == NULL) {
@@ -683,7 +679,7 @@ static void scv_tr_handle_cbf(
       default_values = true;
     }
 
-    string tmp_str = t.get_scv_tr_generator_base().get_begin_attribute_name() ?
+    std::string tmp_str = t.get_scv_tr_generator_base().get_begin_attribute_name() ?
 		t.get_scv_tr_generator_base().get_begin_attribute_name() : "";
 
     do_attributes(
@@ -709,7 +705,7 @@ static void scv_tr_handle_cbf(
 
     my_exts_p = t.get_end_exts_p();
 
-    string exts_kind = "end_attributes";
+    std::string exts_kind = "end_attributes";
     bool default_values = false;
 
     if (my_exts_p == NULL) {
@@ -718,7 +714,7 @@ static void scv_tr_handle_cbf(
       default_values = true;
     }
 
-    string tmp_str = t.get_scv_tr_generator_base().get_end_attribute_name() ?
+    std::string tmp_str = t.get_scv_tr_generator_base().get_end_attribute_name() ?
 		t.get_scv_tr_generator_base().get_end_attribute_name() : "";
 
     do_attributes(
@@ -752,7 +748,7 @@ static void scv_tr_handle_record_attribute_cbf(
 
   if (my_text_file_p == NULL) return;
 
-  string tmp_str;
+  std::string tmp_str;
 
   if (attribute_name == 0) {
     tmp_str = "";
@@ -762,7 +758,7 @@ static void scv_tr_handle_record_attribute_cbf(
 
   char tmp_str2[100];
   sprintf(tmp_str2, "tx_record_attribute " scv_tr_TEXT_LLU, t.get_id());
-  string exts_kind = tmp_str2;
+  std::string exts_kind = tmp_str2;
 
   do_attributes(
         false,

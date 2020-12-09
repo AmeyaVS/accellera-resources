@@ -356,7 +356,7 @@ cuddDynamicAllocNode(
 	    table->stash = NULL;
 	    /* Inhibit resizing of tables. */
 	    table->maxCacheHard = table->cacheSlots - 1;
-	    table->cacheSlack = -(table->cacheSlots + 1);
+	    table->cacheSlack = - (int) (table->cacheSlots + 1);
 	    for (i = 0; i < table->size; i++) {
 		table->subtables[i].maxKeys <<= 2;
 	    }
@@ -532,15 +532,15 @@ cuddSwapping(
   int upper,
   Cudd_ReorderingType heuristic)
 {
-    int	i, j;
-    int	max, keys;
-    int	nvars;
-    int	x, y;
-    int	iterate;
+    int i, j;
+    int max, keys;
+    int nvars;
+    int x, y;
+    int iterate;
     int previousSize;
     Move *moves, *move;
-    int	pivot;
-    int	modulo;
+    int pivot = lower;  /* ensure initialization of pivot */
+    int modulo;
     int result;
 
 #ifdef DD_DEBUG
@@ -556,7 +556,6 @@ cuddSwapping(
 	    break;
 	if (heuristic == CUDD_REORDER_RANDOM_PIVOT) {
 	    max = -1;
-	    pivot = 0; /* To shut up GCC warnings */
 	    for (j = lower; j <= upper; j++) {
 		if ((keys = table->subtables[j].keys) > max) {
 		    max = keys;

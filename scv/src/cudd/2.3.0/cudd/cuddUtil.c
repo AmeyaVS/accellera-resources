@@ -1085,7 +1085,7 @@ Cudd_bddPickArbitraryMinterms(
     DdNode *zero, **old, *neW;
     double minterms;
     char *saveString;
-    int saveFlag, savePoint, isSame;
+    int saveFlag, savePoint = 0, isSame; /* SCV: ensure initialization of savePoint */
 
     minterms = Cudd_CountMinterm(dd,f,n);
     if ((double)k > minterms) {
@@ -1133,7 +1133,6 @@ Cudd_bddPickArbitraryMinterms(
     old = ALLOC(DdNode *, k);
     saveString = ALLOC(char, size + 1);
     saveFlag = 0;
-    savePoint = 0; /* To shut up GCC warnings */
 
     /* Build result BDD array. */
     for (i = 0; i < k; i++) {
@@ -1626,7 +1625,7 @@ Cudd_FirstNode(
     }
 
     /* Find the first node. */
-    retval = st_gen(gen->gen.nodes.stGen, (char **)(void *) &(gen->node), NULL);
+    retval = st_gen(gen->gen.nodes.stGen, (char **) &(gen->node), NULL);
     if (retval != 0) {
 	gen->status = CUDD_GEN_NONEMPTY;
 	*node = gen->node;
@@ -1658,7 +1657,7 @@ Cudd_NextNode(
     int retval;
 
     /* Find the next node. */
-    retval = st_gen(gen->gen.nodes.stGen, (char **)(void *) &(gen->node), NULL);
+    retval = st_gen(gen->gen.nodes.stGen, (char **) &(gen->node), NULL);
     if (retval == 0) {
 	gen->status = CUDD_GEN_EMPTY;
     } else {
@@ -1835,6 +1834,11 @@ Cudd_AverageDistance(
 	for (j = 0; j < slots; j++) {
 	    scan = nodelist[j];
 	    while (scan != sentinel) {
+		/* The CUDD implementation assumes that scan is not NULL
+		** at this point. Make this assumption explicit for
+		** static code analysis.
+		*/
+		assert(scan);
 		diff = (long) scan - (long) cuddT(scan);
 		tesubtotal += (double) ddAbs(diff);
 		diff = (long) scan - (long) Cudd_Regular(cuddE(scan));
@@ -2635,7 +2639,7 @@ ddCountPathAux(
     if (cuddIsConstant(node)) {
 	return(1.0);
     }
-    if (st_lookup(table, (char *)node, (char **)(void *)&dummy)) {
+    if (st_lookup(table, (char *)node, (char **)&dummy)) {
 	paths = *dummy;
 	return(paths);
     }
