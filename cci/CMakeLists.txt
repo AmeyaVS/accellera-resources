@@ -76,4 +76,5 @@ install(FILES ${CFG_HEADER_FILES} DESTINATION include/cci_cfg)
 install(FILES ${CORE_HEADER_FILES} DESTINATION include/cci_core)
 install(FILES ${UTILS_HEADER_FILES} DESTINATION include/cci_utils)
 
-
+include(CTest)
+add_subdirectory(examples)

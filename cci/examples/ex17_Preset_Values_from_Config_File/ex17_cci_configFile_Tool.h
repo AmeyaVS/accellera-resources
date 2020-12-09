@@ -31,7 +31,6 @@
 
 #include <cci_configuration>
 #include <boost/algorithm/string.hpp>
-#include <boost/tokenizer.hpp>
 #include <sstream>
 #include <utility>
 #include <string>
