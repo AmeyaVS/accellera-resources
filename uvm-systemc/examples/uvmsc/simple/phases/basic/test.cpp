@@ -230,6 +230,13 @@ class A : public uvm_component
               << " end phase: " << phase.get_name() << std::endl;
   }
 
+  // destructor
+  virtual ~A()
+  {
+    delete b1;
+    delete d1;
+  }
+
   // member data objects
   B* b1;
   D* d1;
@@ -245,6 +252,12 @@ class AA : public uvm_component
   AA(uvm_component_name name) : uvm_component(name)
   {
     a = new A("a");
+  }
+
+  // destructor
+  virtual ~AA()
+  {
+    delete a;
   }
 };
 
@@ -319,6 +332,13 @@ class top : public uvm_env
     phase.drop_objection(this);
   }
 
+  // destructor
+  virtual ~top() 
+  {
+    delete a1;
+    delete a2;
+  }
+
   // member data objects
   AA* a1;
   AA* a2;
@@ -330,6 +350,8 @@ int sc_main(int, char*[])
   top* t1 = new top("t1");
 
   run_test();
+
+  delete t1;
 
   return 0;
 }

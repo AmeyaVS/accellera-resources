@@ -3,6 +3,7 @@
 //   Copyright 2010 Synopsys, Inc.
 //   Copyright 2010 Cadence Design Systems, Inc.
 //   Copyright 2011 Mentor Graphics Corporation
+//   Copyright 2018 Intel Corp.
 //   All Rights Reserved Worldwide
 //
 //   Licensed under the Apache License, Version 2.0 (the
@@ -85,7 +86,7 @@ public:
                            uvm_predict_e     kind = UVM_PREDICT_DIRECT,
                            uvm_reg_byte_en_t be = -1 );
 
-  virtual uvm_reg_map* get_local_map( uvm_reg_map* map, const std::string& caller = "" ) const;
+  virtual uvm_reg_map* get_local_map( const uvm_reg_map* map, const std::string& caller = "" ) const;
 
   virtual void add_field( uvm_reg_field* field );
 

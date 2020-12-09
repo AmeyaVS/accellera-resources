@@ -6,6 +6,7 @@
 //   Copyright 2010 Synopsys, Inc.
 //   Copyright 2014 NVIDIA Corporation
 //   Copyright 2016 NXP B.V.
+//   Copyright 2018 Intel Corp.
 //   All Rights Reserved Worldwide
 //
 //   Licensed under the Apache License, Version 2.0 (the
@@ -73,7 +74,7 @@ uvm_default_report_server::uvm_default_report_server( const std::string& name )
 // of the current configuration.
 //----------------------------------------------------------------------------
 
-void uvm_default_report_server::do_print( const uvm_printer& printer )
+void uvm_default_report_server::do_print( const uvm_printer& printer ) const
 {
   uvm_severity l_severity_count_index;
   std::string l_id_count_index;
@@ -87,7 +88,7 @@ void uvm_default_report_server::do_print( const uvm_printer& printer )
   {
     printer.print_array_header("severity_count", m_severity_count.size(), "severity counts");
 
-    for( severity_count_itt it = m_severity_count.begin();
+    for( severity_count_citt it = m_severity_count.begin();
          it != m_severity_count.end(); ++it)
     {
       l_severity_count_index = it->first;
@@ -673,7 +674,7 @@ void uvm_default_report_server::report_summarize( UVM_FILE file ) const
 // Internal member function. Needed for callbacks
 //----------------------------------------------------------------------------
 
-std::string uvm_default_report_server::get_type_name()
+const std::string uvm_default_report_server::get_type_name() const
 {
   return "uvm_default_report_server";
 }

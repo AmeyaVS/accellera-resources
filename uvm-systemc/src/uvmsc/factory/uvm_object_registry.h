@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------
 //   Copyright 2014 Fraunhofer-Gesellschaft zur Foerderung
 //					der angewandten Forschung e.V.
-//   Copyright 2012-2014 NXP B.V.
+//   Copyright 2012-2020 NXP B.V.
 //   Copyright 2007-2010 Mentor Graphics Corporation
 //   Copyright 2007-2010 Cadence Design Systems, Inc.
 //   Copyright 2010 Synopsys, Inc.
@@ -27,6 +27,7 @@
 
 #include <string>
 #include <sstream>
+#include <map>
 #include <systemc>
 
 #include "uvmsc/base/uvm_root.h"
@@ -94,6 +95,8 @@ class uvm_object_registry : public uvm_object_wrapper
   // not part of UVM Class reference / LRM
   /////////////////////////////////////////////////////
 
+  static void destroy( T* obj );
+
  private:
   explicit uvm_object_registry( const std::string& name = "" );
 
@@ -102,11 +105,7 @@ class uvm_object_registry : public uvm_object_wrapper
   static const std::string m_type_name_prop();
 
   // data members
-  static const std::string type_name;
-
   static uvm_object_registry<T>* me;
-
-  std::vector<T* > m_obj_t_list;
 
 }; // class uvm_object_registry
 
@@ -114,9 +113,6 @@ class uvm_object_registry : public uvm_object_wrapper
 //----------------------------------------------------------------------
 // definition of static members outside class definition
 //----------------------------------------------------------------------
-
-template <typename T>
-const std::string uvm_object_registry<T>::type_name = m_type_name_prop();
 
 template <typename T>
 uvm_object_registry<T>* uvm_object_registry<T>::me = get();
@@ -144,24 +140,13 @@ template <typename T>
 uvm_object* uvm_object_registry<T>::create_object( const std::string& name )
 {
   T* obj = NULL;
-/*
-#ifdef UVM_OBJECT_MUST_HAVE_CONSTRUCTOR
+
   if (name.empty())
-    obj = new T();
+    obj = new T(sc_core::sc_gen_unique_name("object"));
   else
     obj = new T(name);
-#else
-*/
 
-  obj = new T(name); // TODO check: was new T();
-
-// do we still need this?
-//  if (!name.empty())
-//    obj->set_name(name);
-//#endif // UVM_OBJECT_MUST_HAVE_CONSTRUCTOR
-
-  m_obj_t_list.push_back(obj); // remember object to delete it later
-  return obj;
+  return obj; // note creation of newed object is tracked in factory
 }
 
 //----------------------------------------------------------------------
@@ -174,7 +159,7 @@ uvm_object* uvm_object_registry<T>::create_object( const std::string& name )
 template <typename T>
 const std::string uvm_object_registry<T>::get_type_name() const
 {
-  return uvm_object_registry<T>::type_name;
+  return uvm_object_registry<T>::m_type_name_prop();
 }
 
 //----------------------------------------------------------------------
@@ -187,15 +172,12 @@ const std::string uvm_object_registry<T>::get_type_name() const
 template <typename T>
 uvm_object_registry<T>* uvm_object_registry<T>::get()
 {
-  if (type_name.empty())
-    m_type_name_prop();
-
   if (me == NULL)
   {
     uvm_coreservice_t* cs = uvm_coreservice_t::get();
     uvm_factory* f = cs->get_factory();
 
-    me = new uvm_object_registry<T>("objrgy_" + type_name);
+    me = new uvm_object_registry<T>("objrgy_" + m_type_name_prop());
     f->do_register(me);
   }
   return me;
@@ -213,8 +195,8 @@ uvm_object_registry<T>* uvm_object_registry<T>::get()
 
 template <typename T>
 T* uvm_object_registry<T>::create( const std::string& name,
-                  uvm_component* parent,
-                  const std::string& contxt )
+                                   uvm_component* parent,
+                                   const std::string& contxt )
 {
   std::string l_contxt;
   uvm_object* obj = NULL;
@@ -229,11 +211,10 @@ T* uvm_object_registry<T>::create( const std::string& name,
   if (robj == NULL)
   {
     std::ostringstream msg;
-    msg << "Factory did not return an object of type '" << type_name
-        << "'. A component of type '" << ( (obj == NULL) ? "null" : obj->get_type_name() )
+    msg << "Factory did not return an object of type '" << m_type_name_prop() << "'."
+        << " A object of type '" << ( (obj == NULL) ? "null" : obj->get_type_name() )
         << "' was returned instead. Name=" << name << " Parent="
-        << ( (parent == NULL) ? "NULL" : parent->get_type_name() )
-        << " contxt=" << l_contxt;
+        << ( (parent == NULL) ? "NULL" : parent->get_type_name() ) << " contxt=" << l_contxt;
 
     uvm_report_fatal("FCTTYP", msg.str(), UVM_NONE);
   }
@@ -318,6 +299,38 @@ const std::string uvm_object_registry<T>::m_type_name_prop()
 }
 
 //----------------------------------------------------------------------
+// member function: destroy (static)
+//
+//! Configures the factory to delete a object which is created using 
+//! 'create' method.
+//----------------------------------------------------------------------
+
+template <typename T>
+void uvm_object_registry<T>::destroy( T* obj ) 
+{
+  if (obj == NULL) 
+  {
+    return;
+  }
+  
+  uvm_coreservice_t* cs = uvm_coreservice_t::get();
+  uvm_factory* f = cs->get_factory();
+
+  if (!f->m_delete_object(obj))
+  {
+    std::ostringstream msg;
+    msg << "Could not destroy object of type '" << obj->get_type_name()
+        << "', name=" << obj->get_name()
+        << " from factory";
+    uvm_report_warning("FCTTYP", msg.str(), UVM_NONE);
+    return;
+  }
+  
+  obj = NULL;
+}
+
+
+//----------------------------------------------------------------------
 // Destructor
 //----------------------------------------------------------------------
 
@@ -331,9 +344,11 @@ uvm_object_registry<T>::~uvm_object_registry()
     me = NULL;
   }
 
-  while(!m_obj_t_list.empty())
-    delete m_obj_t_list.back(), m_obj_t_list.pop_back();
+  uvm_coreservice_t* cs = uvm_coreservice_t::get();
+  uvm_factory* f = cs->get_factory();
+  f->m_delete_all_objects();
 }
+
 
 //////////////
 

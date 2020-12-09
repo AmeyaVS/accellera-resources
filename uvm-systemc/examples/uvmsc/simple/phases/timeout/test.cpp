@@ -61,6 +61,11 @@ class test : public uvm_test
     wait(100, SC_US);
     phase.drop_objection(this);
   }
+  
+  virtual ~test()
+  {
+    tb_timer::destroy();
+  }
 };
 
 
@@ -71,6 +76,8 @@ int sc_main(int, char*[])
   //uvm_set_verbosity_level(UVM_DEBUG);
 
   run_test("test");
+
+  delete env;
 
   return 0;
 }

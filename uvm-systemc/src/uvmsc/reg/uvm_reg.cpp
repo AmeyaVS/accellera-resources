@@ -77,6 +77,7 @@ uvm_reg::uvm_reg( const std::string& name,
   m_locked = false;
   m_parent = NULL;
   m_regfile_parent = NULL;
+  m_process_valid = false;
 
   if (n_bits > m_max_size)
     m_max_size = n_bits;
@@ -798,6 +799,8 @@ void uvm_reg::write( uvm_status_e& status,
    status = rw->status;
 
    m_atomic_check_lock(false);
+  
+   uvm_reg_item::type_id::destroy(rw);
 }
 
 //----------------------------------------------------------------------
@@ -904,6 +907,8 @@ void uvm_reg::poke( uvm_status_e& status,
 
   if (!m_is_locked_by_field)
     m_atomic_check_lock(false);
+  
+  uvm_reg_item::type_id::destroy(rw);
 }
 
 //----------------------------------------------------------------------
@@ -977,6 +982,8 @@ void uvm_reg::peek( uvm_status_e& status,
 
   if (!m_is_locked_by_field)
     m_atomic_check_lock(false);
+  
+  uvm_reg_item::type_id::destroy(rw);
 }
 
 //----------------------------------------------------------------------
@@ -2365,6 +2372,8 @@ void uvm_reg::m_read( uvm_status_e& status,
    do_read(rw);
    status = rw->status;
    value = rw->value[0];
+
+  uvm_reg_item::type_id::destroy(rw);
 }
 
 

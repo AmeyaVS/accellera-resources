@@ -2,7 +2,8 @@
 //   Copyright 2007-2011 Mentor Graphics Corporation
 //   Copyright 2007-2011 Cadence Design Systems, Inc.
 //   Copyright 2010-2011 Synopsys, Inc.
-//   Copyright 2012-2015 NXP B.V.
+//   Copyright 2012-2020 NXP B.V.
+//   Copyright 2018 Intel Corp.
 //   All Rights Reserved Worldwide
 //
 //   Licensed under the Apache License, Version 2.0 (the
@@ -133,7 +134,6 @@ public:
   uvm_sequence_base* m_find_sequence(int sequence_id);
   void m_kill_sequence( uvm_sequence_base* sequence_ptr );
   virtual void do_print( const uvm_printer& printer ) const;
-  virtual void print( uvm_printer* printer = NULL ) const;
 
   void m_lock_req( uvm_sequence_base* sequence_ptr, bool lock );
   void m_unlock_req( uvm_sequence_base* sequence_ptr );
@@ -169,6 +169,7 @@ public:
   static int g_sequence_id;
   static int g_request_id;
 
+  uvm_sequence_item* m_current_sequence_item;
 };
 
 //------------------------------------------------------------------------------

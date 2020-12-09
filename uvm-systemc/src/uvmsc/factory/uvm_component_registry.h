@@ -1,10 +1,11 @@
 //----------------------------------------------------------------------
 //   Copyright 2014 Fraunhofer-Gesellschaft zur Foerderung
 //					der angewandten Forschung e.V.
-//   Copyright 2012-2014 NXP B.V.
+//   Copyright 2012-2020 NXP B.V.
 //   Copyright 2007-2010 Mentor Graphics Corporation
 //   Copyright 2007-2010 Cadence Design Systems, Inc.
 //   Copyright 2010 Synopsys, Inc.
+//   Copyright 2018 Intel Corp.
 //   All Rights Reserved Worldwide
 //
 //   Licensed under the Apache License, Version 2.0 (the
@@ -95,6 +96,8 @@ class uvm_component_registry : public uvm_object_wrapper
   // Implementation-defined member functions below,
   // not part of UVM Class reference / LRM
   /////////////////////////////////////////////////////
+  //
+  static void destroy( T* comp );
 
   virtual ~uvm_component_registry();
 
@@ -105,11 +108,7 @@ class uvm_component_registry : public uvm_object_wrapper
 
   // data members
 
-  static const std::string type_name;
-
   static uvm_component_registry<T>* me;
-
-  std::vector<T* > m_comp_t_list;
 
 }; // class uvm_component_registry
 
@@ -117,9 +116,6 @@ class uvm_component_registry : public uvm_object_wrapper
 //----------------------------------------------------------------------
 // definition of static members outside class definition
 //----------------------------------------------------------------------
-
-template <typename T>
-const std::string uvm_component_registry<T>::type_name = m_type_name_prop();
 
 template <typename T>
 uvm_component_registry<T>* uvm_component_registry<T>::me = get();
@@ -148,7 +144,6 @@ uvm_component* uvm_component_registry<T>::create_component( const std::string& n
 {
   T* comp = NULL;
   comp = new T( name.c_str() );
-  m_comp_t_list.push_back(comp); // remember object to delete it later
   return comp;
 }
 
@@ -162,7 +157,7 @@ uvm_component* uvm_component_registry<T>::create_component( const std::string& n
 template <typename T>
 const std::string uvm_component_registry<T>::get_type_name() const
 {
-  return uvm_component_registry<T>::type_name;
+  return uvm_component_registry<T>::m_type_name_prop();
 }
 
 //----------------------------------------------------------------------
@@ -175,14 +170,11 @@ const std::string uvm_component_registry<T>::get_type_name() const
 template <typename T>
 uvm_component_registry<T>* uvm_component_registry<T>::get()
 {
-  if (type_name.empty())
-    m_type_name_prop();
-
   if (me == NULL)
   {
     uvm_coreservice_t* cs = uvm_coreservice_t::get();
     uvm_factory* f = cs->get_factory();
-    me = new uvm_component_registry<T>("comprgy_" + type_name);
+    me = new uvm_component_registry<T>("comprgy_" + m_type_name_prop());
     f->do_register(me);
   }
   return me;
@@ -216,7 +208,7 @@ T* uvm_component_registry<T>::create( const std::string& name,
   if (robj == NULL)
   {
     std::ostringstream msg;
-    msg << "Factory did not return a component of type '" << type_name << "'."
+    msg << "Factory did not return a component of type '" << m_type_name_prop() << "'."
         << " A component of type '" << ((obj == NULL) ? "NULL" : obj->get_type_name() )
         << "' was returned instead. Name=" << name << " Parent="
         << ((parent == NULL) ? "NULL" : parent->get_type_name()) << " contxt=" << l_contxt;
@@ -297,6 +289,49 @@ const std::string uvm_component_registry<T>::m_type_name_prop()
 }
 
 //----------------------------------------------------------------------
+// member function: destroy (static)
+//
+//! Configures the factory to delete a component which is created using 
+//! 'create' method. In order to delete the component, all phases must be
+//! finshed. Calling this method in destructor is recommended.
+//----------------------------------------------------------------------
+
+template <typename T>
+void uvm_component_registry<T>::destroy( T* comp ) 
+{
+  if (comp == NULL) 
+  {
+    return;
+  }
+  
+  uvm_coreservice_t* cs = uvm_coreservice_t::get();
+  uvm_factory* f = cs->get_factory();
+  uvm_root* root = cs->get_root();
+
+  if (!root->get_phase_all_done()) 
+  {
+    std::ostringstream msg;
+    msg << "Could not destroy component of type '" << comp->get_type_name()
+        << "', name=" << comp->get_name()
+        << " when all phases have not been finished";
+    uvm_report_warning("FCTTYP", msg.str(), UVM_NONE);
+    return;
+  }
+
+  if (!f->m_delete_component(comp))
+  {
+    std::ostringstream msg;
+    msg << "Could not destroy component of type '" << comp->get_type_name()
+        << "', name=" << comp->get_name()
+        << " from factory";
+    uvm_report_warning("FCTTYP", msg.str(), UVM_NONE);
+    return;
+  }
+
+  comp = NULL;
+}
+
+//----------------------------------------------------------------------
 // Destructor
 //----------------------------------------------------------------------
 
@@ -310,8 +345,9 @@ uvm_component_registry<T>::~uvm_component_registry()
     me = NULL;
   }
 
-  while(!m_comp_t_list.empty())
-    delete m_comp_t_list.back(), m_comp_t_list.pop_back();
+  uvm_coreservice_t* cs = uvm_coreservice_t::get();
+  uvm_factory* f = cs->get_factory();
+  f->m_delete_all_components();
 }
 
 

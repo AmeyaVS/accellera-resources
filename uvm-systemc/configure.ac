@@ -1,12 +1,14 @@
 ##                            -*- Autoconf -*-
 ## --------------------------------------------------------------------------
 ##
-##   Copyright 2014 Université Pierre et Marie Curie, Paris
-##   Copyright 2014-2017 Fraunhofer-Gesellschaft zur Foerderung
+##   Copyright 2014 Universitï¿½ Pierre et Marie Curie, Paris
+##   Copyright 2014-2018 Fraunhofer-Gesellschaft zur Foerderung
 ##                  der angewandten Forschung e.V.
 ##   Copyright 2007-2011 Mentor Graphics Corporation
 ##   Copyright 2007-2011 Cadence Design Systems, Inc.
 ##   Copyright 2010-2011 Synopsys, Inc.
+##   Copyright 2018 Robert Bosch GmbH
+##   Copyright 2019 COSEDA Technologies GmbH
 ##   All Rights Reserved Worldwide
 ##
 ##   Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +43,7 @@
 AC_PREREQ(2.61)
 
 AC_INIT([UVM-SystemC],
-        [1.0-beta1],
+        [1.0-beta3],
         [uvm-systemc-feedback@lists.accellera.org],
         [uvm-systemc],
         [Download-URL],
@@ -56,7 +58,7 @@ AC_DEFINE_UNQUOTED(CONFIGURE_DATE, "`sh -c date`", [Date of configure])
 AC_SUBST(CONFIGURE_DATE)
 
 AC_DEFINE_UNQUOTED(UVM_VERSION, "${PACKAGE_VERSION}", [UVM SystemC Version])
-AC_DEFINE_UNQUOTED(UVM_RELEASE_DATE, "2017-12-07", [UVM SystemC Release Date])
+AC_DEFINE_UNQUOTED(UVM_RELEASE_DATE, "2020-07-08", [UVM SystemC Release Date])
 AC_SUBST(UVM_VERSION)
 AC_SUBST(UVM_RELEASE_DATE)
 
@@ -365,11 +367,23 @@ AC_ARG_WITH([arch-suffix],
   [ac_dummy=""]
 )
 AC_MSG_RESULT($have_arch_suffix (TARGET_ARCH=${TARGET_ARCH}))
-AC_SUBST(LIB_ARCH_SUFFIX)
 AC_SUBST(rootdocdir)
 AC_SUBST(examplesdir, [${rootdocdir}/examples])
-libdir="${libdir}${LIB_ARCH_SUFFIX}"
+AC_SUBST([libarchdir],  ['${libdir}${LIB_ARCH_SUFFIX}'] )
 
+AM_CONDITIONAL([SEPARATE_INSTALL_TREE],dnl
+  [ test "x${prefix}" != "x${abs_srcdir}" ])
+dnl Check for out-of-tree build
+AM_CONDITIONAL([SEPARATE_BUILD_TREE],dnl
+  [ test "x${abs_srcdir}" != "x${abs_builddir}" ])
+
+#AM_COND_IF([SEPARATE_BUILD_TREE],[
+if test -z "${SEPARATE_BUILD_TREE_TRUE}" ; then
+  if test "x${prefix}" = "x${abs_builddir}" ; then
+    AC_MSG_ERROR([Installation to build directory not supported.])
+  fi
+fi
+#])
 
 AC_ARG_WITH([systemc],
   [AS_HELP_STRING([--with-systemc=DIR],
@@ -458,8 +472,8 @@ case "$want_regex" in
     AC_TRY_RUN([#include<regex>
       int main()
       {
-        std::regex rx("xabcy", std::regex::extended);
-        if( !std::regex_match("abc", rx) ) exit(1);
+        std::regex rx("[(ab)]+", std::regex::extended);
+        if( !std::regex_match("abababab", rx) ) exit(1);
         exit(0);
         return 0;
       }],
@@ -530,34 +544,34 @@ AC_PROG_LIBTOOL
 # * restore CXXFLAGS
 CXXFLAGS="${stored_CXXFLAGS}"
 
+#check SystemC Version by building an example program
+stored_CXXFLAGS="${CXXFLAGS}"
+stored_LIBS="${LIBS}"
+CXXFLAGS="${SYSTEMC_CFLAGS} ${CXXFLAGS}"
+LIBS="${LIBS} ${SYSTEMC_LIBS}"
+AC_MSG_CHECKING( SystemC Version IEEE compliant)
+AC_RUN_IFELSE( 
+	[AC_LANG_SOURCE([[#include <systemc>
+	int sc_main(int argc, char* argv[]) {
+	#if (IEEE_1666_SYSTEMC >= 201101L)
+	return 0;
+	#endif
+	return 1;
+	}
+	]])]
+	,  
+	[AC_MSG_RESULT([IEEE 1666 compatible SystemC version found ])],
+	[AC_MSG_FAILURE([Non IEEE 1666 compatible SystemC version found, make sure that SystemC can be found and you build with the same compile options as building SystemC])]
+	)
+CXXFLAGS="${stored_CXXFLAGS}"
+LIBS="${stored_LIBS}"
 
-AC_CHECK_PROGS([DOXYGEN], [doxygen])
-if test -z "$DOXYGEN"; then
-  AC_MSG_WARN(Doxygen not found - Doxygen documentation will not be built.);
-fi
-AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
-
+AC_SUBST(LIB_ARCH_SUFFIX)
 
 AC_OUTPUT( Makefile
            src/Makefile
            src/uvmsc/Makefile
            src/uvmsc/uvm-systemc.pc
-           src/uvmsc/base/Makefile
-           src/uvmsc/cb/Makefile
-           src/uvmsc/comps/Makefile
-           src/uvmsc/conf/Makefile
-           src/uvmsc/dpi/Makefile
-           src/uvmsc/factory/Makefile
-           src/uvmsc/macros/Makefile
-           src/uvmsc/misc/Makefile
-           src/uvmsc/phasing/Makefile
-           src/uvmsc/policy/Makefile
-           src/uvmsc/print/Makefile
-           src/uvmsc/reg/Makefile
-           src/uvmsc/reg/sequences/Makefile
-           src/uvmsc/report/Makefile
-           src/uvmsc/seq/Makefile
-           src/uvmsc/tlm1/Makefile
            examples/Makefile
            examples/uvmsc/Makefile
            docs/Makefile

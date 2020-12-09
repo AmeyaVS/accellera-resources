@@ -5,6 +5,7 @@
 //   Copyright 2011 Mentor Graphics Corporation
 //   Copyright 2014 Fraunhofer-Gesellschaft zur Foerderung
 //					der angewandten Forschung e.V.
+//   Copyright 2018 Intel Corp.
 //   All Rights Reserved Worldwide
 //
 //   Licensed under the Apache License, Version 2.0 (the
@@ -186,7 +187,7 @@ void uvm_reg_indirect_data::do_predict( uvm_reg_item* rw,
 // Implementation defined
 //-----------------------------------------------------------------------------
 
-uvm_reg_map* uvm_reg_indirect_data::get_local_map( uvm_reg_map* map,
+uvm_reg_map* uvm_reg_indirect_data::get_local_map( const uvm_reg_map* map,
                                                    const std::string& caller ) const
 {
   return m_idx->get_local_map(map,caller);
@@ -309,6 +310,8 @@ void uvm_reg_indirect_data::write( uvm_status_e& status,
     status = rw->status;
 
     m_atomic_check_lock(false);
+    
+    uvm_reg_item::type_id::destroy(rw);
   }
 }
 

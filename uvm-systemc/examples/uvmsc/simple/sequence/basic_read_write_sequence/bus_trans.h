@@ -1,5 +1,6 @@
 //----------------------------------------------------------------------
 //   Copyright 2012-2014 NXP B.V.
+//   Copyright 2018 Intel Corp.
 //   All Rights Reserved Worldwide
 //
 //   Licensed under the Apache License, Version 2.0 (the
@@ -114,7 +115,9 @@ class bus_req : public bus_trans
 class bus_rsp : public bus_trans
 {
  public:
-  bus_rsp( const std::string& name = "bus_rsp_seq_item" ) : bus_trans(name) {}
+  bus_rsp( const std::string& name = "bus_rsp_seq_item" ) : bus_trans(name) {
+    status = STATUS_NOT_OK;
+  }
 
   ~bus_rsp() {}
 

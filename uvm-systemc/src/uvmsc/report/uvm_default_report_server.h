@@ -4,6 +4,7 @@
 //   Copyright 2010 Synopsys, Inc.
 //   Copyright 2014 NVIDIA Corporation
 //   Copyright 2016 NXP B.V.
+//   Copyright 2018 Intel Corp.
 //   All Rights Reserved Worldwide
 //
 //   Licensed under the Apache License, Version 2.0 (the
@@ -54,7 +55,7 @@ class uvm_default_report_server : public uvm_report_server
 
   uvm_default_report_server( const std::string& name = "uvm_report_server" );
 
-  virtual void do_print( const uvm_printer& printer );
+  virtual void do_print( const uvm_printer& printer ) const;
 
   //--------------------------------------------------------------------------
   // Group: Quit Count
@@ -140,7 +141,7 @@ class uvm_default_report_server : public uvm_report_server
 
 
 
-  std::string get_type_name();
+  const std::string get_type_name() const;
 
  private:
   // local data members
@@ -151,12 +152,12 @@ class uvm_default_report_server : public uvm_report_server
   bool max_quit_overridable;
 
   typedef std::map<uvm_severity, int> severity_count_map;
-  severity_count_map m_severity_count;
+  mutable severity_count_map m_severity_count;
   typedef severity_count_map::iterator severity_count_itt;
   typedef severity_count_map::const_iterator severity_count_citt;
 
   typedef std::map<std::string, int> id_count_map;
-  id_count_map m_id_count;
+  mutable id_count_map m_id_count;
   typedef id_count_map::iterator id_count_itt;
   typedef id_count_map::const_iterator id_count_citt;
 

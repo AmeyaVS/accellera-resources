@@ -4,6 +4,7 @@
 //   Copyright 2010 Synopsys, Inc.
 //   Copyright 2014 NVIDIA Corporation
 //   Copyright 2016 NXP B.V.
+//   Copyright 2018 Intel Corp.
 //   All Rights Reserved Worldwide
 //
 //   Licensed under the Apache License, Version 2.0 (the
@@ -54,7 +55,7 @@ class uvm_report_server : public uvm_object
 
   uvm_report_server( const std::string& name = "base" );
 
-  std::string get_type_name();
+  const std::string get_type_name() const;
 
   virtual void set_max_quit_count( int count, bool overridable = true ) = 0;
 
