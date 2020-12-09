@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Grammar SystemRDL.g</TITLE>
+</HEAD>
+<BODY>
+<table summary="" border="1" cellpadding="5">
+<tr>
+<td>
+<font size="+2">Grammar SystemRDLLexer</font><br>
+<a href="http://www.ANTLR.org">ANTLR</a>-generated HTML file from SystemRDL.g
+<p>
+Terence Parr, <a href="http://www.magelang.com">MageLang Institute</a>
+<br>ANTLR Version 2.7.6 (20060925); 1989-2005
+</td>
+</tr>
+</table>
+<PRE>
+
+Definition of lexer SystemRDLLexer, which is a subclass of CharScanner.
+
+/** Lexer nextToken rule:
+ *  The lexer nextToken rule is synthesized from all of the user-defined
+ *  lexer rules.  It logically consists of one big alternative block with
+ *  each user-defined rule being an alternative.
+ */
+<a href="SystemRDLLexer.html#mWS">mWS</a> 
+|	<a href="SystemRDLLexer.html#mSL_COMMENT">mSL_COMMENT</a> 
+|	<a href="SystemRDLLexer.html#mML_COMMENT">mML_COMMENT</a> 
+|	<a href="SystemRDLLexer.html#mID">mID</a> 
+|	<a href="SystemRDLLexer.html#mNUM">mNUM</a> 
+|	<a href="SystemRDLLexer.html#mSTR">mSTR</a> 
+|	<a href="SystemRDLLexer.html#mLBRACE">mLBRACE</a> 
+|	<a href="SystemRDLLexer.html#mRBRAC">mRBRAC</a> 
+|	<a href="SystemRDLLexer.html#mLSQ">mLSQ</a> 
+|	<a href="SystemRDLLexer.html#mRSQ">mRSQ</a> 
+|	<a href="SystemRDLLexer.html#mLPAREN">mLPAREN</a> 
+|	<a href="SystemRDLLexer.html#mRPAREN">mRPAREN</a> 
+|	<a href="SystemRDLLexer.html#mAT">mAT</a> 
+|	<a href="SystemRDLLexer.html#mOR">mOR</a> 
+|	<a href="SystemRDLLexer.html#mSEMI">mSEMI</a> 
+|	<a href="SystemRDLLexer.html#mCOLON">mCOLON</a> 
+|	<a href="SystemRDLLexer.html#mCOMMA">mCOMMA</a> 
+|	<a href="SystemRDLLexer.html#mDOT">mDOT</a> 
+|	<a href="SystemRDLLexer.html#mDREF">mDREF</a> 
+|	<a href="SystemRDLLexer.html#mEQ">mEQ</a> 
+|	<a href="SystemRDLLexer.html#mINC">mINC</a> 
+|	<a href="SystemRDLLexer.html#mMOD">mMOD</a> 
+protected <a name="mLETTER">mLETTER</a>
+	:	(				'a'..'z' 
+		|				'A'..'Z' 
+		) 
+	;
+
+<a name="mWS">mWS</a>
+	:	(	&#039; &#039; 
+		|	&#039;\t&#039; 
+		|	(	&#039;\n&#039; 
+			|	&#039;\r&#039; 
+			|	&quot;\r\n&quot; 
+			) 
+		) 
+	;
+
+<a name="mSL_COMMENT">mSL_COMMENT</a>
+	:	&quot;//&quot; ( (	&#039;\n&#039; 
+			|	&#039;\r&#039; 
+			) )* 
+		(	&#039;\n&#039; 
+		|	&#039;\r&#039; 
+		|	&quot;\r\n&quot; 
+		) 
+	;
+
+<a name="mML_COMMENT">mML_COMMENT</a>
+	:	&quot;/*&quot; 
+		(	&#039;*&#039; 
+		|	&#039;\n&#039; 
+		|	&#039;\r&#039; 
+		|	&quot;\r\n&quot; 
+		|	(	&#039;*&#039; 
+			|	&#039;\n&#039; 
+			|	&#039;\r&#039; 
+			) 
+		)* 
+		&quot;*/&quot; 
+	;
+
+<a name="mID">mID</a>
+	:	(	&#039;\\&#039; 
+		|	
+		) 
+		(	<a href="SystemRDLLexer.html#mLETTER">mLETTER</a> 
+		|	&#039;_&#039; 
+		) 
+		(	<a href="SystemRDLLexer.html#mLETTER">mLETTER</a> 
+		|	&#039;_&#039; 
+		|				'0'..'9' 
+		)* 
+	;
+
+protected <a name="mVNUM">mVNUM</a>
+	:	&#039;\&#039;&#039; 
+		(	&#039;b&#039; 
+			(	&#039;0&#039; 
+			|	&#039;1&#039; 
+			|	&#039;_&#039; 
+			)+ 
+		|	&#039;d&#039; 
+			(					'0'..'9' 
+			|	&#039;_&#039; 
+			)+ 
+		|	&#039;o&#039; 
+			(					'0'..'7' 
+			|	&#039;_&#039; 
+			)+ 
+		|	&#039;h&#039; 
+			(					'0'..'9' 
+			|					'a'..'f' 
+			|					'A'..'F' 
+			|	&#039;_&#039; 
+			)+ 
+		) 
+	;
+
+<a name="mNUM">mNUM</a>
+	:	( 			'0'..'9' )* 
+		(	<a href="SystemRDLLexer.html#mVNUM">mVNUM</a> 
+		|	( 				'0'..'9' ) 
+		) 
+	|	&quot;0x&quot; 
+		(				'0'..'9' 
+		|				'a'..'f' 
+		|				'A'..'F' 
+		)+ 
+	;
+
+protected <a name="mESC_DQUOTE">mESC_DQUOTE</a>
+	:	&quot;\\\&quot;&quot; 
+	;
+
+<a name="mSTR">mSTR</a>
+	:	&#039;&quot;&#039; 
+		(	(	&#039;&quot;&#039; 
+			|	&#039;\n&#039; 
+			|	&#039;\\&#039; 
+			) 
+		|	<a href="SystemRDLLexer.html#mESC_DQUOTE">mESC_DQUOTE</a> 
+		|	&#039;\n&#039; 
+		)* 
+		&#039;&quot;&#039; 
+	;
+
+<a name="mLBRACE">mLBRACE</a>
+	:	&#039;{&#039; 
+	;
+
+<a name="mRBRAC">mRBRAC</a>
+	:	&#039;}&#039; 
+	;
+
+<a name="mLSQ">mLSQ</a>
+	:	&#039;[&#039; 
+	;
+
+<a name="mRSQ">mRSQ</a>
+	:	&#039;]&#039; 
+	;
+
+<a name="mLPAREN">mLPAREN</a>
+	:	&#039;(&#039; 
+	;
+
+<a name="mRPAREN">mRPAREN</a>
+	:	&#039;)&#039; 
+	;
+
+<a name="mAT">mAT</a>
+	:	&#039;@&#039; 
+	;
+
+<a name="mOR">mOR</a>
+	:	&#039;|&#039; 
+	;
+
+<a name="mSEMI">mSEMI</a>
+	:	&#039;;&#039; 
+	;
+
+<a name="mCOLON">mCOLON</a>
+	:	&#039;:&#039; 
+	;
+
+<a name="mCOMMA">mCOMMA</a>
+	:	&#039;,&#039; 
+	;
+
+<a name="mDOT">mDOT</a>
+	:	&#039;.&#039; 
+	;
+
+<a name="mDREF">mDREF</a>
+	:	&quot;-&gt;&quot; 
+	;
+
+<a name="mEQ">mEQ</a>
+	:	&#039;=&#039; 
+	;
+
+<a name="mINC">mINC</a>
+	:	&quot;+=&quot; 
+	;
+
+<a name="mMOD">mMOD</a>
+	:	&quot;%=&quot; 
+	;

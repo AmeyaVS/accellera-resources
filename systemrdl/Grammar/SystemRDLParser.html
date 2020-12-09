@@ -1,0 +1,408 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Grammar SystemRDL.g</TITLE>
+</HEAD>
+<BODY>
+<table summary="" border="1" cellpadding="5">
+<tr>
+<td>
+<font size="+2">Grammar SystemRDLParser</font><br>
+<a href="http://www.ANTLR.org">ANTLR</a>-generated HTML file from SystemRDL.g
+<p>
+Terence Parr, <a href="http://www.magelang.com">MageLang Institute</a>
+<br>ANTLR Version 2.7.6 (20060925); 1989-2005
+</td>
+</tr>
+</table>
+<PRE>
+
+Definition of parser SystemRDLParser, which is a subclass of LLkParser.
+
+
+<a name="root">root</a>
+    :   (   <a href="SystemRDLParser.html#component_def">component_def</a>
+        |   <a href="SystemRDLParser.html#enum_def">enum_def</a>
+        |   <a href="SystemRDLParser.html#explicit_component_inst">explicit_component_inst</a>
+        |   <a href="SystemRDLParser.html#property_assign">property_assign</a>
+        |   <a href="SystemRDLParser.html#property_definition">property_definition</a>
+        )*
+        EOF
+    ;
+
+
+<a name="component_def">component_def</a>
+    :   (   &quot;addrmap&quot;
+        |   &quot;regfile&quot;
+        |   &quot;reg&quot;
+        |   &quot;field&quot;
+        |   &quot;signal&quot;
+        )
+        (   <a href="SystemRDLParser.html#id">id</a>
+        |
+        )
+        LBRACE
+        (   <a href="SystemRDLParser.html#component_def">component_def</a>
+        |   <a href="SystemRDLParser.html#explicit_component_inst">explicit_component_inst</a>
+        |   <a href="SystemRDLParser.html#property_assign">property_assign</a>
+        |   <a href="SystemRDLParser.html#enum_def">enum_def</a>
+        )*
+        RBRACE
+        (   <a href="SystemRDLParser.html#anonymous_component_inst_elems">anonymous_component_inst_elems</a>
+        |
+        )
+        SEMI
+    ;
+
+
+<a name="enum_def">enum_def</a>
+    :   &quot;enum&quot; <a href="SystemRDLParser.html#id">id</a> <a href="SystemRDLParser.html#enum_body">enum_body</a> SEMI
+    ;
+
+
+<a name="explicit_component_inst">explicit_component_inst</a>
+    :   (   &quot;external&quot;
+        |
+        )
+        (   &quot;internal&quot;
+        |
+        )
+        (   &quot;alias&quot; <a href="SystemRDLParser.html#id">id</a>
+        |
+        )
+        <a href="SystemRDLParser.html#id">id</a> <a href="SystemRDLParser.html#component_inst_elem">component_inst_elem</a> ( COMMA <a href="SystemRDLParser.html#component_inst_elem">component_inst_elem</a> )* SEMI
+    ;
+
+
+<a name="property_assign">property_assign</a>
+    :   <a href="SystemRDLParser.html#default_property_assign">default_property_assign</a> SEMI
+    |   <a href="SystemRDLParser.html#explicit_property_assign">explicit_property_assign</a> SEMI
+    |   <a href="SystemRDLParser.html#post_property_assign">post_property_assign</a> SEMI
+    ;
+
+
+<a name="property_definition">property_definition</a>
+    :   &quot;property&quot; <a href="SystemRDLParser.html#id">id</a> LBRACE <a href="SystemRDLParser.html#property_body">property_body</a> RBRACE SEMI
+    ;
+
+
+<a name="id">id</a>
+    :   ID
+    |   INST_ID
+    ;
+
+
+<a name="property_body">property_body</a>
+    :   <a href="SystemRDLParser.html#property_type">property_type</a>
+        (   <a href="SystemRDLParser.html#property_usage">property_usage</a>
+            (   <a href="SystemRDLParser.html#property_default">property_default</a>
+            |
+            )
+        |   <a href="SystemRDLParser.html#property_default">property_default</a> <a href="SystemRDLParser.html#property_usage">property_usage</a>
+        )
+    |   <a href="SystemRDLParser.html#property_usage">property_usage</a>
+        (   <a href="SystemRDLParser.html#property_type">property_type</a>
+            (   <a href="SystemRDLParser.html#property_default">property_default</a>
+            |
+            )
+        |   <a href="SystemRDLParser.html#property_default">property_default</a> <a href="SystemRDLParser.html#property_type">property_type</a>
+        )
+    |   <a href="SystemRDLParser.html#property_default">property_default</a>
+        (   <a href="SystemRDLParser.html#property_type">property_type</a> <a href="SystemRDLParser.html#property_usage">property_usage</a>
+        |   <a href="SystemRDLParser.html#property_usage">property_usage</a> <a href="SystemRDLParser.html#property_type">property_type</a>
+        )
+    ;
+
+
+<a name="property_type">property_type</a>
+    :   &quot;type&quot; EQ
+        (   <a href="SystemRDLParser.html#property_string_type">property_string_type</a>
+        |   <a href="SystemRDLParser.html#property_number_type">property_number_type</a>
+        |   <a href="SystemRDLParser.html#property_boolean_type">property_boolean_type</a>
+        |   <a href="SystemRDLParser.html#property_ref_type">property_ref_type</a>
+        )
+        SEMI
+    ;
+
+
+<a name="property_usage">property_usage</a>
+    :   &quot;component&quot; EQ <a href="SystemRDLParser.html#property_component">property_component</a> ( OR <a href="SystemRDLParser.html#property_component">property_component</a> )* SEMI
+    ;
+
+
+<a name="property_default">property_default</a>
+    :   ( &quot;default&quot; EQ
+            (   <a href="SystemRDLParser.html#str">str</a>
+            |   <a href="SystemRDLParser.html#num">num</a>
+            |   &quot;true&quot;
+            |   &quot;false&quot;
+            )
+            SEMI )
+    ;
+
+
+<a name="property_string_type">property_string_type</a>
+    :   &quot;string&quot;
+    ;
+
+
+<a name="property_number_type">property_number_type</a>
+    :   &quot;number&quot;
+    ;
+
+
+<a name="property_boolean_type">property_boolean_type</a>
+    :   &quot;boolean&quot;
+    ;
+
+
+<a name="property_ref_type">property_ref_type</a>
+    :   (   &quot;addrmap&quot;
+        |   &quot;reg&quot;
+        |   &quot;regfile&quot;
+        |   &quot;field&quot;
+        |   &quot;ref&quot;
+        )
+    ;
+
+
+<a name="str">str</a>
+    :   STR
+    ;
+
+
+<a name="num">num</a>
+    :   NUM
+    ;
+
+
+<a name="property_component">property_component</a>
+    :   (   &quot;signal&quot;
+        |   &quot;addrmap&quot;
+        |   &quot;reg&quot;
+        |   &quot;regfile&quot;
+        |   &quot;field&quot;
+        |   &quot;all&quot;
+        )
+    ;
+
+
+<a name="anonymous_component_inst_elems">anonymous_component_inst_elems</a>
+    :   (   &quot;external&quot;
+        |
+        )
+        <a href="SystemRDLParser.html#component_inst_elem">component_inst_elem</a> ( COMMA <a href="SystemRDLParser.html#component_inst_elem">component_inst_elem</a> )*
+    ;
+
+
+<a name="component_inst_elem">component_inst_elem</a>
+    :   <a href="SystemRDLParser.html#id">id</a>
+        (   <a href="SystemRDLParser.html#array">array</a>
+        |
+        )
+        (   EQ <a href="SystemRDLParser.html#num">num</a>
+        |
+        )
+        (   AT <a href="SystemRDLParser.html#num">num</a>
+        |
+        )
+        (   INC <a href="SystemRDLParser.html#num">num</a>
+        |
+        )
+        (   MOD <a href="SystemRDLParser.html#num">num</a>
+        |
+        )
+    ;
+
+
+<a name="array">array</a>
+    :   LSQ <a href="SystemRDLParser.html#num">num</a>
+        (   COLON <a href="SystemRDLParser.html#num">num</a>
+        |
+        )
+        RSQ
+    ;
+
+
+<a name="instance_ref">instance_ref</a>
+    :   <a href="SystemRDLParser.html#instance_ref_elem">instance_ref_elem</a> ( DOT <a href="SystemRDLParser.html#instance_ref_elem">instance_ref_elem</a> )*
+        (   DREF <a href="SystemRDLParser.html#property">property</a>
+        |
+        )
+    ;
+
+
+<a name="instance_ref_elem">instance_ref_elem</a>
+    :   <a href="SystemRDLParser.html#id">id</a>
+        (   LSQ <a href="SystemRDLParser.html#num">num</a> RSQ
+        |
+        )
+    ;
+
+
+<a name="property">property</a>
+    :   &quot;name&quot;
+    |   &quot;desc&quot;
+    |   &quot;arbiter&quot;
+    |   &quot;rset&quot;
+    |   &quot;rclr&quot;
+    |   &quot;woclr&quot;
+    |   &quot;woset&quot;
+    |   &quot;we&quot;
+    |   &quot;wel&quot;
+    |   &quot;swwe&quot;
+    |   &quot;swwel&quot;
+    |   &quot;hwset&quot;
+    |   &quot;hwclr&quot;
+    |   &quot;swmod&quot;
+    |   &quot;swacc&quot;
+    |   &quot;sticky&quot;
+    |   &quot;stickybit&quot;
+    |   &quot;intr&quot;
+    |   &quot;anded&quot;
+    |   &quot;ored&quot;
+    |   &quot;xored&quot;
+    |   &quot;counter&quot;
+    |   &quot;overflow&quot;
+    |   &quot;sharedextbus&quot;
+    |   &quot;errextbus&quot;
+    |   &quot;reset&quot;
+    |   &quot;littleendian&quot;
+    |   &quot;bigendian&quot;
+    |   &quot;rsvdset&quot;
+    |   &quot;rsvdsetX&quot;
+    |   &quot;bridge&quot;
+    |   &quot;shared&quot;
+    |   &quot;msb0&quot;
+    |   &quot;lsb0&quot;
+    |   &quot;sync&quot;
+    |   &quot;async&quot;
+    |   &quot;cpuif_reset&quot;
+    |   &quot;field_reset&quot;
+    |   &quot;activehigh&quot;
+    |   &quot;activelow&quot;
+    |   &quot;singlepulse&quot;
+    |   &quot;underflow&quot;
+    |   &quot;incr&quot;
+    |   &quot;decr&quot;
+    |   &quot;incrwidth&quot;
+    |   &quot;decrwidth&quot;
+    |   &quot;incrvalue&quot;
+    |   &quot;decrvalue&quot;
+    |   &quot;saturate&quot;
+    |   &quot;decrsaturate&quot;
+    |   &quot;threshold&quot;
+    |   &quot;decrthreshold&quot;
+    |   &quot;dontcompare&quot;
+    |   &quot;donttest&quot;
+    |   &quot;internal&quot;
+    |   &quot;alignment&quot;
+    |   &quot;regwidth&quot;
+    |   &quot;fieldwidth&quot;
+    |   &quot;signalwidth&quot;
+    |   &quot;accesswidth&quot;
+    |   &quot;sw&quot;
+    |   &quot;hw&quot;
+    |   &quot;addressing&quot;
+    |   &quot;precedence&quot;
+    |   &quot;encode&quot;
+    |   &quot;resetsignal&quot;
+    |   &quot;clock&quot;
+    |   &quot;mask&quot;
+    |   &quot;enable&quot;
+    |   &quot;hwenable&quot;
+    |   &quot;hwmask&quot;
+    |   &quot;haltmask&quot;
+    |   &quot;haltenable&quot;
+    |   &quot;halt&quot;
+    |   &quot;next&quot;
+    |   PROPERTY
+    ;
+
+
+<a name="default_property_assign">default_property_assign</a>
+    :   &quot;default&quot; <a href="SystemRDLParser.html#explicit_property_assign">explicit_property_assign</a>
+    ;
+
+
+<a name="explicit_property_assign">explicit_property_assign</a>
+    :   <a href="SystemRDLParser.html#property_modifier">property_modifier</a> <a href="SystemRDLParser.html#property">property</a>
+    |   <a href="SystemRDLParser.html#property">property</a> ( EQ <a href="SystemRDLParser.html#property_assign_rhs">property_assign_rhs</a> )
+    ;
+
+
+<a name="post_property_assign">post_property_assign</a>
+    :   <a href="SystemRDLParser.html#instance_ref">instance_ref</a> ( EQ <a href="SystemRDLParser.html#property_assign_rhs">property_assign_rhs</a> )
+    ;
+
+
+<a name="property_modifier">property_modifier</a>
+    :   &quot;posedge&quot;
+    |   &quot;negedge&quot;
+    |   &quot;bothedge&quot;
+    |   &quot;level&quot;
+    |   &quot;nonsticky&quot;
+    ;
+
+
+<a name="property_assign_rhs">property_assign_rhs</a>
+    :   <a href="SystemRDLParser.html#property_rvalue_constant">property_rvalue_constant</a>
+    |   &quot;enum&quot; <a href="SystemRDLParser.html#enum_body">enum_body</a>
+    |   <a href="SystemRDLParser.html#instance_ref">instance_ref</a>
+    |   <a href="SystemRDLParser.html#concat">concat</a>
+    ;
+
+
+<a name="property_rvalue_constant">property_rvalue_constant</a>
+    :   &quot;true&quot;
+    |   &quot;false&quot;
+    |   &quot;rw&quot;
+    |   &quot;wr&quot;
+    |   &quot;r&quot;
+    |   &quot;w&quot;
+    |   &quot;na&quot;
+    |   &quot;compact&quot;
+    |   &quot;regalign&quot;
+    |   &quot;fullalign&quot;
+    |   &quot;hw&quot;
+    |   &quot;sw&quot;
+    |   <a href="SystemRDLParser.html#num">num</a>
+    |   <a href="SystemRDLParser.html#str">str</a>
+    ;
+
+
+<a name="enum_body">enum_body</a>
+    :   LBRACE ( <a href="SystemRDLParser.html#enum_entry">enum_entry</a> )* RBRACE
+    ;
+
+
+<a name="concat">concat</a>
+    :   LBRACE <a href="SystemRDLParser.html#concat_elem">concat_elem</a> ( COMMA <a href="SystemRDLParser.html#concat_elem">concat_elem</a> )* RBRACE
+    ;
+
+
+<a name="concat_elem">concat_elem</a>
+    :   <a href="SystemRDLParser.html#instance_ref">instance_ref</a>
+    |   <a href="SystemRDLParser.html#num">num</a>
+    ;
+
+
+<a name="enum_entry">enum_entry</a>
+    :   <a href="SystemRDLParser.html#id">id</a> EQ <a href="SystemRDLParser.html#num">num</a>
+        (   LBRACE ( <a href="SystemRDLParser.html#enum_property_assign">enum_property_assign</a> )* RBRACE
+        |
+        )
+        SEMI
+    ;
+
+
+<a name="enum_property_assign">enum_property_assign</a>
+    :   (   &quot;name&quot;
+        |   &quot;desc&quot;
+        )
+        EQ <a href="SystemRDLParser.html#str">str</a> SEMI
+    ;
+
+</PRE>
+</BODY>
+</HTML>
