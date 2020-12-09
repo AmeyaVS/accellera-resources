@@ -73,12 +73,12 @@ class channel :
     data = i;
 
     cout <<"simulation time" << ":" << sc_time_stamp()<<"    ";
-    cout<<"writting "<< data <<" to channel" << endl;
+    cout<<"writing "<< data <<" to channel" << endl;
   
     if(i < 3){
       write_event_1.notify(20, SC_NS);
     }
-    else if(3 <= i & i < 6) {
+    else if(3 <= i && i < 6) {
       write_event_2.notify(5, SC_NS);
 	}
     else{

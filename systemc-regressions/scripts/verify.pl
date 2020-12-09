@@ -1,9 +1,14 @@
-eval "exec perl -S $0 $*"
-  if 0;
+# The following code snippet from the PERLRUN(1) man page ensures the
+# script to be interpreted by the Perl interpreter even if it is started
+# to be interpreted as a shell script. It is valid code in Perl as well as
+# csh, sh, and work-alike shells.
+eval '(exit $?0)' && eval 'exec perl -S $0 ${1+"$@"}'
+& eval 'exec /usr/bin/perl -S $0 $argv:q'
+        if $running_under_some_shell;
 # *****************************************************************************
 #
 #  The following code is derived, directly or indirectly, from the SystemC
-#  source code Copyright (c) 1996-2002 by all Contributors.
+#  source code Copyright (c) 1996-2012 by all Contributors.
 #  All Rights reserved.
 #
 #  The contents of this file are subject to the restrictions and limitations
@@ -130,6 +135,7 @@ sub create_mail
     printf MAIL "\n";
     printf MAIL "SYSTEMC_ARCH : %s %s\n", $rt_systemc_arch, "$rt_pthreads";
     printf MAIL "SYSTEMC_HOME : %s\n", $rt_systemc_home;
+    printf MAIL "TLM_HOME     : %s\n", $rt_tlm_home;
     printf MAIL "SYSTEMC_TEST : %s\n", $rt_systemc_test;
     printf MAIL " OUTPUT_DIR  : %s\n", $rt_output_dir;
 
@@ -325,7 +331,47 @@ sub get_systemc_home
 	exit 1;
     }
 
-    $ENV{ 'SYSTEMC_HOME' };
+    my $sysc_home = $ENV{ 'SYSTEMC_HOME' };
+    $sysc_home =~ s|\\|/|g ;  # replace any backslash with forward slash
+    $sysc_home;
+}
+
+# -----------------------------------------------------------------------------
+#  SUB : get_tlm_home
+#
+#  Get the TLM_HOME environment variable's value, it it exists.
+#  Otherwise set TLM_HOME to SYSTEMC_HOME
+#  TLM_HOME should be set to the directory containing tlm.h
+#
+# -----------------------------------------------------------------------------
+
+sub get_tlm_home
+{
+    my $tlm_home;
+    
+    if( defined $ENV{ 'TLM_HOME' } ) {
+    
+      $tlm_home = $ENV{ 'TLM_HOME' };
+    
+    } elsif ( defined $ENV{ 'SYSTEMC_HOME' } ) {
+    
+      $tlm_home = $ENV{ 'SYSTEMC_HOME' };
+    	if( $rt_systemc_arch =~ /^msvc/ ) {
+  	    $tlm_home .= "/src";
+ 	    } else {
+  	    $tlm_home .= "/include";
+      }
+ 	    
+    } else {   
+    
+        &print_log( "Error: " .
+		    "TLM environment: neither TLM_HOME nor SYSTEMC_HOME are defined!\n" );
+	     exit 1;
+    
+    }
+    
+    $tlm_home =~ s|\\|/|g ;  # replace any backslash with forward slash
+    $tlm_home;
 }
 
 
@@ -382,12 +428,23 @@ sub get_systemc_arch
 	}
     } elsif( $uname_s eq "Darwin" ) {
 	if( $cxx_comp eq "c++" || $cxx_comp eq "g++" ) {
-	    $arch = "macosx";
+	    if ( $uname_m eq "x86_64" )
+	    {
+		$arch = "macosx64";
+	    }
+	    elsif ( $uname_m eq "i386" )
+	    {
+		$arch = "macosx";
+	    }
+	    else
+	    {
+		$arch = "macosxppc";
+	    }
 	} else {
 	    die "Error: unsupported compiler '$cxx'\n";
 	}
     } elsif( $uname_s eq "Linux" ) {
-	if( $uname_r =~ /^2/ ) {
+	if( $uname_r =~ /^[23]/ ) {
 	    if( $cxx_comp eq "c++" || $cxx_comp eq "g++" ) {
 	        if ( $uname_m eq "x86_64" )
 		{
@@ -403,12 +460,73 @@ sub get_systemc_arch
 	} else {
 	    die "Error: unsupported architecture '$uname_s $uname_r'\n";
 	}
-    } elsif( $uname_s eq "CYGWIN_NT-4.0" ) {
-	if( $uname_r =~ /^1/ ) {
-	    if( $cxx_comp eq "cl" ) {
-		$arch = "msvc60";
+    } elsif( $uname_s eq "FreeBSD" ) {
+           if( $cxx_comp eq "c++" || $cxx_comp eq "g++" ) {
+               if ( $uname_m eq "x86_64" || $uname_m eq "amd64" )
+               {
+                   $arch = "freebsd64";
+               }
+               else
+               {
+                   $arch = "freebsd";
+               }
+           } else {
+               die "Error: unsupported compiler '$cxx'\n";
+           }
+    } elsif( $uname_s =~ /^(CYGWIN|MINGW32)_NT/ ) {
+	if( $uname_r =~ /^1\./ ) { # both Cygwin and MinGW report 1.x as of now
+	    if( $uname_s =~ /^CYGWIN_NT/ ) {
+		$arch  = "cygwin";
+		$slash = '/';
+	    } else {
+		$arch  = "mingw";
+		$slash = '//';
+	    }
+	    if( $cxx_comp =~ /^cl(\.exe)?/i ) {
+		#find MSVC version
+		#reassign stderr and stdout
+		open SAVEOUT, ">&STDOUT";
+		open SAVERR, ">&STDERR";
+		open STDOUT, ">tempfile.out" or die "Can't redirect stdout";
+		open STDERR, ">&STDOUT" or die "Can't dup stdout";
+		select STDERR; $| = 1;
+		select STDOUT; $| = 1;
+
+		qx /cl/;   #cl returns version number in stderr
+
+		#restore stderr and stdout
+		close STDOUT;
+		close STDERR;
+		open STDOUT, ">&SAVEOUT";
+		open STDERR, ">&SAVERR";
+
+		#get version string and delete tempfile
+		open(CL_STRING, "<tempfile.out");
+		$v_string = join ( "", <CL_STRING>);
+		unlink "tempfile.out";
+
+		if ( $v_string =~ /.+Version 12\.00/ ) {
+		    $arch = "msvc60";
+		    # VC 6.0 (no longer supported)
+		    die "Error: unsupported architecture '$arch'\n";
+		}
+		elsif ( $v_string =~ /.+Version 13\.10/ )  { # 2003
+		    $arch = "msvc71";
+		}
+		elsif ( $v_string =~ /.+Version 14\.00/ )  { # 2005
+		    $arch = "msvc80";
+		}
+		elsif ( $v_string =~ /.+Version 15\.00/) {   # 2008
+		    $arch = "msvc90";
+		}
+		elsif ( $v_string =~ /.+Version 16\.00/) {   # 2010
+		    $arch = "msvc10";
+		}
+		else {
+		  die "Error: unsupported compiler '$cxx'\n";
+		}
 	    } elsif( $cxx_comp eq "c++" || $cxx_comp eq "g++" ) {
-		$arch = "cygwin";
+		# use MinGW/Cygwin GCC compiler
 	    } else {
 		die "Error: unsupported compiler '$cxx'\n";
 	    }
@@ -437,8 +555,9 @@ sub init_globals
     $SIG{ 'QUIT' } = 'interrupt_handler';
     $SIG{ 'ALRM' } = 'alarm_handler';
 
-    $rt_systemc_home = &get_systemc_home;
     $rt_systemc_arch = &get_systemc_arch;
+    $rt_systemc_home = &get_systemc_home;
+	  $rt_tlm_home = &get_tlm_home;
 
     $rt_cleanup = 1;                    # cleanup temp dirs by default
     $rt_mail = 0;                       # send mail with results
@@ -474,61 +593,49 @@ sub init_globals
     $ENV{ 'SYSTEMC_REGRESSION' } = 1;
 
     # Set compiler and compiler flags
+    #
+    # defaults
+    $rt_ccflags       = "-Wall";
+    $rt_ld            = $rt_cc;
+    $rt_ldflags       = $rt_ccflags;
+    $rt_ldrpath       = "-Wl,-rpath=";
+    $rt_debug_flag    = "-g";
+    $rt_debug_ldflags = "";
+    $rt_optimize_flag = "-O2";
+
     if( $rt_systemc_arch eq "gccsparcOS5" ) {
-	$rt_ccflags = "-Wall";
-	$rt_ld = $rt_cc;
-	$rt_ldflags = $rt_ccflags;
-	$rt_debug_flag = "-g";
-	$rt_optimize_flag = "-O2";
+        $rt_ldrpath       = "-Wl,-R";
     } elsif( $rt_systemc_arch eq "sparcOS5" ) {
-	$rt_ccflags = "";
-	$rt_ld = $rt_cc;
-	$rt_ldflags = "-xildoff";
-	$rt_debug_flag = "-g";
+        $rt_ccflags       = "";
+        $rt_ldflags       = "-xildoff";
+        $rt_debug_flag    = "-g";
 	$rt_optimize_flag = "-O3";
     } elsif( $rt_systemc_arch eq "gcchpux11" ) {
-	$rt_ccflags = "-Wall";
-	$rt_ld = $rt_cc;
-	$rt_ldflags = $rt_ccflags;
-	$rt_debug_flag = "-g";
-	$rt_optimize_flag = "-O2";
+        #use defaults
     } elsif( $rt_systemc_arch eq "hpux11" ) {
-	$rt_ccflags = "-AA -ext +DA2.0 +DS2.0";
-	$rt_ld = $rt_cc;
-	$rt_ldflags = $rt_ccflags;
-	$rt_debug_flag = "-g";
-	$rt_optimize_flag = "+O1";
-    } elsif( $rt_systemc_arch eq "linux64" ) {
-	$rt_ccflags = "-Wall";
-	$rt_ld = $rt_cc;
-	$rt_ldflags = "$rt_ccflags -lpthread"; # use pthreads for now...
-	$rt_debug_flag = "-g";
-	$rt_optimize_flag = "-O2";
-    } elsif( $rt_systemc_arch eq "linux" ) {
-	$rt_ccflags = "-Wall";
-	$rt_ld = $rt_cc;
-	$rt_ldflags = $rt_ccflags;
-	$rt_debug_flag = "-g";
-	$rt_optimize_flag = "-O2";
-    } elsif( $rt_systemc_arch eq "macosx" ) {
-	$rt_ccflags = "-Wall";
-	$rt_ld = $rt_cc;
-	$rt_ldflags = $rt_ccflags;
-	$rt_debug_flag = "-g";
+        $rt_ccflags       = "-Aa -ext +DA2.0 +DS2.0";
+        $rt_optimize_flag = "+O1";
+    } elsif( $rt_systemc_arch =~ /^linux(64)?/ ) {
+        # use defaults
+    } elsif( $rt_systemc_arch =~ /^freebsd(64)?/ ) {
+        # use defaults
+    } elsif( $rt_systemc_arch =~ /^macosx(ppc)?(64)?/ ) {
 	$rt_optimize_flag = "-O3";
+	$rt_ldrpath       = "-Wl,-rpath -Wl,";
     } elsif( $rt_systemc_arch eq "cygwin" ) {
-	$rt_ccflags = "-Wall";
-	$rt_ld = $rt_cc;
-	$rt_ldflags = $rt_ccflags;
-	$rt_debug_flag = "-g";
-	$rt_optimize_flag = "-O2";
-    } elsif( $rt_systemc_arch eq "msvc60" ) {
+	$rt_ldflags = $rt_ccflags." -Wl,--enable-auto-import";
+    } elsif( $rt_systemc_arch eq "mingw" ) {
+	# use defaults
+    } elsif( $rt_systemc_arch =~ /^msvc(71|8|9|10)/ ) {
 	$rt_cc = "CL.EXE";
-	$rt_ccflags = "/nologo /GR /GX /Zm800 /Op";
+	$rt_ccflags = "${slash}nologo ${slash}GR ${slash}EHsc "
+	             ."${slash}Zm800 ${slash}vmg "
+		     ."${slash}D \"_USE_MATH_DEFINES\"";
 	$rt_ld = "LINK.EXE";
-	$rt_ldflags = "/nologo /NODEFAULTLIB:LIBCD";
-	$rt_debug_flag = "/GZ";
-	$rt_optimize_flag = "/O2";
+	$rt_ldflags = "${slash}nologo ${slash}LTCG ${slash}NODEFAULTLIB:LIBCD ";
+        $rt_debug_flag    = "${slash}GZ ${slash}MTd ${slash}Zi";
+        $rt_debug_ldflags = "${slash}DEBUG ${slash}PDB:$rt_prodname.pdb";
+	$rt_optimize_flag = "${slash}O2";
     }
 
     $rt_add_ldpaths = '';  # additional link paths
@@ -591,7 +698,7 @@ sub init_globals
 	'pass',               '              passed               ',
 	'skip',               '              skipped              ',
         'unknown',            '          unknown problem          '
-		      );
+    );
 }
 
 
@@ -653,7 +760,13 @@ sub parse_args
 	local( $arg ) = shift @arglist;
 
 	if( $arg =~ /^-/ ) {  # must be -arg
-	  
+
+	    # help
+	    if( $arg =~ /^-h/ ) {
+		&usage;
+		exit;
+	    }
+
 	    # do not cleanup
 	    if( $arg =~ /^-no-cleanup/ ) {
 		$rt_cleanup = 0;
@@ -734,7 +847,7 @@ sub parse_args
 		$rt_verbose = 1;
 		next;
 	    }
-	  
+
 	    &print_log( "Error: unknown argument '$arg'\n");
 	    exit 1;
 	}
@@ -787,6 +900,11 @@ sub print_intro
         &print_log( "[$working_view] " );
     }
     &print_log( "$rt_systemc_home\n" );
+    &print_log( "TLM_HOME     : " );
+    if( $rt_tlm_home =~ m|^$vob| ) {
+        &print_log( "[$working_view] " );
+    }
+    &print_log( "$rt_tlm_home\n" );
     &print_log( "SYSTEMC_TEST : " );
     if( $rt_systemc_test =~ m|^$vob| ) {
         &print_log( "[$working_view] " );
@@ -1126,6 +1244,7 @@ sub get_testlist
     foreach $temp ( split( / /, $namelist ) ) {
 	next if $temp =~ /^\s*$/;
 	$testnames = &find_it( $temp );    # returns '<paths>' on failure
+
 	if( $testnames ne '' ) {
 	    # error because dir exists but has no tests
 	    foreach $err_file ( split( ' ', $testnames ) ) {
@@ -1236,15 +1355,15 @@ sub setup_for_test
 {
     local( $currtestdir ) = @_;
 
-    local( $linkdir );
+    local( $dirparts );
 
-    split( '/', $currtestdir );
-    $linkdir = pop @_;
+    @dirparts = split( '/', $currtestdir );
+    $linkdir = pop @dirparts;
 
     # create log path and cd to it
     &create_dir( "$rt_output_dir/$currtestdir" );
 
-    if( $rt_systemc_arch eq "msvc60" ) {
+    if( $rt_systemc_arch =~ /^msvc/ ) {
 
 	# the 'cl' compiler doesn't accept links
 	local( @args );
@@ -1420,34 +1539,25 @@ sub compile_files
     while( <FILE> ) {
         $temp = $_;				# <link_dir>/<basename>.cpp
 
-        chop( $temp );
+        $temp =~ s|\s+$||;
         $file = `basename $temp .cpp`;		# file = <basename>
-        chop( $file );
+        $file =~ s|\s+$||;
 
-	if( $rt_systemc_arch eq "msvc60" ) {
-	    $ofile = "$file.obj";
+	$newcommand = $command;
+	if( $rt_systemc_arch =~ /^msvc/ ) {
+            $ofilestring .= " $file.obj";
+           $newcommand  .= " ${slash}Fo$file.obj $temp";
 	} else {
-	    $ofile = "$file.o";
+            $ofilestring .= " $file.o";
+            $newcommand  .= " -o $file.o $temp";
 	}
-        $ofilestring .= " $ofile";
 
-        $newcommand = $command;
         # if first time create the file, else append to it
         if( $first_time ) {
 	    $first_time = 0;
-#	    if( $rt_systemc_arch eq "msvc60" ) {
-#		$newcommand .= " $temp /Fo $ofile 1> $testname.log  2>&1";
-#	    } else {
-#		$newcommand .= " $temp -o $ofile 1> $testname.log  2>&1";
-#	    }
-	    $newcommand .= " $temp 1> $testname.log 2>&1";
+            $newcommand .= " 1> $testname.log 2>&1";
         } else {
-#	    if( $rt_systemc_arch eq "msvc60" ) {
-#		$newcommand .= " $temp /Fo $ofile 1>> $testname.log  2>&1";
-#	    } else {
-#		$newcommand .= " $temp -o $ofile 1>> $testname.log  2>&1";
-#	    }
-	    $newcommand .= " $temp 1>> $testname.log 2>&1";
+            $newcommand .= " 1>> $testname.log 2>&1";
         }
 
 	&print_log( "  $file\n" ) unless $rt_verbose;
@@ -1490,7 +1600,7 @@ sub strip_tracelog
     ( $dir = $stripped_file ) =~ s|/[^/]+$||;
     &create_dir( $dir );
     
-    $command = "`tail +8 < $log_file | sed -e 's:\r::' > $stripped_file`";
+    $command = "`sed '1,7d' < $log_file > $stripped_file`";
 
     ( $exit_code, $signal ) = &rt_system( $command );
 
@@ -1570,17 +1680,17 @@ sub scl_strip
     while( $#strip_logfile >= 0 ) {
         ( $_ = shift( @strip_logfile ) ) =~ s|$rt_systemc_home|\$SYSTEMC_HOME|;
 	# remove file and line number information (always changes!)
-	s|^(In file: ).*/src/systemc/.*$|$1<removed by verify\.pl>|;
-	s|^(In file: ).*/include/systemc/.*$|$1<removed by verify\.pl>|;
+        s|^(In file: ).*/src/sysc/.*$|$1<removed by verify\.pl>|;
+        s|^(In file: ).*/include/sysc/.*$|$1<removed by verify\.pl>|;
 	s|^(In file: ).*:.*$|$1<removed by verify\.pl>|;
-	# remove ^M in msvc60 generated output files
+	# remove ^M in msvc generated output files
 	s|\r||;
 	# additional filter
 	if( $rt_add_filter ne '' ) {
 	    s|$rt_add_filter||;
 	}
         $strip_output_log .= $_;
-    }   
+    }
 }
 
 
@@ -1724,7 +1834,7 @@ sub diff_log
     local( $ref ) = "$rt_tests_dir/$golden_logfile";
 
     # do diff
-    if( ! open( DIFFCMD_OUT, "diff $new $ref |" ) ) {
+    if( ! open( DIFFCMD_OUT, "diff --strip-trailing-cr $new $ref |" ) ) {
 	&print_log( "Error: diff on '$new' and '$ref' failed\n" );
 	return 'diff_prog_fail';
     }
@@ -1826,6 +1936,7 @@ sub run_test
     local( $linkdir );          # final dir in path to test
     local( $opts );             # command line options passed to compiler
     local( $basename );         # basename for test
+    local( $test_set );         # set of tests (first part of path)
     local( $exit_code );        # exit code returned by system calls
     local( $signal );           # signal on which system call terminated
     local( $tmp );
@@ -1848,6 +1959,9 @@ sub run_test
     
     # making a global to keep track of progress
     $rt_current_test = "$currtestdir/$testname.$type";
+
+    # determine the test set
+    ( $test_set = $currtestdir ) =~ s|^([^/]+)/.*|\1|;
 
     # check for compiler
     # include your compiler check in here
@@ -1897,13 +2011,17 @@ sub run_test
     if( $type =~ /$rt_test_type{'s'}/ ) {
 
 	# compile command
-	if( $rt_systemc_arch eq "msvc60" ) {
+	if( $rt_systemc_arch =~ /^msvc/ ) {
 	    $command  = "$rt_cc $rt_ccflags $extra_flags ";
-	    $command .= "/I. /I$rt_systemc_home/src ";
-	    $command .= "/c ";
+	    $command .= "${slash}I $rt_tlm_home ";
+	    $command .= "${slash}I . ${slash}I $rt_systemc_home/src ";
+	    $command .= "${slash}I $rt_systemc_test/include/$test_set ";
+	    $command .= "${slash}c ";
 	} else {
 	    $command  = "$rt_cc $rt_ccflags $extra_flags ";
-	    $command .= "-I. -I$rt_systemc_home/include ";
+	    $command .= "-I $rt_tlm_home ";
+	    $command .= "-I . -I $rt_systemc_home/include ";
+	    $command .= "-I $rt_systemc_test/include/$test_set ";
 	    $command .= "-c ";
 	}
 
@@ -1916,9 +2034,9 @@ sub run_test
         # add logfile to command
         $command .= " 1> $testname.log  2>&1";
 
-	if( $rt_systemc_arch eq "msvc60" ) {
+	if( $rt_systemc_arch =~ /^msvc/ ) {
 	    # translate Cygwin path to Windows path
-	    $command =~ s|/cygdrive/(.)/|$1:/|;
+	    $command =~ s|/cygdrive/(.)/|$1:/|g;
 	}
 
 	&print_log( "Compiling\n" );
@@ -1940,27 +2058,38 @@ sub run_test
 	}
 
 	# link command
-	if( $rt_systemc_arch eq "msvc60" ) {
-	    $command  = "$rt_ld $rt_ldflags $extra_flags ";
-	    $command .= "/out:$rt_prodname ";
+        $command  = "$pure $rt_ld $rt_ldflags $extra_flags ";
+        if( $rt_props & $rt_test_props{ 'debug' } ) {
+            $command .= "$rt_debug_ldflags ";
+        }
+
+	if( $rt_systemc_arch =~ /^msvc/ ) {
+	    $command .= "${slash}out:$rt_prodname ";
 	    $command .= "$testname.obj ";
-	    # $command .= "$rt_systemc_home/msvc60/systemc/Debug/systemc.lib ";
-	    $command .= "$rt_systemc_home/msvc60/systemc/Release/systemc.lib ";
+            if( $rt_props & $rt_test_props{ 'debug' } ) {
+                $command .= "$rt_systemc_home/$rt_systemc_arch/"
+                            ."systemc/Debug/systemc.lib ";
+            } else {
+                $command .= "$rt_systemc_home/$rt_systemc_arch/"
+                           ."systemc/Release/systemc.lib ";
+            }
 	} else {
-	    $command  = "$pure $rt_ld $rt_ldflags $extra_flags ";
 	    $command .= "-o $rt_prodname ";
 	    $command .= "$testname.o ";
 	    $command .= "-L. -L$rt_systemc_home/lib-$rt_systemc_arch ";
+	    $command .= "$rt_ldrpath$rt_systemc_home/lib-$rt_systemc_arch ";
+
 	    if( $rt_add_ldpaths ne '' ) {
 		$command .= "$rt_add_ldpaths ";
 	    }
+
 	    $command .= "-lsystemc $lpthreads ";
 	    if( $rt_add_ldlibs ne '' ) {
 		$command .= "$rt_add_ldlibs ";
 	    }
 	}
 
-        if( $rt_systemc_arch ne "msvc60" ) {
+        if( $rt_systemc_arch !~ /^msvc/ ) {
             # add user provided options to command
 	    $command .= " $opts";
         }
@@ -1968,7 +2097,7 @@ sub run_test
         # add logfile to command
         $command .= " 1>> $testname.log  2>&1";
 
-	if( $rt_systemc_arch eq "msvc60" ) {
+	if( $rt_systemc_arch =~ /^msvc/ ) {
 	    # translate Cygwin path to Windows path
 	    $command =~ s|/cygdrive/(.)/|$1:/|;
 	}
@@ -1983,22 +2112,26 @@ sub run_test
     if( $type =~ /$rt_test_type{'f'}/ ) {
 
 	# compile command
-	if( $rt_systemc_arch eq "msvc60" ) {
+	if( $rt_systemc_arch =~ /^msvc/ ) {
 	    $command  = "$rt_cc $rt_ccflags $extra_flags ";
-	    $command .= "/I. /I$rt_systemc_home/src ";
-	    $command .= "/c ";
+	    $command .= "${slash}I $rt_tlm_home ";
+	    $command .= "${slash}I . ${slash}I $rt_systemc_home/src ";
+	    $command .= "${slash}I $rt_systemc_test/include/$test_set ";
+	    $command .= "${slash}c ";
 	} else {
 	    $command  = "$rt_cc $rt_ccflags $extra_flags ";
-	    $command .= "-I. -I$rt_systemc_home/include ";
+	    $command .= "-I $rt_tlm_home ";
+	    $command .= "-I . -I $rt_systemc_home/include ";
+	    $command .= "-I $rt_systemc_test/include/$test_set ";
 	    $command .= "-c ";
 	}
 
         # add user provided options to command
 	$command .= " $opts";
 
-	if( $rt_systemc_arch eq "msvc60" ) {
+	if( $rt_systemc_arch =~ /^msvc/ ) {
 	    # translate Cygwin path to Windows path
-	    $command =~ s|/cygdrive/(.)/|$1:/|;
+	    $command =~ s|/cygdrive/(.)/|$1:/|g;
 	}
 
         # call compile_files to execute command for each C++ file 
@@ -2018,17 +2151,27 @@ sub run_test
 	}
 
 	# link command
-	if( $rt_systemc_arch eq "msvc60" ) {
-	    $command  = "$rt_ld $rt_ldflags $extra_flags ";
-	    $command .= "/out:$rt_prodname ";
+        $command  = "$pure $rt_ld $rt_ldflags $extra_flags ";
+        if( $rt_props & $rt_test_props{ 'debug' } ) {
+            $command .= "$rt_debug_ldflags ";
+        }
+
+	if( $rt_systemc_arch =~ /^msvc/ ) {
+	    $command .= "${slash}out:$rt_prodname ";
 	    $command .= "$ofiles ";
-	    # $command .= "$rt_systemc_home/msvc60/systemc/Debug/systemc.lib ";
-	    $command .= "$rt_systemc_home/msvc60/systemc/Release/systemc.lib ";
+            if( $rt_props & $rt_test_props{ 'debug' } ) {
+                $command .= "$rt_systemc_home/$rt_systemc_arch/"
+                            ."systemc/Debug/systemc.lib ";
+            } else {
+                $command .= "$rt_systemc_home/$rt_systemc_arch/"
+                           ."systemc/Release/systemc.lib ";
+            }
 	} else {
-	    $command  = "$pure $rt_ld $rt_ldflags $extra_flags ";
 	    $command .= "-o $rt_prodname ";
 	    $command .= "$ofiles ";
 	    $command .= "-L. -L$rt_systemc_home/lib-$rt_systemc_arch ";
+	    $command .= "$rt_ldrpath$rt_systemc_home/lib-$rt_systemc_arch ";
+
 	    if( $rt_add_ldpaths ne '' ) {
 		$command .= "$rt_add_ldpaths ";
 	    }
@@ -2038,7 +2181,7 @@ sub run_test
 	    }
 	}
 
-        if( $rt_systemc_arch ne "msvc60" ) {
+        if( $rt_systemc_arch !~ /^msvc/ ) {
             # add user provided options to command
 	    $command .= " $opts";
         }
@@ -2046,7 +2189,7 @@ sub run_test
         # add logfile to command
         $command .= " 1>> $testname.log  2>&1";
 
-	if( $rt_systemc_arch eq "msvc60" ) {
+	if( $rt_systemc_arch =~ /^msvc/ ) {
 	    # translate Cygwin path to Windows path
 	    $command =~ s|/cygdrive/(.)/|$1:/|;
 	}
@@ -2181,7 +2324,7 @@ sub clean_up
 	}
     }
 
-    if( $rt_systemc_arch ne "msvc60" ) {
+    if( $rt_systemc_arch !~ /^msvc/ ) {
         rmdir $full_dir || return 0;
     }
 

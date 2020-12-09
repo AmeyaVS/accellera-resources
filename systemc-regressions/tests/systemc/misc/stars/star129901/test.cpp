@@ -49,8 +49,8 @@ g++ -g -I /u/scp/src/systemc-2.0/include bug.cpp /u/scp/src/systemc-2.0/lib-gccs
 
 double bug()
 {
-    sc_fxval_fast fast = 2;
-    sc_fxval slow = 1;
+    sc_fxval_fast fast(2);
+    sc_fxval slow(1);
     fast  = slow;
     fast += slow;
     fast -= slow;

@@ -82,6 +82,10 @@ struct Top: sc_module
 
 int sc_main(int argc, char* argv[])
 {
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+    _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
+
   cout << "Should be silent except for some renaming warnings..." << endl;
 
   Top top("top");
@@ -96,7 +100,7 @@ int sc_main(int argc, char* argv[])
   sc_semaphore sem(2);
   sc_event_queue eq;
 
-  sc_start();
+  sc_start(100, SC_NS);
 
   cout << endl << "Success" << endl;
   return 0;
