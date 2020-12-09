@@ -1,0 +1,449 @@
+	INSTALL NOTES FOR SystemC Verification Library Release 1.0p1
+	-------------------------------------------------------------
+
+Contents:
+
+        1. Special Notes for SCV kits
+
+	2. Installation Notes for Unix 
+
+	3. Installation Notes for Windows
+
+1. Special Notes for SCV kits
+-----------------------------
+
+The SCV (SystemC Verification Library) installation process attempts to 
+follow the conventions set forth by the SystemC core library. However, 
+there are some cases where the SCV installation process diverges from the 
+conventions of the core library.  In particular, the SCV example makefiles
+are different from the core library makefiles.
+
+2. Installation Notes for Unix
+------------------------------
+
+System Requirements
+===================
+
+The SystemC Verification Library can be installed on the following UNIX platforms
+
+  o Sun Solaris 2.7 and 2.8 with GNU C++ compiler version gcc-2.95.2
+    Sun Solaris 2.7 and 2.8 with GNU C++ compiler version gcc-3.2
+  o Linux Redhat 7.1 with GNU C++ compiler version gcc-2.96-85 or gcc-2.95.3
+    Linux Redhat 7.2 with GNU C++ compiler version gcc-2.96-98 or gcc-2.95.3
+  o HP-UX 11.00 with HP C++ compiler version A.03.39
+
+NOTES:
+
+  Sun C++ compiler versions SC5.1 and SC5.2 are not supported due to problems
+  with template specialization. 
+
+  SystemC 2.0.1 does not compile with gcc-3.2 under HP-UX.  We use a commercial
+  SystemC which is compatible with gcc-3.2 under HP-UX.
+
+  We recommend not compiling SCV on machines with less than 256Mb of RAM.
+
+Sources for Compilers and Related Tools
+=======================================
+
+To build, install, and use SCV on UNIX platforms, you need the
+following tools:
+
+  1. A supported compiler for your platform as listed in System Requirements
+
+  2. GNU Make (gmake)
+
+GCC and gmake are free software that you can
+obtain from the following sources:
+
+  GCC		http://www.gnu.org/software/gcc/gcc.html
+
+  gmake		http://www.gnu.org/software/make/make.html
+
+
+Basic SCV Installation
+==========================
+
+To install SCV on a UNIX system, do the following steps:
+
+  1. Change to the top level directory (scv)
+
+  2. Create a temporary directory, e.g.,
+
+	> mkdir objdir
+
+  3. Change to the temporary directory, e.g.,
+
+	> cd objdir
+
+  4. Set the following environment variable(s):
+
+     For gcc on Solaris:
+
+	> setenv CXX g++
+        > setenv CC gcc
+
+     For gcc on Linux:
+
+	> setenv CXX g++
+        > setenv CC gcc
+
+     For aCC on HP-UX:
+
+	> setenv CXX aCC
+        > setenv CC cc
+
+     You can also specify an absolute path to the compiler of your choice.
+
+  5. Configure the package for your system, e.g.,
+     (The configure script is explained below.)
+
+	> ../configure --with-systemc=<path_to_SystemC_2.0.1>
+
+     While the 'configure' script is running, which takes a few moments, 
+     it prints messages to inform you of the features it is checking.
+     It also detects the platform.
+
+     If you do not specify the path to a SystemC installation, 
+     configure will look in ../systemc. So, if your SystemC and SCV
+     packages are located at the same root directory, you do not need
+     to specify the --with-systemc option.
+
+     If you do specify the path to a SystemC installation, use an absolute 
+     path (one starting with "/"), and do not use wildcards.
+
+     Do not put spaces in around the "=" in the "--with-systemc=" option or
+     in other configure options.
+
+     If you want to install SCV using a compiler other than the ones we have 
+     fully tested, you will need to specify the --disable-compiler-check 
+     option.
+
+     The command above instructs configure to install SCV in the same directory 
+     as the SystemC installation.  If you want to install the package elsewhere,
+     use the --prefix option, e.g. as follows:
+
+	> ../configure --prefix=/usr/local/scv --with-systemc=/usr/local/systemc-2.0.1
+
+     Note: make sure you have created the target directory before installing
+           the package. Do _not_ use /usr/local as a prefix.
+
+     Note for System V users: 
+     If you are using `csh' on an older version of System V, you might 
+     need to use the `sh ../configure' command instead of '../configure'.
+     Otherwise, `csh' will attempt to `configure' itself.
+
+  6. Compile the package.
+
+	> gmake
+
+     Some Solaris systems are unable to compile SCV with optimization
+     enabled (which it is by default).  If you run into trouble, try
+     configuring again with the "--disable-opt" option specified on
+     the configure command line.
+
+  7. Install the package.
+
+	> gmake install
+
+     This command will copy the SCV libraries, header files, documentation, and 
+     examples directories into your SCV installation directory (this will be 
+     your SystemC installation directory unless you used --prefix, as mentioned
+     in #5 above).   This means that you must have write permissions into the 
+     SCV installation area. Once this step is successfully completed you will have 
+     a complete SCV installation.
+
+  8. You can now remove the temporary directory, .e.g,
+
+	> cd ..
+	> rm -rf objdir
+
+     Alternatively, you can keep the temporary directory to later uninstall
+     the package. To clean up the temporary directory, enter:
+
+	> gmake clean
+
+     To uninstall the package, enter:
+
+	> gmake uninstall
+
+
+Running the Examples
+====================
+
+1. Change to the example directory in the build directory
+   (e.g. scv/objdir/examples/general/hello/).
+
+2. Read the brief description of the example in the README file. 
+
+3. Build the example using `gmake' and corresponding Makefile:
+
+   For Solaris and g++ compiler: gmake sun-gnu
+   For Linux and gcc compiler  : gmake linux
+   For HP-UX and aCC compiler  : gmake hppa-native
+
+4. Run the executable.
+
+Use the makefiles provided in  the 'examples' directory as templates for 
+makefiles you need for compiling your own examples.
+
+If you want to run the examples from the command line, remember to add 
+<path_to_SystemC_2.0.1>/lib-<arch> and <path_to_SCV>/lib-<arch> to your 
+LD_LIBRARY_PATH.
+	
+     
+Using the Configure Script
+==========================
+ 
+The `configure' shell script tries to determine the correct values for
+various system-dependent variables used during compilation. It uses
+these values to create a `Makefile' in each directory of the package.
+It also creates one or more `.h' files containing system-dependent
+definitions if needed. Then, it creates the following files:
+
+  config.status		A shell script that you can run at another time to
+			recreate the current configuration.
+
+  config.cache		A file in which the configure test results are
+			saved to speed up reconfiguration.
+
+			Data is appended to the config.cache file. 
+			You can remove unwanted data.
+
+  config.log		A file in which compiler output is saved.
+			This is used to debug the configure script.
+
+If you need to use other commands to successfully compile the package
+on your system, please try to determine if the configure script can be used 
+for these commands. Then, send either a diff file or instructions about
+the commands you used to the email address provided in the README file.
+This information will be used to improve the installation process in
+the next release.
+
+The `configure.in' file is provided in case you want to change or regenerate
+the `configure' script, for example to use a newer version of `autoconf'. 
+The `configure.in' file is used by the `autoconf' program to create the
+`configure' script.
+
+Note for developers:
+
+  In case you have changed the `configure.in' file or one of the
+  `Makefile.am' files:
+
+  - Run 'make distclean' to remove the generated `configure' script, 
+    the generated `aclocal.m4' file and the generated `Makefile.am'
+    files.
+
+  - Use the GNU auto-tools `aclocal', `automake', and `autoconf' to
+    generate the `configure' script.  We use the following sequence.
+    If you are using a non-GNU compiler you may need to add the
+    --include-deps option on the automake line:
+
+      autoheader
+      aclocal
+      automake --add-missing --copy
+      autoconf
+      autoheader
+
+
+Compilation and Linking Options
+===============================
+
+Some systems require compilation or linking options that the `configure'
+script does not define. You can define the initial values for these
+options by setting them in your environment before running the
+`configure' script.
+
+Using a Bourne-compatible shell, the command line entry might be:
+
+	> CC=c89 CFLAGS=-O2 LIBS=-lposix ../configure
+
+Or, on systems that have the `env' program, the command line entry might be:
+
+	> env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ../configure
+
+
+Optional Features
+=================
+
+By default, optimized libraries are built.
+
+
+Specifying the System Type
+==========================
+
+Some features cannot be automatically determined by `configure' unless
+it can detect the host type on which the package will run.
+If it prints a message that it cannot determine the host type, 
+use the `--host=TYPE' option to define it. TYPE can either be a 
+short system name, such as `sun4', or a canonical name with three fields:
+
+     CPU-COMPANY-SYSTEM
+
+See the `config.sub' file for details about the values of each field. If
+the `config.sub' file is not included in the package, the package does not
+need to know the host type.
+
+If you are building compiler tools for cross-compiling, you can also
+use the `--target=TYPE' option to select the type of system for which
+the code is produced and the `--build=TYPE' option to select the type of
+system on which you are compiling the package.
+
+
+Sharing Defaults
+================
+
+You can set the default values that `configure' scripts share by
+creating a site shell script called `config.site'. This file contains the
+default values for variables like `CC', `cache_file', and `prefix'.
+The `configure' script looks for the `config.site' file in the following 
+search precedence:
+
+  1. PREFIX/share/config.site
+
+  2. PREFIX/etc/config.site
+
+Alternatively, you can set the `CONFIG_SITE' environment variable to the
+site script path.
+
+Note: The `configure' script for some systems does not look for a site script.
+
+
+Operation Controls
+==================
+
+The `configure' script recognizes the following options to control its
+operation:
+
+`--cache-file=FILE'
+	Use and save the test results in FILE instead of
+	`./config.cache'. Set FILE to `/dev/null' to disable caching
+	when debugging `configure'.
+
+`--help'
+	Print a summary of `configure' options and exit.
+
+`--quiet'
+`--silent'
+`-q'
+	Do not print messages about checks being made.
+	To suppress all normal output, redirect it to `/dev/null'.
+	Error messages continue to print.
+
+`--srcdir=DIR'
+	Look for the package's source code in directory DIR.
+	Typically `configure' determines the directory automatically.
+
+`--version'
+	Print the version of `autoconf' used to generate the `configure'
+	script and exit.
+
+Other options that are rarely used are available in the `configure' script.
+Use the `--help' option to print a list.
+
+
+
+3. Installation Notes for Windows
+---------------------------------
+
+This release has been ported to Windows XP, and will work with Visual 
+C++ .NET 2003 (VC++ 7.1).  The text below was adapted from READMEs 
+provided by Robert Clark, who performed the port.  You can see his 
+original READMEs in msvc71/README.
+
+The SCV distribution includes project and solution files for Visual 
+C++ 7.1, in the msvc71 directory.  This directory contains the project 
+and solution files to build SCV itself.  You will find project and 
+solution files for the SCV examples in subdirectories of 
+msvc71/examples.
+
+Preparing to Build SCV
+======================
+
+There was a iostream bug in Visual C++ 6.0 that has been fixed in
+Visual C++ 7.1, which is encoded as (_MSC_VER = 1300).  Because of
+this, you need to make a change in SystemC 2.0.1, and rebuild it.
+
+In src/systemc/datatypes/int/sc_nbdefs.h, lines 185 and 194, change:
+
+  #if defined( _MSC_VER )
+
+to
+
+  #if ( _MSC_VER < 1300 )
+
+Before building SCV with VC++, you need to create an scv_config.h 
+file:
+
+  cd ...\scv-01.00-p001 # your SCV distribution
+  copy acconfig.h src\scv\scv_config.h
+  edit src\scv\scv_config.h
+
+In the final step above, use your favorite source code editor to 
+remove the line containing @BOTTOM@.
+
+Set these environment variables:
+
+  SYSTEMC  C:\osci\systemc-2.0.1\msvc60
+  SCV      C:\osci\scv-01.00-p001\msvc71
+
+To set environment variables, go to System Properties->Advanced
+->Environment Variables.  In this window, select "New" under "user 
+variables for xxx", where xxx is your login.  To get to System
+Properties, go to My Computer->Properties under Windows 2000, and
+to My Computer->View System Information under Windows XP.
+
+
+Building SCV
+============
+
+Double click on the scv Solution object n msvc71 to launch Visual 
+C++.  The proper switches will be set to compile SCV for VC++ 7.1.  
+Select Build -> Build Solution to build SCV.  There will be several
+warnings, but the build should succeed.
+
+Running Examples
+================
+
+The `examples' directory contains the project and workspace files to
+compile the SCV examples. Go to one of the examples subdirectories
+and double-click on the solution file to launch Visual C++.  Select
+Build -> Build Solution to build the example executable.  Select
+Debug -> Start Without Debugging to run the example.
+
+Creating Your Own Testbench
+===========================
+
+You will need to set the following MSVC settings after you create
+a new "blank" solution within a VC++ project "Win32 Console Project".
+You will need to set the following for "All Configurations". Right 
+click on your project, and select Properties. Now set All 
+Configuration under "Configuration:"
+
+Under C/C++ additions include directories enter the following:
+"$(SYSTEMC)\..\src";"$(SCV)\..\src"
+
+Under C/C++ General:
+Additional Include Directories		"$(SYSTEMC)\..\src";"$(SCV)\..\src"
+Detect 64-bit Portability Issues	No
+
+Under C/C++ Language:
+Enable Run-Time Type Info		Yes
+
+Under C/C++ Precompiled Headers:
+Create/Use Precompiled Header		Not Using Precompiled Headers
+
+You will now need to add the libraries. Do this by right clicking on
+the project and selecting Add->Add Existing Item...
+
+Navigate to your SystemC build area, normally 
+.../systemc-2.0.1/msvc60/Release, and select the systemc.lib file.
+Navigate to your SCV build area, normally .../scv-01.00-p001/msvc71/Debug,
+and select all of the .lib files, namely:
+
+  cudd.lib
+  dddmp.lib
+  mtr.lib
+  obj.lib
+  scv.lib
+  st.lib
+  util.lib

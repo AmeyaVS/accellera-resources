@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ex_02_enumdata", "ex_02_enumdata.vcproj", "{709C828C-5CDF-44BC-9E9B-EAD3E6759FC9}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{709C828C-5CDF-44BC-9E9B-EAD3E6759FC9}.Debug.ActiveCfg = Debug|Win32
+		{709C828C-5CDF-44BC-9E9B-EAD3E6759FC9}.Debug.Build.0 = Debug|Win32
+		{709C828C-5CDF-44BC-9E9B-EAD3E6759FC9}.Release.ActiveCfg = Release|Win32
+		{709C828C-5CDF-44BC-9E9B-EAD3E6759FC9}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

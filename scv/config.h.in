@@ -1,0 +1,131 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+ 
+/* Define if we're on Linux */
+#undef ARCH_IS_X86
+
+/* the full canonical system: cpu, vendor, os */
+#undef TARGET
+
+/* found Dl_info in dlfcn.h */
+#undef HAVE_DL_INFO
+
+/* A string that contains the shared library extention (e.g. .so or .sl) */
+#undef SHLIB_EXT
+
+/* Define if we're on the HP-UX 11 */
+#undef RWSTD_MULTI_THREAD 
+#undef RW_MULTI_THREAD 
+#undef _REENTRANT
+#undef __HPACC_THREAD_SAFE_RB_TREE 
+#undef HP_THREAD_SAFE 
+#undef _THREAD_SAFE
+#undef _POSIX_C_SOURCE
+#undef hp_hpux11
+
+#undef _USE_FMTFLAGS_TYPE
+#undef _USE_FRIEND_FOR_EQUAL
+#undef _USE_EXPLICIT_NEQ
+#undef _USE_HASH_MAP
+#undef _USE_PADDING_ON_STRUCTS
+#undef _USE_UINT64_WRITE
+
+#undef SCV_USE_IOSTREAM_H
+#undef _SCV_USE_SC_REPORT
+
+#undef SC_VERSION
+
+/* Define if you have the <a.out.h> header file.  */
+#undef HAVE_A_OUT_H
+
+/* Define if you have the <bfd.h> header file.  */
+#undef HAVE_BFD_H
+
+/* Define if you have the <dlfcn.h> header file.  */
+#undef HAVE_DLFCN_H
+
+/* Define if you have the <libgen.h> header file.  */
+#undef HAVE_LIBGEN_H
+
+/* Define if you have the <stddef.h> header file.  */
+#undef HAVE_STDDEF_H
+
+/* Define if you have the <sys/frame.h> header file.  */
+#undef HAVE_SYS_FRAME_H
+
+/* Define if you have the <sys/link.h> header file.  */
+#undef HAVE_SYS_LINK_H
+
+/* Define if you have the <sys/reg.h> header file.  */
+#undef HAVE_SYS_REG_H
+
+/* Define if you have the <sys/regset.h> header file.  */
+#undef HAVE_SYS_REGSET_H
+
+/* Define if you have the <ucontext.h> header file.  */
+#undef HAVE_UCONTEXT_H
+
+/* Define if you have the <unistd.h> header file.  */
+#undef HAVE_UNISTD_H
+
+/* Define if you have the bfd library (-lbfd).  */
+#undef HAVE_LIBBFD
+
+/* Define if you have the demangle library (-ldemangle).  */
+#undef HAVE_LIBDEMANGLE
+
+/* Define if you have the dl library (-ldl).  */
+#undef HAVE_LIBDL
+
+/* Define if you have the dld library (-ldld).  */
+#undef HAVE_LIBDLD
+
+/* Define if you have the elf library (-lelf).  */
+#undef HAVE_LIBELF
+
+/* Define if you have the iberty library (-liberty).  */
+#undef HAVE_LIBIBERTY
+
+#ifdef __cplusplus
+
+/* cc on HPUX seems to define this automatically so avoid redefinition warnings by */
+/* conditionally defining it. */
+#undef _HPUX_SOURCE
+
+#if defined (__SUNPRO_CC)
+#include<list>
+#include<map>
+#include<string>
+#endif
+
+/* HP-UX's aCC doesn't have std defined until it sees a std lib header file */
+/* (unlike g++ and SunWorks CC.) */
+/* So define it here empty.  Namespaces are extensible, so this is harmless. */
+namespace std {}
+using namespace std;
+
+#ifdef DELETE
+#undef DELETE
+#endif
+#ifdef ERROR
+#undef ERROR
+#endif
+
+#endif // __cplusplus
+
+#if defined (__SUNPRO_CC)
+  using std::list;
+  using std::pair;
+  using std::map;
+  using std::less;
+  using std::string;
+  using std::equal_to;
+#endif
+
+#if defined(_MSC_VER)
+# define _USE_FMTFLAGS_TYPE
+# define _USE_FRIEND_FOR_EQUAL
+# define _USE_EXPLICIT_NEQ
+# define SC_VERSION 2000001
+# define HAVE_STDDEF_H
+#endif

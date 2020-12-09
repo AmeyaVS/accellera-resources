@@ -1,0 +1,131 @@
+		Release Notes for SCV 1.0p1
+                ===========================
+
+CONTENTS
+========
+
+  1) What's new in this release?
+
+  2) Bug fixes and enhancements
+
+  3) Other changes
+
+  4) Known limitations
+
+  5) Beta features
+
+  6) Deprecated features
+
+
+1) What's new in this release?
+==============================
+
+This is the first production release for the SystemC verification library.
+Aside from the new version number and an updated randomization whitepaper
+in docs/scv, it is the same as the 1.0b4 release.  The remainder of these
+comments describe the 1.0b4 release.
+
+It includes support for HP-UX gcc 3.2 and Sun Solaris Forte 5.4. 
+
+You can now build using Microsoft VC++ 7.1 (VC++ .NET 2003).  We have
+not yet run our full regression suite on this new platform, so we are
+not ready to declare it supported.
+
+Special thanks to Robert A. Clark of Parama Networks Inc., who
+performed the VC++ port.
+
+2) Bug fixes and enhancements
+=============================
+
+In the previous release, installing did not copy user documentation
+into the install tree.  This has been fixed.
+
+A bug has been fixed which had caused coredumps in randomization.
+
+3) Other changes
+================
+
+In the previous release, installing did not copy user documentation
+into the install tree.  This has been fixed.
+
+4) Known limitations
+====================
+
+o There are still differences between the SCV installation process and
+  the one for the SystemC core library.  See the file INSTALL for
+  details.
+
+o Compile times can be excessively slow (especially on g++ on Solaris).
+  We have made some improvements since beta 1, and will continue to
+  work to speed up compiles.
+
+o Introspection is not supported for fixed point data types
+  (scv_fixed<>, etc). This means that randomization can not be
+  done for these types.
+
+o Constrained randomization cannot be done with floating point types.
+  However, simple constraints can be done with floating point types,
+  so it is possible to get similar effects by overloading the next()
+  method in a constraint which includes floating point types.
+
+  For example:
+    struct constraint : public scv_constraint_base {
+      scv_smart_ptr<double> d;
+      scv_smart_ptr<int> i;
+      SCV_CONSTRAINT_CTOR(constraint) {
+        SCV_CONSTRAINT( d() < 0.01 && i() < 10 );
+      }
+    };
+
+  must be written as:
+    struct constraint : public scv_constraint_base {
+      scv_smart_ptr<double> d;
+      scv_smart_ptr<int> i;
+      SCV_CONSTRAINT_CTOR(constraint) {
+        d->keep_only(-FLT_MAX/2, 0.01);
+        SCV_CONSTRAINT( i() < 10 );
+      }
+    };
+
+o Complex constraints which use arithmethic operators may take
+  a long time to solve. Constraints involving multiplication operations
+  should be limited to 8 bit by 8 bit numbers. Larger than this will
+  cause simulations to effectively hang. For example, the following
+  constraint will never finish due to the two 32 bit by 32 bit
+  multiplications:
+
+    struct constraint : public scv_constraint_base {
+      scv_smart_ptr<int> a, b, c;
+      SCV_CONSTRAINT_CTOR(constraint) {
+        SCV_CONSTRAINT( (a() * b()) < (b() * c()) );
+      }
+    };
+
+o We do not support smart pointers to arrays.  You can work around
+  this limitation by wrapping a struct around the array.
+
+o We do not implement scv_connect().  This function creates a 
+  connection between a SystemC and an HDL signal.  It is intended
+  that vendor implementations of SystemC will include an scv_connect()
+  that supports connections with specific HDL simulators.
+
+o We have not run our full regression suite using VC++, and are not
+  prepared to claim full support under Windows.  Also, there are a
+  number of warnings when compiling under VC++ which we intend to
+  investigate and eliminate.
+
+5) Beta features
+================
+
+The SCV library consists of the following set of features:
+
+o Simple constrainted randomization
+o Complex constrained randomization (multi-variable constraints)
+o Random distributions and distribution ranges
+o Composite and enumerated datatype introspection
+o Transaction recording
+o Verification datastructure
+o Messaging
+
+6) Deprecated features
+======================
