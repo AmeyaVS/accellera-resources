@@ -29,14 +29,23 @@
 #ifndef SC_HOST_MUTEX_H_INCLUDED_
 #define SC_HOST_MUTEX_H_INCLUDED_
 
-#ifndef SC_INCLUDE_WINDOWS_H
-#  define SC_INCLUDE_WINDOWS_H // include Windows.h, if needed
-#endif
 #include "sysc/kernel/sc_cmnhdr.h"
 #include "sysc/communication/sc_mutex_if.h"
 
-#if !defined(WIN32) && !defined(_WIN32) // use pthread mutex
+#if SC_CPLUSPLUS >= 201103L
+# include <mutex>
+#elif !defined(WIN32) && !defined(_WIN32) // use pthread mutex
 # include <pthread.h>
+#else // use Windows critical section
+# ifndef SC_INCLUDE_WINDOWS_H
+#   define SC_INCLUDE_WINDOWS_H // include Windows.h, if needed
+#   include "sysc/kernel/sc_cmnhdr.h"
+# endif
+#endif // SC_CPLUSPLUS
+
+#if defined(_MSC_VER) && !defined(SC_WIN_DLL_WARN)
+# pragma warning(push)
+# pragma warning(disable: 4251) // DLL import for std::mutex
 #endif
 
 namespace sc_core {
@@ -49,7 +58,17 @@ namespace sc_core {
 
 class SC_API sc_host_mutex : public sc_mutex_if
 {
-#if defined(WIN32) || defined(_WIN32) // use CRITICAL_SECTION on Windows
+#if SC_CPLUSPLUS >= 201103L
+
+    typedef std::mutex underlying_type;
+
+    void do_init()    { /* no-op */ }
+    void do_lock()    { m_mtx.lock(); }
+    bool do_trylock() { return m_mtx.try_lock(); }
+    void do_unlock()  { m_mtx.unlock(); }
+    void do_destroy() { /* no-op */ }
+
+#elif defined(WIN32) || defined(_WIN32) // use CRITICAL_SECTION on Windows
 
     typedef CRITICAL_SECTION underlying_type;
 
@@ -113,6 +132,10 @@ private:
 };
 
 } // namespace sc_core
+
+#if defined(_MSC_VER) && !defined(SC_WIN_DLL_WARN)
+# pragma warning(pop)
+#endif
 
 /*****************************************************************************
 

@@ -367,6 +367,9 @@ sc_simcontext::init()
 void
 sc_simcontext::clean()
 {
+    // remove remaining zombie processes
+    do_collect_processes();
+
     delete m_method_invoker_p;
     delete m_error;
     delete m_cor_pkg;
@@ -516,14 +519,8 @@ sc_simcontext::crunch( bool once )
 	    }
 	}
 
-	// remove finally dead zombies:
-
-        while( ! m_collectable->empty() )
-        {
-	    sc_process_b* del_p = m_collectable->front();
-	    m_collectable->pop_front();
-	    del_p->reference_decrement();
-        }
+        // remove finally dead zombies:
+        do_collect_processes();
 
 
 	// UPDATE PHASE
@@ -603,6 +600,7 @@ sc_simcontext::crunch( bool once )
     // by '*m_error'.
 out:
     this->reset_curr_proc();
+    do_collect_processes();
     if( m_error ) throw *m_error; // re-throw propagated error
 }
 
@@ -975,6 +973,15 @@ sc_simcontext::mark_to_collect_process( sc_process_b* zombie )
     m_collectable->push_back( zombie );
 }
 
+void sc_simcontext::do_collect_processes()
+{
+    while( ! m_collectable->empty() )
+    {
+        sc_process_b* del_p = m_collectable->front();
+        m_collectable->pop_front();
+        del_p->reference_decrement();
+    }
+}
 
 //------------------------------------------------------------------------------
 //"sc_simcontext::stop"
@@ -1702,7 +1709,8 @@ sc_start( const sc_time& duration, sc_starvation_policy p )
         return;
     }
 
-    if ( context_p->m_prim_channel_registry->pending_updates() )
+    if ( context_p->m_prim_channel_registry->pending_updates()
+         || ! context_p->m_delta_events.empty() )
         init_delta_or_pending_updates = true;
 
     // If the simulation status is good perform the simulation:

@@ -112,8 +112,27 @@ DIST_COMMON = $(top_srcdir)/config/Make-rules.examples \
 @USES_PTHREADS_LIB_TRUE@am__append_7 = $(PTHREAD_CFLAGS)
 @USES_PTHREADS_LIB_TRUE@am__append_8 = $(PTHREAD_LIBS)
 @SEPARATE_BUILD_TREE_TRUE@am__append_9 = $(examples_BUILD)
-TESTS = $(am__EXEEXT_3)
-check_PROGRAMS = $(am__EXEEXT_1)
+TESTS = $(am__EXEEXT_5)
+check_PROGRAMS = $(am__EXEEXT_2)
+
+# example requires async-update support
+@DISABLE_ASYNC_UPDATES_FALSE@am__append_10 = 2.3/simple_async/test
+@DISABLE_ASYNC_UPDATES_FALSE@am__append_11 = \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(2_3_simple_async_BUILD)
+
+@DISABLE_ASYNC_UPDATES_FALSE@am__append_12 = \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/run.log \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/expected_trimmed.log \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/run_trimmed.log \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/diff.log
+
+@DISABLE_ASYNC_UPDATES_FALSE@am__append_13 = \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(2_3_simple_async_H_FILES) \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(2_3_simple_async_CXX_FILES) \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(2_3_simple_async_BUILD) \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(2_3_simple_async_EXTRA)
+
+@DISABLE_ASYNC_UPDATES_FALSE@am__append_14 = 2.3/simple_async
 subdir = examples/sysc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/config/ax_check_define.m4 \
@@ -128,7 +147,9 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__EXEEXT_1 = fft/fft_flpt/test$(EXEEXT) fft/fft_fxpt/test$(EXEEXT) \
+@DISABLE_ASYNC_UPDATES_FALSE@am__EXEEXT_1 =  \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/test$(EXEEXT)
+am__EXEEXT_2 = fft/fft_flpt/test$(EXEEXT) fft/fft_fxpt/test$(EXEEXT) \
 	fir/test$(EXEEXT) fir/test_rtl$(EXEEXT) pipe/test$(EXEEXT) \
 	pkt_switch/test$(EXEEXT) risc_cpu/test$(EXEEXT) \
 	rsa/test$(EXEEXT) simple_bus/test$(EXEEXT) \
@@ -138,7 +159,7 @@ am__EXEEXT_1 = fft/fft_flpt/test$(EXEEXT) fft/fft_fxpt/test$(EXEEXT) \
 	2.1/sc_report/test$(EXEEXT) 2.1/scx_barrier/test$(EXEEXT) \
 	2.1/scx_mutex_w_policy/test$(EXEEXT) \
 	2.1/specialized_signals/test$(EXEEXT) 2.3/sc_rvd/test$(EXEEXT) \
-	2.3/sc_ttd/test$(EXEEXT) 2.3/simple_async/test$(EXEEXT)
+	2.3/sc_ttd/test$(EXEEXT) $(am__EXEEXT_1)
 am__objects_1 =
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_2 = 2.1/dpipe/2_1_dpipe_test-main.$(OBJEXT)
@@ -208,9 +229,12 @@ am_2_3_sc_ttd_test_OBJECTS = $(am__objects_1) $(am__objects_11)
 2_3_sc_ttd_test_OBJECTS = $(am_2_3_sc_ttd_test_OBJECTS)
 2_3_sc_ttd_test_LDADD = $(LDADD)
 2_3_sc_ttd_test_DEPENDENCIES = $(top_builddir)/src/libsystemc.la
-am__objects_12 =  \
-	2.3/simple_async/2_3_simple_async_test-main.$(OBJEXT)
-am_2_3_simple_async_test_OBJECTS = $(am__objects_1) $(am__objects_12)
+am__2_3_simple_async_test_SOURCES_DIST =  \
+	2.3/simple_async/async_event.h 2.3/simple_async/main.cpp
+@DISABLE_ASYNC_UPDATES_FALSE@am__objects_12 = 2.3/simple_async/2_3_simple_async_test-main.$(OBJEXT)
+@DISABLE_ASYNC_UPDATES_FALSE@am_2_3_simple_async_test_OBJECTS =  \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(am__objects_1) \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(am__objects_12)
 2_3_simple_async_test_OBJECTS = $(am_2_3_simple_async_test_OBJECTS)
 2_3_simple_async_test_LDADD = $(LDADD)
 2_3_simple_async_test_DEPENDENCIES =  \
@@ -381,12 +405,13 @@ DIST_SOURCES = $(2_1_dpipe_test_SOURCES) $(2_1_forkjoin_test_SOURCES) \
 	$(2_1_scx_mutex_w_policy_test_SOURCES) \
 	$(2_1_specialized_signals_test_SOURCES) \
 	$(2_3_sc_rvd_test_SOURCES) $(2_3_sc_ttd_test_SOURCES) \
-	$(2_3_simple_async_test_SOURCES) $(fft_fft_flpt_test_SOURCES) \
-	$(fft_fft_fxpt_test_SOURCES) $(fir_test_SOURCES) \
-	$(fir_test_rtl_SOURCES) $(pipe_test_SOURCES) \
-	$(pkt_switch_test_SOURCES) $(risc_cpu_test_SOURCES) \
-	$(rsa_test_SOURCES) $(simple_bus_test_SOURCES) \
-	$(simple_fifo_test_SOURCES) $(simple_perf_test_SOURCES)
+	$(am__2_3_simple_async_test_SOURCES_DIST) \
+	$(fft_fft_flpt_test_SOURCES) $(fft_fft_fxpt_test_SOURCES) \
+	$(fir_test_SOURCES) $(fir_test_rtl_SOURCES) \
+	$(pipe_test_SOURCES) $(pkt_switch_test_SOURCES) \
+	$(risc_cpu_test_SOURCES) $(rsa_test_SOURCES) \
+	$(simple_bus_test_SOURCES) $(simple_fifo_test_SOURCES) \
+	$(simple_perf_test_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -597,7 +622,8 @@ am__set_TESTS_bases = \
   bases=`echo $$bases`
 RECHECK_LOGS = $(TEST_LOGS)
 AM_RECURSIVE_TARGETS = check recheck
-am__EXEEXT_2 = fft/fft_flpt/test.sh fft/fft_fxpt/test.sh fir/test.sh \
+@DISABLE_ASYNC_UPDATES_FALSE@am__EXEEXT_3 = 2.3/simple_async/test.sh
+am__EXEEXT_4 = fft/fft_flpt/test.sh fft/fft_fxpt/test.sh fir/test.sh \
 	fir/test_rtl.sh pipe/test.sh pkt_switch/test.sh \
 	risc_cpu/test.sh rsa/test.sh simple_bus/test.sh \
 	simple_fifo/test.sh simple_perf/test.sh 2.1/dpipe/test.sh \
@@ -605,8 +631,8 @@ am__EXEEXT_2 = fft/fft_flpt/test.sh fft/fft_fxpt/test.sh fir/test.sh \
 	2.1/sc_export/test.sh 2.1/sc_report/test.sh \
 	2.1/scx_barrier/test.sh 2.1/scx_mutex_w_policy/test.sh \
 	2.1/specialized_signals/test.sh 2.3/sc_rvd/test.sh \
-	2.3/sc_ttd/test.sh 2.3/simple_async/test.sh
-am__EXEEXT_3 = $(am__EXEEXT_2)
+	2.3/sc_ttd/test.sh $(am__EXEEXT_3)
+am__EXEEXT_5 = $(am__EXEEXT_4)
 TEST_SUITE_LOG = test-suite.log
 TEST_EXTENSIONS = @EXEEXT@ .test
 LOG_DRIVER = $(SHELL) $(top_srcdir)/config/test-driver
@@ -790,18 +816,7 @@ EXTRA_DEFINES = -DSC_INCLUDE_FX
 
 # initialize some useful variables (filled later)
 CLEANFILES = $(am__append_9) $(examples_CLEAN) $(check_SCRIPTS)
-EXTRA_DIST = $(examples_FILES) CMakeLists.txt 2.1/dpipe/CMakeLists.txt \
-	2.1/forkjoin/CMakeLists.txt 2.1/reset_signal_is/CMakeLists.txt \
-	2.1/sc_export/CMakeLists.txt 2.1/sc_report/CMakeLists.txt \
-	2.1/scx_barrier/CMakeLists.txt \
-	2.1/scx_mutex_w_policy/CMakeLists.txt \
-	2.1/specialized_signals/CMakeLists.txt \
-	2.3/sc_rvd/CMakeLists.txt 2.3/sc_ttd/CMakeLists.txt \
-	fft/fft_flpt/CMakeLists.txt fft/fft_fxpt/CMakeLists.txt \
-	fir/CMakeLists.txt pipe/CMakeLists.txt \
-	pkt_switch/CMakeLists.txt risc_cpu/CMakeLists.txt \
-	rsa/CMakeLists.txt simple_bus/CMakeLists.txt \
-	simple_fifo/CMakeLists.txt simple_perf/CMakeLists.txt
+EXTRA_DIST = $(examples_FILES) CMakeLists.txt
 SYSTEMC_INC_DIR = $(top_srcdir)/src
 SYSTEMC_LIB_DIR = $(libdir)$(LIB_ARCH_SUFFIX)
 LDADD = $(top_builddir)/src/libsystemc.la
@@ -847,9 +862,7 @@ examples_FILES = README.txt fft/README $(fft_fft_flpt_H_FILES) \
 	$(2_3_sc_rvd_CXX_FILES) $(2_3_sc_rvd_BUILD) \
 	$(2_3_sc_rvd_EXTRA) $(2_3_sc_ttd_H_FILES) \
 	$(2_3_sc_ttd_CXX_FILES) $(2_3_sc_ttd_BUILD) \
-	$(2_3_sc_ttd_EXTRA) $(2_3_simple_async_H_FILES) \
-	$(2_3_simple_async_CXX_FILES) $(2_3_simple_async_BUILD) \
-	$(2_3_simple_async_EXTRA)
+	$(2_3_sc_ttd_EXTRA) $(am__append_13)
 examples_INPUT = input.txt
 examples_GOLDEN = golden.log
 examples_BUILD = $(fft_fft_flpt_BUILD) $(fft_fft_fxpt_BUILD) \
@@ -860,7 +873,7 @@ examples_BUILD = $(fft_fft_flpt_BUILD) $(fft_fft_fxpt_BUILD) \
 	$(2_1_sc_export_BUILD) $(2_1_sc_report_BUILD) \
 	$(2_1_scx_barrier_BUILD) $(2_1_scx_mutex_w_policy_BUILD) \
 	$(2_1_specialized_signals_BUILD) $(2_3_sc_rvd_BUILD) \
-	$(2_3_sc_ttd_BUILD) $(2_3_simple_async_BUILD)
+	$(2_3_sc_ttd_BUILD) $(am__append_11)
 examples_CLEAN = fft/fft_flpt/run.log \
 	fft/fft_flpt/expected_trimmed.log fft/fft_flpt/run_trimmed.log \
 	fft/fft_flpt/diff.log fft/fft_flpt/out_real \
@@ -906,16 +919,19 @@ examples_CLEAN = fft/fft_flpt/run.log \
 	2.3/sc_rvd/expected_trimmed.log 2.3/sc_rvd/run_trimmed.log \
 	2.3/sc_rvd/diff.log 2.3/sc_ttd/run.log \
 	2.3/sc_ttd/expected_trimmed.log 2.3/sc_ttd/run_trimmed.log \
-	2.3/sc_ttd/diff.log 2.3/simple_async/run.log \
-	2.3/simple_async/expected_trimmed.log \
-	2.3/simple_async/run_trimmed.log 2.3/simple_async/diff.log
+	2.3/sc_ttd/diff.log $(am__append_12)
 examples_TESTS = fft/fft_flpt/test fft/fft_fxpt/test fir/test \
 	fir/test_rtl pipe/test pkt_switch/test risc_cpu/test rsa/test \
 	simple_bus/test simple_fifo/test simple_perf/test \
 	2.1/dpipe/test 2.1/forkjoin/test 2.1/reset_signal_is/test \
 	2.1/sc_export/test 2.1/sc_report/test 2.1/scx_barrier/test \
 	2.1/scx_mutex_w_policy/test 2.1/specialized_signals/test \
-	2.3/sc_rvd/test 2.3/sc_ttd/test 2.3/simple_async/test
+	2.3/sc_rvd/test 2.3/sc_ttd/test $(am__append_10)
+examples_DIRS = fft/fft_flpt fft/fft_fxpt fft fir pipe pkt_switch \
+	risc_cpu rsa simple_bus simple_fifo simple_perf 2.1/dpipe \
+	2.1/forkjoin 2.1/reset_signal_is 2.1/sc_export 2.1/sc_report \
+	2.1/scx_barrier 2.1/scx_mutex_w_policy 2.1/specialized_signals \
+	2.1 2.3/sc_rvd 2.3/sc_ttd $(am__append_14) 2.3/include 2.3
 fft_fft_flpt_test_CPPFLAGS = \
 	$(AM_CPPFLAGS)
 
@@ -958,6 +974,7 @@ fft_fft_flpt_BUILD = \
 fft_fft_flpt_EXTRA = \
 	fft/fft_flpt/fft_flpt.sln \
 	fft/fft_flpt/fft_flpt.vcxproj \
+	fft/fft_flpt/CMakeLists.txt \
 	fft/fft_flpt/Makefile
 
 fft_fft_fxpt_test_CPPFLAGS = \
@@ -1002,6 +1019,7 @@ fft_fft_fxpt_BUILD = \
 fft_fft_fxpt_EXTRA = \
 	fft/fft_fxpt/fft_fxpt.sln \
 	fft/fft_fxpt/fft_fxpt.vcxproj \
+	fft/fft_fxpt/CMakeLists.txt \
 	fft/fft_fxpt/Makefile
 
 fir_test_CPPFLAGS = \
@@ -1050,6 +1068,7 @@ fir_EXTRA = \
 	fir/fir_common.vcxproj \
 	fir/fir.vcxproj \
 	fir/fir_rtl.vcxproj \
+	fir/CMakeLists.txt \
 	fir/Makefile \
 	fir/README
 
@@ -1082,6 +1101,7 @@ pipe_CXX_FILES = \
 pipe_EXTRA = \
 	pipe/pipe.sln \
 	pipe/pipe.vcxproj \
+	pipe/CMakeLists.txt \
 	pipe/Makefile \
 	pipe/README
 
@@ -1116,6 +1136,7 @@ pkt_switch_CXX_FILES = \
 pkt_switch_EXTRA = \
 	pkt_switch/pkt_switch.sln \
 	pkt_switch/pkt_switch.vcxproj \
+	pkt_switch/CMakeLists.txt \
 	pkt_switch/Makefile \
 	pkt_switch/README
 
@@ -1169,6 +1190,7 @@ risc_cpu_EXTRA = \
 	risc_cpu/README_TYPESCRIPT \
 	risc_cpu/risc_cpu.sln \
 	risc_cpu/risc_cpu.vcxproj \
+	risc_cpu/CMakeLists.txt \
 	risc_cpu/Makefile
 
 rsa_test_CPPFLAGS = \
@@ -1189,6 +1211,7 @@ rsa_CXX_FILES = \
 rsa_EXTRA = \
 	rsa/rsa.sln \
 	rsa/rsa.vcxproj \
+	rsa/CMakeLists.txt \
 	rsa/Makefile \
 	rsa/README
 
@@ -1232,6 +1255,7 @@ simple_bus_BUILD = \
 simple_bus_EXTRA = \
 	simple_bus/simple_bus.sln \
 	simple_bus/simple_bus.vcxproj \
+	simple_bus/CMakeLists.txt \
 	simple_bus/Makefile \
 	simple_bus/ChangeLog \
 	simple_bus/README \
@@ -1255,6 +1279,7 @@ simple_fifo_BUILD = \
 simple_fifo_EXTRA = \
 	simple_fifo/simple_fifo.sln \
 	simple_fifo/simple_fifo.vcxproj \
+	simple_fifo/CMakeLists.txt \
 	simple_fifo/Makefile
 
 simple_perf_test_CPPFLAGS = \
@@ -1275,6 +1300,7 @@ simple_perf_CXX_FILES = \
 simple_perf_EXTRA = \
 	simple_perf/simple_perf.sln \
 	simple_perf/simple_perf.vcxproj \
+	simple_perf/CMakeLists.txt \
 	simple_perf/Makefile
 
 2_1_dpipe_test_CPPFLAGS = \
@@ -1294,6 +1320,7 @@ simple_perf_EXTRA = \
 2_1_dpipe_EXTRA = \
 	2.1/dpipe/dpipe.sln \
 	2.1/dpipe/dpipe.vcxproj \
+	2.1/dpipe/CMakeLists.txt \
 	2.1/dpipe/Makefile
 
 2_1_forkjoin_test_CPPFLAGS = \
@@ -1313,6 +1340,7 @@ simple_perf_EXTRA = \
 2_1_forkjoin_EXTRA = \
 	2.1/forkjoin/forkjoin.sln \
 	2.1/forkjoin/forkjoin.vcxproj \
+	2.1/forkjoin/CMakeLists.txt \
 	2.1/forkjoin/Makefile \
 	2.1/forkjoin/README.txt
 
@@ -1333,6 +1361,7 @@ simple_perf_EXTRA = \
 2_1_reset_signal_is_EXTRA = \
 	2.1/reset_signal_is/reset_signal_is.sln \
 	2.1/reset_signal_is/reset_signal_is.vcxproj \
+	2.1/reset_signal_is/CMakeLists.txt \
 	2.1/reset_signal_is/Makefile
 
 2_1_sc_export_test_CPPFLAGS = \
@@ -1352,6 +1381,7 @@ simple_perf_EXTRA = \
 2_1_sc_export_EXTRA = \
 	2.1/sc_export/sc_export.sln \
 	2.1/sc_export/sc_export.vcxproj \
+	2.1/sc_export/CMakeLists.txt \
 	2.1/sc_export/Makefile \
 	2.1/sc_export/README.txt
 
@@ -1372,6 +1402,7 @@ simple_perf_EXTRA = \
 2_1_sc_report_EXTRA = \
 	2.1/sc_report/sc_report.sln \
 	2.1/sc_report/sc_report.vcxproj \
+	2.1/sc_report/CMakeLists.txt \
 	2.1/sc_report/Makefile \
 	2.1/sc_report/README.txt
 
@@ -1394,6 +1425,7 @@ simple_perf_EXTRA = \
 2_1_scx_barrier_EXTRA = \
 	2.1/scx_barrier/scx_barrier.sln \
 	2.1/scx_barrier/scx_barrier.vcxproj \
+	2.1/scx_barrier/CMakeLists.txt \
 	2.1/scx_barrier/Makefile
 
 2_1_scx_mutex_w_policy_test_CPPFLAGS = \
@@ -1413,6 +1445,7 @@ simple_perf_EXTRA = \
 2_1_scx_mutex_w_policy_EXTRA = \
 	2.1/scx_mutex_w_policy/scx_mutex_w_policy.sln \
 	2.1/scx_mutex_w_policy/scx_mutex_w_policy.vcxproj \
+	2.1/scx_mutex_w_policy/CMakeLists.txt \
 	2.1/scx_mutex_w_policy/Makefile
 
 2_1_specialized_signals_test_CPPFLAGS = \
@@ -1441,6 +1474,7 @@ simple_perf_EXTRA = \
 2_1_specialized_signals_EXTRA = \
 	2.1/specialized_signals/specialized_signals.sln \
 	2.1/specialized_signals/specialized_signals.vcxproj \
+	2.1/specialized_signals/CMakeLists.txt \
 	2.1/specialized_signals/Makefile
 
 2_3_sc_rvd_test_CPPFLAGS = $(AM_CPPFLAGS) -I \
@@ -1461,6 +1495,7 @@ simple_perf_EXTRA = \
 2_3_sc_rvd_EXTRA = \
 	2.3/sc_rvd/sc_rvd.sln \
 	2.3/sc_rvd/sc_rvd.vcxproj \
+	2.3/sc_rvd/CMakeLists.txt \
 	2.3/sc_rvd/Makefile
 
 2_3_sc_ttd_test_CPPFLAGS = $(AM_CPPFLAGS) -I \
@@ -1481,27 +1516,30 @@ simple_perf_EXTRA = \
 2_3_sc_ttd_EXTRA = \
 	2.3/sc_ttd/sc_ttd.sln \
 	2.3/sc_ttd/sc_ttd.vcxproj \
+	2.3/sc_ttd/CMakeLists.txt \
 	2.3/sc_ttd/Makefile
 
-2_3_simple_async_test_CPPFLAGS = $(AM_CPPFLAGS) -I \
-	$(srcdir)/2.3/simple_async/../include
-2_3_simple_async_test_SOURCES = \
-	$(2_3_simple_async_H_FILES) \
-	$(2_3_simple_async_CXX_FILES)
+@DISABLE_ASYNC_UPDATES_FALSE@2_3_simple_async_test_CPPFLAGS =  \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(AM_CPPFLAGS) -I \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(srcdir)/2.3/simple_async/../include
+@DISABLE_ASYNC_UPDATES_FALSE@2_3_simple_async_test_SOURCES = \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(2_3_simple_async_H_FILES) \
+@DISABLE_ASYNC_UPDATES_FALSE@	$(2_3_simple_async_CXX_FILES)
 
-2_3_simple_async_H_FILES = \
-	2.3/simple_async/async_event.h
+@DISABLE_ASYNC_UPDATES_FALSE@2_3_simple_async_H_FILES = \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/async_event.h
 
-2_3_simple_async_CXX_FILES = \
-	2.3/simple_async/main.cpp
+@DISABLE_ASYNC_UPDATES_FALSE@2_3_simple_async_CXX_FILES = \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/main.cpp
 
-2_3_simple_async_BUILD = \
-	2.3/simple_async/golden.log
+@DISABLE_ASYNC_UPDATES_FALSE@2_3_simple_async_BUILD = \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/golden.log
 
-2_3_simple_async_EXTRA = \
-	2.3/simple_async/simple_async.sln \
-	2.3/simple_async/simple_async.vcxproj \
-	2.3/simple_async/Makefile
+@DISABLE_ASYNC_UPDATES_FALSE@2_3_simple_async_EXTRA = \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/simple_async.sln \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/simple_async.vcxproj \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/CMakeLists.txt \
+@DISABLE_ASYNC_UPDATES_FALSE@	2.3/simple_async/Makefile
 
 
 # install examples?
@@ -3434,6 +3472,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+@SEPARATE_INSTALL_TREE_FALSE@uninstall-hook:
 clean: clean-am
 
 clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
@@ -3504,8 +3543,9 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-nobase_syscexamplesDATA
-
-.MAKE: check-am install-am install-strip
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+.MAKE: check-am install-am install-strip uninstall-am
 
 .PHONY: CTAGS GTAGS TAGS all all-am all-local check check-TESTS \
 	check-am clean clean-checkPROGRAMS clean-generic clean-libtool \
@@ -3520,7 +3560,7 @@ uninstall-am: uninstall-nobase_syscexamplesDATA
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	recheck tags tags-am uninstall uninstall-am \
+	recheck tags tags-am uninstall uninstall-am uninstall-hook \
 	uninstall-nobase_syscexamplesDATA
 
 
@@ -3590,6 +3630,11 @@ all:
 #2_3_sc_ttd_FILTER = 
 
 #2_3_simple_async_FILTER = 
+
+@SEPARATE_INSTALL_TREE_TRUE@uninstall-hook:
+@SEPARATE_INSTALL_TREE_TRUE@	test ! -d "$(syscexamplesdir)" || ( set -e ; cd "$(syscexamplesdir)" ; \
+@SEPARATE_INSTALL_TREE_TRUE@	  for dir in $(examples_DIRS) ; do test ! -d $$dir || rmdir $$dir ; done ; \
+@SEPARATE_INSTALL_TREE_TRUE@	  cd - ; rmdir "$(syscexamplesdir)" )
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

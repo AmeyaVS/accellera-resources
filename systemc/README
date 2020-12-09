@@ -1,29 +1,28 @@
-                SystemC Class Library (Rel. 2.3.2)
+                SystemC Class Library (Rel. 2.3.3)
                 ==================================
 
-This is the release of the SystemC 2.3.2 Class Library.
-This release includes TLM 2.0.4 (Transaction Level Modeling) code,
+This is the release of the SystemC 2.3.3 Class Library.
+This release includes TLM 2.0.5 (Transaction Level Modeling) code,
 as described in the IEEE 1666-2011 Language Reference Manual.
 
 -------------------------------------------------------------------------------
                 IMPORTANT
 
-1. This is the release of SystemC 2.3.2. This release contains bug fixes
-   for SystemC 2.3.1 (and earlier) as well as adding some minor and
-   experimental features.
+1. This is the release of SystemC 2.3.3. This release contains bug fixes
+   for SystemC 2.3.2 (and earlier) as well as adding some minor features.
 
 2. This release is supported on the following platform combinations for
    which it has been tested:
 
     o 64-bit Linux (x86_64)
       (RedHat Enterprise 6; SuSE Enterprise Linux 11; Debian 9)
-      - GNU C++ compiler versions gcc-4.2.2 through gcc-7.2.0
-      - Clang C++ compiler versions clang-3.4 through clang-5.0
+      - GNU C++ compiler versions gcc-4.2.2 through gcc-8.2.0
+      - Clang C++ compiler versions clang-3.4 through clang-6.0
       - Intel C++ Compiler (ICC 15.0.0)
 
     o 64-bit Linux (x86_64) with 32-bit compiler (--host=i686-linux-gnu)
       (SuSE Enterprise Linux 11)
-      - GNU C++ compiler versions gcc-4.2.2 through gcc-7.2.0
+      - GNU C++ compiler versions gcc-4.2.2 through gcc-8.2.0
       - Intel C++ Compiler (ICC 15.0.0)
 
     o 64-bit Linux (aarch64)
