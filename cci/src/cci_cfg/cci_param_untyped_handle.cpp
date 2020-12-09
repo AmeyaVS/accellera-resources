@@ -52,7 +52,7 @@ cci_param_untyped_handle::~cci_param_untyped_handle()
 cci_param_untyped_handle::
   cci_param_untyped_handle(const cci_param_untyped_handle& param_handle)
     : m_param(param_handle.m_param)
-    , m_originator(param_handle.m_originator)
+    , m_originator(promote_originator(param_handle.m_originator))
 {
     if(m_param) {
         m_param->add_param_handle(this);
@@ -63,7 +63,7 @@ cci_param_untyped_handle::
 cci_param_untyped_handle::
   cci_param_untyped_handle(cci_param_untyped_handle&& param_handle)
     : m_param(CCI_MOVE_(param_handle.m_param))
-    , m_originator(CCI_MOVE_(param_handle.m_originator))
+    , m_originator(promote_originator(param_handle.m_originator))
 {
     if(m_param) {
         m_param->add_param_handle(this);
@@ -82,8 +82,8 @@ cci_param_untyped_handle::operator=(const cci_param_untyped_handle& param_handle
     }
 
     m_param      = param_handle.m_param;
-    m_originator = param_handle.m_originator;
-
+    // The originator is explicitly not assigned here.
+    
     if (m_param) {
         m_param->add_param_handle(this);
     }
@@ -102,8 +102,8 @@ cci_param_untyped_handle::operator=(cci_param_untyped_handle&& param_handle)
     }
 
     m_param      = CCI_MOVE_(param_handle.m_param);
-    m_originator = CCI_MOVE_(param_handle.m_originator);
-
+    // The originator is explicitly not assigned here.
+    
     if (m_param) {
         m_param->add_param_handle(this);
     }
@@ -153,7 +153,7 @@ cci_value cci_param_untyped_handle::get_default_cci_value() const
     return m_param->get_default_cci_value();
 }
 
-bool cci_param_untyped_handle::is_default_value()
+bool cci_param_untyped_handle::is_default_value() const
 {
     check_is_valid();
     return m_param->is_default_value();
@@ -166,10 +166,10 @@ bool cci_param_untyped_handle::is_preset_value() const
 }
 
 cci_originator
-cci_param_untyped_handle::get_latest_write_originator() const
+cci_param_untyped_handle::get_value_origin() const
 {
     check_is_valid();
-    return m_param->get_latest_write_originator();
+    return m_param->get_value_origin();
 }
 
 #define CCI_PARAM_UNTYPED_HANDLE_CALLBACK_IMPL_(name)                          \
@@ -245,10 +245,10 @@ cci_param_data_category cci_param_untyped_handle::get_data_category() const
     return m_param->get_data_category();
 }
 
-const std::string& cci_param_untyped_handle::get_name() const
+const char* cci_param_untyped_handle::name() const
 {
     check_is_valid();
-    return m_param->get_name();
+    return m_param->name();
 }
 
 cci_originator cci_param_untyped_handle::get_originator() const
@@ -283,12 +283,6 @@ const std::type_info& cci_param_untyped_handle::get_type_info() const
 {
     check_is_valid();
     return m_param->get_type_info();
-}
-
-void cci_param_untyped_handle::reset()
-{
-  check_is_valid();
-  m_param->reset(m_originator);
 }
 
 bool cci_param_untyped_handle::is_valid() const

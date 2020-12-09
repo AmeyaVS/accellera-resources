@@ -30,9 +30,17 @@ cci_originator::cci_originator(const std::string& originator_name)
   : m_originator_obj()
   , m_originator_str()
 {
-    if (originator_name.length() > 0) {
-        m_originator_obj = current_originator_object();
+    if (current_originator_object()) {
+      m_originator_obj = current_originator_object();
+      if (originator_name.length() > 0) {
+        CCI_REPORT_ERROR("cci_originator/name_inside_hierarchy","Originators must not be named inside the SystemC hierarchy");
+      }
+    } else {
+      if (originator_name.length() > 0) {
         m_originator_str = new std::string(originator_name);
+      } else {
+        CCI_REPORT_ERROR("cci_originator/noname_outside_hierarchy","An originator name must be given outside the SystemC hierarchy");
+      }
     }
     check_is_valid();
 }
@@ -41,9 +49,17 @@ cci_originator::cci_originator(const char* originator_name)
   : m_originator_obj()
   , m_originator_str()
 {
-    if (originator_name && *originator_name) {
-        m_originator_obj = current_originator_object();
+    if (current_originator_object()) {
+      m_originator_obj = current_originator_object();
+      if (originator_name && *originator_name) {
+        CCI_REPORT_ERROR("cci_originator/name_inside_hierarchy","Originators must not be named inside the SystemC hierarchy");
+      }
+    } else {
+      if (originator_name && *originator_name) {
         m_originator_str = new std::string(originator_name);
+      } else {
+        CCI_REPORT_ERROR("cci_originator/noname_outside_hierarchy","An originator name must be given outside the SystemC hierarchy");
+      }
     }
     check_is_valid();
 }
@@ -70,18 +86,6 @@ cci_originator::cci_originator(cci_originator&& originator)
 const sc_core::sc_object *cci_originator::get_object() const
 {
     return m_originator_obj;
-}
-
-cci_originator cci_originator::get_parent_originator() const
-{
-  if (m_originator_obj != NULL) {
-    const sc_core::sc_object *parent_object =
-            m_originator_obj->get_parent_object();
-    if (parent_object) {
-        return cci_originator(*parent_object);
-    }
-  }
-  return cci_originator( unknown_tag() );
 }
 
 const char* cci_originator::name() const

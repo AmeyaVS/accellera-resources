@@ -43,7 +43,7 @@ namespace cci_utils {
  */
   broker::broker(const std::string& name)
     : consuming_broker(name),
-    m_parent(get_parent_broker(m_originator)) // local convenience function
+    m_parent(get_parent_broker()) // local convenience function
     { 
       sc_assert (name.length() > 0 && "Name must not be empty");
     }
@@ -52,12 +52,12 @@ namespace cci_utils {
   {
   }
 
-  cci_originator broker::get_latest_write_originator(const std::string &parname) const
+  cci_originator broker::get_value_origin(const std::string &parname) const
   {
     if (sendToParent(parname)) {
-      return m_parent.get_latest_write_originator(parname);
+      return m_parent.get_value_origin(parname);
     } else {
-      return consuming_broker::get_latest_write_originator(parname);
+      return consuming_broker::get_value_origin(parname);
     }
   }
   
@@ -90,7 +90,7 @@ namespace cci_utils {
 
   void broker::add_param(cci_param_if* par)
   {
-    if (sendToParent(par->get_name())) {
+    if (sendToParent(par->name())) {
       return m_parent.add_param(par);
     } else {
       return consuming_broker::add_param(par);
@@ -98,7 +98,7 @@ namespace cci_utils {
   }
 
   void broker::remove_param(cci_param_if* par) {
-    if (sendToParent(par->get_name())) {
+    if (sendToParent(par->name())) {
       return m_parent.remove_param(par);
     } else {
       return consuming_broker::remove_param(par);
@@ -114,7 +114,7 @@ namespace cci_utils {
     const cci_originator& originator)
   {
     if (sendToParent(parname)) {
-      return m_parent.set_preset_cci_value(parname,cci_value);
+      return m_parent.set_preset_cci_value(parname,cci_value, originator);
     } else {
       return consuming_broker::set_preset_cci_value(parname,cci_value,originator);
     }
@@ -124,14 +124,14 @@ namespace cci_utils {
     const cci_originator& originator) const
   {
     if (sendToParent(parname)) {
-      return m_parent.get_param_handle(parname);
+      return m_parent.get_param_handle(parname, originator);
     }
     cci_param_if* orig_param = get_orig_param(parname);
     if (orig_param) {
       return cci_param_untyped_handle(*orig_param, originator);
     }
     if (has_parent) {
-      return m_parent.get_param_handle(parname);
+      return m_parent.get_param_handle(parname, originator);
     }
     return cci_param_untyped_handle(originator);
   }

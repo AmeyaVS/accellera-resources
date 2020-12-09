@@ -39,7 +39,7 @@ cci_param_untyped::cci_param_untyped(const std::string& name,
                                      const std::string& desc,
                                      const cci_originator& originator)
     : m_description(desc), m_lock_pwd(NULL),
-      m_broker_handle(broker_handle), m_value_originator(originator),
+      m_broker_handle(broker_handle), m_value_origin(originator),
       m_originator(originator), fast_read(false),fast_write(false)
 {
     if(name_type == CCI_ABSOLUTE_NAME) {
@@ -75,7 +75,7 @@ cci_param_untyped::~cci_param_untyped()
     sc_assert( m_param_handles.empty() );
 
     if(!m_name.empty()) {
-        cci_unregister_name(get_name().c_str());
+        cci_unregister_name(name());
     }
 }
 
@@ -104,21 +104,14 @@ cci_value_map cci_param_untyped::get_metadata() const
 
 bool cci_param_untyped::is_preset_value() const
 {
-  const std::string& name = get_name();
-  if (!m_broker_handle.has_preset_value(name)) return false;
-  cci_value init_value = m_broker_handle.get_preset_cci_value(name);
+  if (!m_broker_handle.has_preset_value(name())) return false;
+  cci_value init_value = m_broker_handle.get_preset_cci_value(name());
   return init_value == get_cci_value(m_originator);
 }
 
-cci_originator cci_param_untyped::get_latest_write_originator() const
+cci_originator cci_param_untyped::get_value_origin() const
 {
-    return m_value_originator;
-}
-
-void cci_param_untyped::update_latest_write_originator(
-        const cci_originator& originator) const
-{
-    m_value_originator = originator;
+    return m_value_origin;
 }
 
 bool
@@ -126,7 +119,7 @@ cci_param_untyped::set_cci_value_allowed(cci_param_mutable_type mutability)
 {
   if (mutability==CCI_IMMUTABLE_PARAM) {
     std::stringstream ss;
-    ss << "Parameter (" << get_name() << ") is immutable.";
+    ss << "Parameter (" << name() << ") is immutable.";
     cci_report_handler::set_param_failed(ss.str().c_str(), __FILE__, __LINE__);
     return false;
   }
@@ -265,9 +258,9 @@ bool cci_param_untyped::is_locked() const
     return m_lock_pwd != NULL;
 }
 
-const std::string& cci_param_untyped::get_name() const
+const char* cci_param_untyped::name() const
 {
-    return m_name;
+    return m_name.c_str();
 }
 
 cci_originator cci_param_untyped::get_originator() const

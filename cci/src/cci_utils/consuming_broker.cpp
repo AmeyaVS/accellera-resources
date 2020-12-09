@@ -36,8 +36,7 @@ namespace cci_utils {
 // NB this broker must be instanced and registered in the same place
 //
   consuming_broker::consuming_broker(const std::string& name)
-    : m_name(cci_gen_unique_name(name.c_str())),
-    m_originator(cci_originator(m_name))
+    : m_name(cci_gen_unique_name(name.c_str()))
     {
       sc_assert (name.length() > 0 && "Name must not be empty");
     }
@@ -46,9 +45,9 @@ namespace cci_utils {
   {
   }
 
-  const std::string &consuming_broker::name() const
+  const char* consuming_broker::name() const
   {
-    return m_name;
+    return m_name.c_str();
   }
 
   void consuming_broker::set_preset_cci_value(
@@ -71,8 +70,17 @@ namespace cci_utils {
     } else {
       m_unused_value_registry[parname] = value;
     }
-    m_preset_value_originator_map.insert(
-      std::pair<std::string, cci_originator>(parname, originator));
+
+    // Store originator of the preset value. Can't use index operator since
+    // null construction of an originator is prohibited outside the module hierarchy.
+    // m_preset_value_originator_map[parname] = originator;
+    std::map<std::string, cci_originator>::iterator it;
+    it = m_preset_value_originator_map.find(parname);
+    if (it != m_preset_value_originator_map.end())
+        it->second = originator;
+    else 
+        m_preset_value_originator_map.insert(
+            std::pair<std::string, cci_originator>(parname, originator));
   }
 
   std::vector<cci_name_value_pair> consuming_broker::get_unconsumed_preset_values() const
@@ -106,11 +114,11 @@ namespace cci_utils {
     m_ignored_unconsumed_predicates.push_back(pred);
   }
 
-  cci_originator consuming_broker::get_latest_write_originator(const std::string &parname) const
+  cci_originator consuming_broker::get_value_origin(const std::string &parname) const
   {
     cci_param_if* p = get_orig_param(parname);
     if (p) {
-      return p->get_latest_write_originator();
+      return p->get_value_origin();
     }
     std::map<std::string, cci_originator>::const_iterator it;
     it = m_preset_value_originator_map.find(parname);
@@ -118,6 +126,16 @@ namespace cci_utils {
       return it->second;
     }
     // if the param doesn't exist, we should return 'unkown_originator'
+    return cci_broker_if::unknown_originator();
+  }
+
+  cci_originator consuming_broker::get_preset_value_origin(const std::string &parname) const
+  {
+    std::map<std::string, cci_originator>::const_iterator it;
+    it = m_preset_value_originator_map.find(parname);
+    if (it != m_preset_value_originator_map.end())
+      return it->second;
+    // if no preset value, return 'unknown originator'
     return cci_broker_if::unknown_originator();
   }
 
@@ -147,11 +165,12 @@ namespace cci_utils {
     locked.insert(parname);
   }
 
-  cci_value consuming_broker::get_cci_value(const std::string &parname) const
+  cci_value consuming_broker::get_cci_value(const std::string &parname,
+  const cci_originator &originator) const
   {
     cci_param_if* p = get_orig_param(parname);
     if(p) {
-      return p->get_cci_value(m_originator);
+      return p->get_cci_value(originator);
     } else {
       std::map<std::string,cci_value>::const_iterator iter =
         m_unused_value_registry.find(parname);
@@ -292,7 +311,7 @@ namespace cci_utils {
 
   void consuming_broker::add_param(cci_param_if* par) {
     sc_assert(par != NULL && "Unable to add a NULL parameter");
-    const std::string &par_name = par->get_name();
+    const std::string &par_name = par->name();
     bool new_element = m_param_registry.insert(
       std::pair<std::string, cci_param_if*>(par_name, par)).second;
     sc_assert(new_element && "The same parameter had been added twice!!");
@@ -312,7 +331,7 @@ namespace cci_utils {
 
   void consuming_broker::remove_param(cci_param_if* par) {
     sc_assert(par != NULL && "Unable to remove a NULL parameter");
-    m_param_registry.erase(par->get_name());
+    m_param_registry.erase(par->name());
 
     // Destroy callbacks
     for (unsigned i = 0; i < m_destroy_callbacks.size(); ++i) {
@@ -321,7 +340,7 @@ namespace cci_utils {
     }
 
     std::map<std::string,cci_value>::iterator iter =
-      m_used_value_registry.find(par->get_name());
+      m_used_value_registry.find(par->name());
     if (iter != m_used_value_registry.end()  ) {
       m_unused_value_registry.insert(std::make_pair(iter->first, iter->second));
       m_used_value_registry.erase(iter);    

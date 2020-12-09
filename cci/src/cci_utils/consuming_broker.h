@@ -26,8 +26,11 @@ protected:
     // but can be used as a global broker if desired.
 
 public:
-    cci::cci_originator get_latest_write_originator(
+    cci::cci_originator get_value_origin(
       const std::string &parname) const;
+
+    cci::cci_originator get_preset_value_origin(
+        const std::string &parname) const;
 
     /// Constructor
     explicit consuming_broker(const std::string& name);
@@ -36,9 +39,7 @@ public:
     ~consuming_broker();
 
     /// Return the name of the broker
-    const std::string &name() const;
-
-    /// Return the preset value of a parameter
+    const char* name() const;
 
     /// Return the preset value of a parameter (by name)
     cci::cci_value get_preset_cci_value(const std::string &parname) const;
@@ -63,7 +64,8 @@ public:
       const cci::cci_preset_value_predicate &pred);
 
     /// Get current cci_value
-    cci::cci_value get_cci_value(const std::string &parname) const;
+    cci::cci_value get_cci_value(const std::string &parname,
+        const cci::cci_originator& originator = cci::cci_originator()) const;
     
     /// return a handle with which to access a parameter
     cci::cci_param_untyped_handle get_param_handle(
@@ -109,7 +111,6 @@ public:
     cci::cci_param_if* get_orig_param(const std::string &parname) const;
 
     std::string m_name;
-    const cci::cci_originator m_originator;    
 
     // These are used as a database of _preset_ values.
     std::map<std::string, cci::cci_param_if*> m_param_registry;

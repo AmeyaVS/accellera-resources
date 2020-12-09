@@ -200,8 +200,8 @@ public:
     /// @copydoc cci_param_untyped::get_originator
     virtual cci_originator get_originator() const = 0;
 
-    /// @copydoc cci_param_untyped::get_latest_write_originator
-    virtual cci_originator get_latest_write_originator() const = 0;
+    /// @copydoc cci_param_untyped::get_value_origin
+    virtual cci_originator get_value_origin() const = 0;
 
     //@}
 
@@ -222,8 +222,8 @@ public:
     ///@name Query parameter type and name
     //@{
 
-    /// @copydoc cci_param_untyped::get_name
-    virtual const std::string &get_name() const = 0;
+    /// @copydoc cci_param_untyped::name
+    virtual const char* name() const = 0;
 
     /// @copydoc cci_param_typed::get_mutable_type
     virtual cci_param_mutable_type get_mutable_type() const = 0;
@@ -247,8 +247,13 @@ public:
     cci_param_untyped_handle
     create_param_handle(const cci_originator& originator = cci_originator()) const;
 
-    /// Reset
-    virtual void reset(const cci_originator &originator) = 0;
+    /**
+     * @brief  Convenience function to restore parameter's initial value
+     * @return true if successful; false if unsuccessful due to parameter being locked
+     * @note   Upon success, the value originator will be updated to reflect the
+     *         origin of the initial value.
+     */
+    virtual bool reset() = 0;
 
 protected:
     /// helper function, returning an unknown/invalid originator
@@ -295,6 +300,9 @@ protected:
      */
     void destroy(cci_broker_handle broker);
 
+    /// Default Constructor
+    cci_param_if() {}
+
     /// Destruction from base pointer is disallowed
     virtual ~cci_param_if() {}
 
@@ -325,7 +333,6 @@ private:
     invalidate_all_param_handles() = 0;
     //@}
 
-private:
     ///@name Type-punned value operations
     //@{
 
@@ -346,6 +353,14 @@ private:
     virtual void remove_param_handle(cci_param_untyped_handle* param_handle) = 0;
 
     //@}
+
+    // Disabled
+    cci_param_if(const cci_param_if&);
+    cci_param_if& operator=(const cci_param_if&);
+#ifdef CCI_HAS_CXX_RVALUE_REFS
+    cci_param_if(cci_param_if&&);
+    cci_param_if& operator=(cci_param_if&&);
+#endif
 
 }; // class cci_param_if
 

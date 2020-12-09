@@ -24,6 +24,7 @@
 #include "cci_core/cci_value.h"
 #include "cci_cfg/cci_broker_types.h"
 #include "cci_cfg/cci_originator.h"
+#include "cci_cfg/cci_param_typed_handle.h"
 
 /**
  * @author Guillaume Delbergue, Ericsson / GreenSocs
@@ -48,19 +49,26 @@ public:
     cci_broker_handle(cci_broker_if& broker,
                       const cci_originator& originator);
 
-#if CCI_CPLUSPLUS >= 201103L
-    cci_broker_handle(const cci_broker_handle&) = default;
-    cci_broker_handle& operator=(const cci_broker_handle&) = default;
+    cci_broker_handle(const cci_broker_handle& broker_handle)
+      : m_broker(broker_handle.m_broker)
+      , m_originator(promote_originator(broker_handle.m_originator)) {}
 
-    // need to spell out move constructor and assignment for MSVC 2013
-    cci_broker_handle(cci_broker_handle&& that) /* = default; */
-      : m_broker(CCI_MOVE_(that.m_broker))
-      , m_originator(CCI_MOVE_(that.m_originator)) {}
-
-    cci_broker_handle& operator=(cci_broker_handle&& that) /* = default; */
+    cci_broker_handle& operator=(const cci_broker_handle& broker_handle)
     {
-      m_broker     = CCI_MOVE_(that.m_broker);
-      m_originator = CCI_MOVE_(that.m_originator);
+        m_broker = broker_handle.m_broker;
+        // originator is preserved during assignment
+        return *this;
+    }
+
+#if CCI_CPLUSPLUS >= 201103L
+    cci_broker_handle(cci_broker_handle&& that)
+      : m_broker(CCI_MOVE_(that.m_broker)) 
+      , m_originator(promote_originator(that.m_originator)) {}
+
+    cci_broker_handle& operator=(cci_broker_handle&& that)
+    {
+      m_broker = CCI_MOVE_(that.m_broker);
+      // originator is preserved during assignment
       return *this;
     }
 
@@ -79,7 +87,7 @@ public:
     cci_originator get_originator() const;
 
     /// @copydoc cci_broker_if::name
-    const std::string& name() const;
+    const char* name() const;
 
     /// @copydoc cci_broker_if::set_preset_cci_value
     void set_preset_cci_value(const std::string &parname,
@@ -102,9 +110,13 @@ public:
     void ignore_unconsumed_preset_values(
             const cci_preset_value_predicate &pred);
 
-    /// @copydoc cci_broker_if::get_latest_write_originator
+    /// @copydoc cci_broker_if::get_value_origin
     cci_originator
-    get_latest_write_originator(const std::string &parname) const;
+    get_value_origin(const std::string &parname) const;
+
+    /// @copydoc cci_broker_if::get_preset_value_origin
+    cci_originator
+    get_preset_value_origin(const std::string &parname) const;
 
     /// @copydoc cci_broker_if::lock_preset_value
     void lock_preset_value(const std::string &parname);
@@ -134,7 +146,7 @@ public:
      * @return  Parameter handle (invalid if not existing or the type is not correct)
      */
     template<class T>
-    cci_param_typed_handle<T> get_param_handle(const std::string &parname) {
+    cci_param_typed_handle<T> get_param_handle(const std::string &parname) const {
         return cci_param_typed_handle<T>(get_param_handle(parname));
     }
 
@@ -144,12 +156,36 @@ public:
     cci_param_create_callback_handle
     register_create_callback(const cci_param_create_callback& cb);
 
+    /**
+     * @brief Convenience overload to register callback for a member function
+     * @param cb  Member function pointer to be used as callback
+     * @param obj Object to invoke member function on
+     * @see register_create_callback(const cci_param_create_callback&)
+     */
+    template<typename Owner>
+    cci_param_create_callback_handle
+    register_create_callback( cci_param_create_callback::signature (Owner::*cb)
+                            , Owner* obj )
+      { return register_create_callback( sc_bind( cb, obj, sc_unnamed::_1 ) ); }
+
     /// @copydoc cci_broker_callback_if::unregister_create_callback
     bool unregister_create_callback(const cci_param_create_callback_handle& cb);
 
     /// @copydoc cci_broker_callback_if::register_destroy_callback
     cci_param_destroy_callback_handle
     register_destroy_callback(const cci_param_destroy_callback& cb);
+
+    /**
+     * @brief Convenience overload to register callback for a member function
+     * @param cb  Member function pointer to be used as callback
+     * @param obj Object to invoke member function on
+     * @see register_destroy_callback(const cci_param_destroy_callback&)
+     */
+    template<typename Owner>
+    cci_param_destroy_callback_handle
+    register_destroy_callback( cci_param_destroy_callback::signature (Owner::*cb)
+                             , Owner* obj )
+      { return register_destroy_callback( sc_bind( cb, obj, sc_unnamed::_1 ) ); }
 
     /// @copydoc cci_broker_callback_if::unregister_destroy_callback
     bool
@@ -182,8 +218,17 @@ public:
     bool operator!=(const cci_broker_if *b) const {
       return m_broker!=b;
     }
+protected:
+    /// Promote a gifted originator to one that represents the current context
+    /// when possible (i.e. when within the module hierarchy)
+    /**
+     * @param gifted_originator associated with the copy ctor broker argument
+     * @return context originator if possible; otherwise, the gifted_originator 
+     */
+    inline const cci_originator promote_originator(const cci_originator &gifted_originator);
 
 private:
+    friend class cci_broker_if;
     friend class cci_param_if;
     cci_broker_if&       ref()       { return *m_broker; }
     const cci_broker_if& ref() const { return *m_broker; }
@@ -192,6 +237,17 @@ private:
     cci_broker_if* m_broker;
     cci_originator m_originator;
 };
+
+
+
+const cci_originator cci_broker_handle::promote_originator(
+    const cci_originator &gifted_originator)
+{
+    if (sc_core::sc_get_current_object())
+        return cci_originator();
+    else
+        return gifted_originator;
+}
 
 CCI_CLOSE_NAMESPACE_
 #endif // CCI_CFG_CCI_BROKER_HANDLE_H_INCLUDED_

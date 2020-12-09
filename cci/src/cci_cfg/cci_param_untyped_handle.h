@@ -51,7 +51,7 @@ public:
                              const cci_originator& originator);
 
     /// Constructor to create an invalid param handle with given originator.
-    explicit cci_param_untyped_handle(const cci_originator& originator);
+    explicit cci_param_untyped_handle(const cci_originator& originator = cci_originator());
 
     /// Copy constructor
     cci_param_untyped_handle(const cci_param_untyped_handle& param_handle);
@@ -117,7 +117,7 @@ public:
     ///@{
 
     /// @copydoc cci_param_if::is_default_value
-    virtual bool is_default_value();
+    virtual bool is_default_value() const;
 
 
     /// @copydoc cci_param_if::is_preset_value
@@ -131,8 +131,8 @@ public:
     /// @copydoc cci_param_if::get_originator
     cci_originator get_originator() const;
 
-    /// @copydoc cci_param_if::get_latest_write_originator
-    cci_originator get_latest_write_originator() const;
+    /// @copydoc cci_param_if::get_value_origin
+    cci_originator get_value_origin() const;
 
     ///@}
 
@@ -219,8 +219,8 @@ public:
     /// @copydoc cci_param_typed::get_data_category
     cci_param_data_category get_data_category() const;
 
-    /// @copydoc cci_param_untyped::get_name
-    const std::string& get_name() const;
+    /// @copydoc cci_param_untyped::name
+    const char* name() const;
 
     /// @copydoc cci_param_typed::get_type_info
     const std::type_info& get_type_info() const;
@@ -243,9 +243,6 @@ public:
      */
     void invalidate();
 
-    /// Reset the parameter to the intial value
-    void reset();
-
 protected:
     ///@name Type-punned value operations
     ///@{
@@ -264,6 +261,14 @@ protected:
 
     ///@}
 
+    /// Promote a gifted originator to one that represents the current context
+    /// when possible (i.e. when within the module hierarchy)
+    /**
+    * @param gifted_originator associated with the copy ctor broker argument
+    * @return context originator if possible; otherwise, the gifted_originator
+    */
+    inline const cci_originator promote_originator(const cci_originator &gifted_originator);
+
 private:
     cci_param_if*  m_param;
     cci_originator m_originator;
@@ -277,6 +282,16 @@ private:
 
 /// Convenience shortcut for untyped parameter handles
 typedef cci_param_untyped_handle cci_param_handle ;
+
+
+const cci_originator cci_param_untyped_handle::promote_originator(
+    const cci_originator &gifted_originator)
+{
+    if (sc_core::sc_get_current_object())
+        return cci_originator();
+    else
+        return gifted_originator;
+}
 
 CCI_CLOSE_NAMESPACE_
 
