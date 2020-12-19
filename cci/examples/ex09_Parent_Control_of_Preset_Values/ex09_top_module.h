@@ -82,9 +82,9 @@ SC_MODULE(ex09_top_module) {
         "top_module_inst.RouterInstance.r_targets");
 
     // Declaring and defining router module
-    char routerName[15] = "RouterInstance";
-    XREPORT("[TOP_MODULE C_TOR] : Creating Router : " << routerName);
-    routerInstance = new ex09_router(routerName);
+    std::string routerName = "RouterInstance";
+    XREPORT("[TOP_MODULE C_TOR] : Creating Router : " << routerName.c_str());
+    routerInstance = new ex09_router(routerName.c_str());
 
     // Top_Module begins construction of the model hierarchy from here
     // ----------------------------------------------------------------
@@ -103,21 +103,29 @@ SC_MODULE(ex09_top_module) {
 
     /// Creating instances of initiator(s)
     for (int i = 0; i < n_initiators; i++) {
-      snprintf(initiatorName, sizeof(initiatorName), "initiator_%d", i);
-      XREPORT("[TOP_MODULE C_TOR] : Creating initiator : " << initiatorName);
+      {
+      //snprintf(initiatorName, sizeof(initiatorName), "initiator_%d", i);
+      std::stringstream initiatorName;
+      initiatorName << "initiator_" << i;
+      XREPORT("[TOP_MODULE C_TOR] : Creating initiator : " << initiatorName.str().c_str());
 
-      snprintf(stringMisc, sizeof(stringMisc), "%s.%s.initiator_ID", name(),
-               initiatorName);
+      std::stringstream stringMisc;
 
-	  snprintf(initiatorName, sizeof(initiatorName), "\"initiator_%d\"", i);
-      m_broker.set_preset_cci_value(stringMisc, cci::cci_value::from_json(initiatorName));
-	  snprintf(initiatorName, sizeof(initiatorName), "initiator_%d", i);
-      initiatorList.push_back(new ex09_initiator(initiatorName));
+      stringMisc << name() << "." << initiatorName.str().c_str() << ".initiator_ID";
+      //snprintf(stringMisc, sizeof(stringMisc), "%s.%s.initiator_ID", name(),
+      //         initiatorName);
+
+	  //snprintf(initiatorName, sizeof(initiatorName), "\"initiator_%d\"", i);
+      std::string jinitiatorName = "\"" + initiatorName.str() + "\"";
+      m_broker.set_preset_cci_value(stringMisc.str().c_str(), cci::cci_value::from_json(jinitiatorName.c_str()));
+	  //snprintf(initiatorName, sizeof(initiatorName), "initiator_%d", i);
+      initiatorList.push_back(new ex09_initiator(initiatorName.str().c_str()));
 
       //     Binding of initiator to Router
       XREPORT("[TOP MODULE C_TOR] : Binding Router_Initiator to "
-              << initiatorName);
+              << initiatorName.str().c_str());
       initiatorList[i]->initiator_socket.bind(routerInstance->Router_target);
+      }
     }
 
     // Defining target size
@@ -125,75 +133,94 @@ SC_MODULE(ex09_top_module) {
 
     // Creating instances of target(s)
     for (int i = 0; i < n_targets; i++) {
-      snprintf(targetName, sizeof(targetName), "target_%d", i);
-      XREPORT("[TOP_MODULE C_TOR] : Creating target : " << targetName);
+      {
+      std::stringstream targetName;
+      targetName << "target_" << i;
+      //snprintf(targetName, sizeof(targetName), "target_%d", i);
+      XREPORT("[TOP_MODULE C_TOR] : Creating target : " << targetName.str().c_str());
 
-      snprintf(stringMisc, sizeof(stringMisc), "%s.%s.target_ID", name(),
-               targetName);
-	  snprintf(targetName, sizeof(targetName), "\"target_%d\"", i);
-      m_broker.set_preset_cci_value(stringMisc, cci::cci_value::from_json(targetName));
-	  snprintf(targetName, sizeof(targetName), "target_%d", i);
+      std::stringstream stringMisc;
+      stringMisc << name() << "." << targetName.str().c_str() << ".target_ID";
+      //snprintf(stringMisc, sizeof(stringMisc), "%s.%s.target_ID", name(),
+      //         targetName);
+	  //snprintf(targetName, sizeof(targetName), "\"target_%d\"", i);
+      std::string jtargetName = "\"" + targetName.str() + "\"";
+      m_broker.set_preset_cci_value(stringMisc.str().c_str(), cci::cci_value::from_json(jtargetName.c_str()));
+	  //snprintf(targetName, sizeof(targetName), "target_%d", i);
 
       // Set preset value for maximum target size(memory)
-      snprintf(stringMisc, sizeof(stringMisc), "%s.%s.s_size", name(),
-               targetName);
+      std::stringstream stringSize;
+      stringSize << name() << "." << targetName.str().c_str() << ".s_size";
+      /*snprintf(stringMisc, sizeof(stringMisc), "%s.%s.s_size", name(),
+               targetName);*/
       ss.clear();
       ss.str("");
       ss << targetSize;
 
-      m_broker.set_preset_cci_value(stringMisc, cci::cci_value::from_json(ss.str()));
-      targetList.push_back(new ex09_target(targetName));
+      m_broker.set_preset_cci_value(stringSize.str().c_str(), cci::cci_value::from_json(ss.str()));
+      targetList.push_back(new ex09_target(targetName.str().c_str()));
 
       // Binding Router to target
-      XREPORT("[TOP MODULE C_TOR] : Binding Router_Initiator to " << targetName);
+      XREPORT("[TOP MODULE C_TOR] : Binding Router_Initiator to " << targetName.str().c_str());
       routerInstance->Router_initiator.bind(targetList[i]->target_socket);
+      }
     }
 
     // Try re-setting locked values for Router Table contents
     for (int i = 0; i < n_targets; i++) {
-      snprintf(targetName, sizeof(targetName), "%s.RouterInstance.r_index_%d",
-               name(), i);
+      {
+      std::stringstream targetName;
+      targetName << name() << ".RouterInstance.r_index_" << i;
+      //snprintf(targetName, sizeof(targetName), "%s.RouterInstance.r_index_%d",
+      //         name(), i);
       ss.clear();
       ss.str("");
       ss << i;
 
       try {
         XREPORT("[TOP_MODULE C_TOR] : Re-setting fields of target_" << i);
-        m_broker.set_preset_cci_value(targetName, cci::cci_value::from_json(ss.str()));
+        m_broker.set_preset_cci_value(targetName.str().c_str(), cci::cci_value::from_json(ss.str()));
       } catch (sc_core::sc_report const & exception) {
         XREPORT("[ROUTER : Caught] : " << exception.what());
       }
 
-      snprintf(targetName, sizeof(targetName), "%s.RouterInstance.r_sa_%d",
-               name(), i);
+      std::stringstream targetSa;
+      targetSa << name() << ".RouterInstance.r_sa_" << i;
+      //snprintf(targetName, sizeof(targetName), "%s.RouterInstance.r_sa_%d",
+      //         name(), i);
       ss.clear();
       ss.str("");
       ss << (i * targetSize);
 
-      snprintf(targetBaseAddr, sizeof(targetBaseAddr), "%s.target_%d.s_base_addr",
-               name(), i);
+      std::stringstream targetBaseAddr;
+      targetBaseAddr << name() << ".target_" << i << ".s_base_addr";
+      //snprintf(targetBaseAddr, sizeof(targetBaseAddr), "%s.target_%d.s_base_addr",
+      //         name(), i);
 
-      cci::cci_param_untyped_handle h=m_broker.get_param_handle(targetBaseAddr);
+      cci::cci_param_untyped_handle h=m_broker.get_param_handle(targetBaseAddr.str().c_str());
       h.set_cci_value(cci::cci_value::from_json(ss.str()));
 
       try {
         XREPORT("[TOP_MODULE C_TOR] : Re-setting start addr of target_" << i);
-        m_broker.set_preset_cci_value(targetName, cci::cci_value::from_json(ss.str()));
+        m_broker.set_preset_cci_value(targetSa.str().c_str(), cci::cci_value::from_json(ss.str()));
       } catch (sc_core::sc_report const & exception) {
         XREPORT("[ROUTER : Caught] : " << exception.what());
       }
 
-      snprintf(targetName, sizeof(targetName), "%s.RouterInstance.r_ea_%d",
-               name(), i);
+      std::stringstream targetEa;
+      targetEa << name() << ".RouterInstance.r_ea_" << i;
+      //snprintf(targetName, sizeof(targetName), "%s.RouterInstance.r_ea_%d",
+      //         name(), i);
       ss.clear();
       ss.str("");
       ss << ((i + 1) * targetSize - 1);
 
       try {
         XREPORT("[TOP_MODULE C_TOR] : Re-setting end addr of target_" << i);
-        m_broker.set_preset_cci_value(targetName, cci::cci_value::from_json(ss.str()));
+        m_broker.set_preset_cci_value(targetEa.str().c_str(), cci::cci_value::from_json(ss.str()));
       } catch (sc_core::sc_report const & exception) {
         XREPORT("[ROUTER : Caught] : " << exception.what());
+      }
       }
     }
   }
@@ -235,10 +262,10 @@ SC_MODULE(ex09_top_module) {
   std::vector<ex09_target*> targetList; ///< STD::VECTOR for targets
 
 
-  char initiatorName[50]; ///< initiator_ID
-  char targetName[50];  ///< target_ID
-  char stringMisc[50];  ///< String to be used for misc things
-  char targetBaseAddr[50];  ///< The base address of the target
+  //char initiatorName[50]; ///< initiator_ID
+  //char targetName[50];  ///< target_ID
+  //char stringMisc[50];  ///< String to be used for misc things
+  //char targetBaseAddr[50];  ///< The base address of the target
 
 
   int addrValue;  ///< Address Value

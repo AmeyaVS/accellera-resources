@@ -87,7 +87,7 @@ SC_MODULE(ex09_router) {
     XREPORT("[ROUTER in beoe] : Maximum Addressable Limit of the router : "
             << addr_limit.get_value());
 
-    char targetName[10];      ///< Holds router table's fields' names
+    //char targetName[10];      ///< Holds router table's fields' names
     addrSize = (unsigned int) (addr_limit.get_value() / r_targets);
 
     // Printing the Router Table contents
@@ -99,27 +99,40 @@ SC_MODULE(ex09_router) {
     // Sets the contents of the routing table with (default) values
     // calculated within 'beoe' phase
     for (int i = 0; i < r_targets; i++) {
-      snprintf(targetName, sizeof(targetName), "r_index_%d", i);
+      {
+      std::stringstream targetName;
+      targetName << "r_index_" << i;
+      //snprintf(targetName, sizeof(targetName), "r_index_%d", i);
       r_target_index.push_back(
           new cci::cci_param<unsigned int, cci::CCI_IMMUTABLE_PARAM>(
-              targetName, i));
-
-      snprintf(targetName, sizeof(targetName), "r_sa_%d", i);
+              targetName.str().c_str(), i));
+      }
+      {
+      //snprintf(targetName, sizeof(targetName), "r_sa_%d", i);
+      std::stringstream targetName;
+      targetName << "r_sa_" << i;
       r_addr_start.push_back(
           new cci::cci_param<unsigned int, cci::CCI_IMMUTABLE_PARAM>(
-              targetName, (i * addrSize)));
+              targetName.str().c_str(), (i * addrSize)));
+      }
 
-      snprintf(targetName, sizeof(targetName), "r_ea_%d", i);
+      {
+      //snprintf(targetName, sizeof(targetName), "r_ea_%d", i);
+      std::stringstream targetName;
+      targetName << "r_ea_" << i;
       r_addr_end.push_back(
           new cci::cci_param<unsigned int, cci::CCI_IMMUTABLE_PARAM>(
-              targetName, ((i + 1) * addrSize - 1)));
+              targetName.str().c_str(), ((i + 1) * addrSize - 1)));
+      }
     }
 
     for (int i = 0; i < r_targets; i++) {
-      snprintf(stringName, sizeof(stringName),
-               "top_module_inst.target_%d.s_base_addr", i);
+      std::stringstream stringName;
+      stringName << "top_module_inst.target_" << i <<".s_base_addr";
+      /*snprintf(stringName, sizeof(stringName),
+               "top_module_inst.target_%d.s_base_addr", i);*/
 
-      base_handle = m_broker.get_param_handle(stringName); 
+      base_handle = m_broker.get_param_handle(stringName.str().c_str());
       if (!base_handle.is_valid()) {
         sc_assert(!"target Base Address Handle returned is NULL");
       }
@@ -190,7 +203,7 @@ SC_MODULE(ex09_router) {
   }
 
   int addrSize;
-  char stringName[50];
+  //char stringName[50];
 };
 // ex09_router
 
